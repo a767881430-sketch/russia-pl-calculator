@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Enhanced Interactivity & Mobile Responsive Overrides
+   ============================================================ */
+
+/* --- NO global * transition — scoped to interactive elements only --- */
+
+/* --- Recharts fix --- */
+.recharts-responsive-container {
+  width: 100% !important;
+  min-width: 0;
+}
+
+/* --- Card 3D Hover Lift --- */
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px -8px rgba(31,27,22,0.12), 0 4px 12px -4px rgba(184,134,11,0.08);
+}
+
+/* --- Metric Number Pulse on Hover --- */
+.metric-value {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: default;
+}
+.metric-value:hover {
+  transform: scale(1.05);
+}
+
+/* --- Button Enhanced Press Effect --- */
+.btn-interact {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.btn-interact:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(92,26,27,0.2);
+}
+.btn-interact:active {
+  transform: translateY(1px) scale(0.96);
+  box-shadow: none;
+}
+
+/* --- Tab Button --- */
+.tab-btn {
+  transition: color 0.15s ease, background-color 0.15s ease;
+  position: relative;
+  border-bottom: 3px solid transparent !important;
+}
+.tab-btn:hover {
+  background-color: rgba(184,134,11,0.06) !important;
+}
+.tab-btn.active {
+  color: #5C1A1B !important;
+  background-color: rgba(184,134,11,0.08) !important;
+  border-bottom-color: #5C1A1B !important;
+  font-weight: 600;
+}
+
+/* --- Page Transition — fast & snappy --- */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: fadeSlideIn 0.18s ease-out;
+}
+
+/* --- Glassmorphism Card --- */
+.glass-card {
+  background: rgba(255,255,255,0.65) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(217,207,184,0.6) !important;
+}
+
+/* --- Row Hover Glow --- */
+.row-glow {
+  transition: background-color 0.12s ease;
+}
+.row-glow:hover {
+  background-color: rgba(184,134,11,0.06) !important;
+}
+
+/* --- Progress Bar Shimmer --- */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.bar-shimmer {
+  background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* --- Number Counter Effect --- */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.count-in {
+  animation: countUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Tag Pill Hover --- */
+.tag-pill {
+  transition: all 0.2s ease !important;
+  cursor: default;
+}
+.tag-pill:hover {
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* --- Scroll Hint for Tables (mobile) --- */
+.scroll-hint {
+  position: relative;
+}
+.scroll-hint::after {
+  content: '← 横向滑动查看 →';
+  display: none;
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #B8860B;
+  white-space: nowrap;
+  animation: fadeInOut 3s ease-in-out;
+}
+@media (max-width: 768px) {
+  .scroll-hint::after {
+    display: block;
+  }
+}
+
+/* --- Input Focus Glow --- */
+.input-glow:focus-within {
+  box-shadow: 0 0 0 3px rgba(92,26,27,0.12), 0 2px 8px rgba(92,26,27,0.06) !important;
+  border-color: #5C1A1B !important;
+}
+
+/* --- Tooltip Arrow & Animation --- */
+.tooltip-pop {
+  animation: tooltipIn 0.15s ease-out;
+}
+@keyframes tooltipIn {
+  from { opacity: 0; transform: scale(0.95) translateY(4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ============================================================
+   Mobile Responsive Overrides
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Smaller padding on mobile */
+  .mobile-px { padding-left: 1rem !important; padding-right: 1rem !important; }
+  
+  /* Smaller title */
+  .mobile-title { font-size: 1.25rem !important; }
+  
+  /* Stack header buttons */
+  .mobile-stack { flex-direction: column; align-items: stretch !important; }
+  
+  /* Wider tab touch targets */
+  .tab-btn {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.8125rem !important;
+    min-height: 44px;
+  }
+  
+  /* Metric cards: 1 col on very small screens */
+  .mobile-grid-1 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Smaller metric text */
+  .mobile-metric-sm {
+    font-size: 1.5rem !important;
+  }
+  
+  /* Full-width buttons */
+  .mobile-btn-full {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 2-col grid on tablets */
+  .mobile-grid-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* --- Scrollbar Styling --- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F2EDE3; }
+::-webkit-scrollbar-thumb { background: #D9CFB8; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #B8860B; }
+
+/* --- Smooth Scroll --- */
+html { scroll-behavior: smooth; }
