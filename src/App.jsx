@@ -502,16 +502,21 @@ function AppContent({ lang, setLang }) {
 
   // --- i18n ---
   const t = useMemo(() => createT(lang), [lang]);
-  const { liveRate, effectiveRate, rateSource, rateLoading, fetchRate, setRateSource } = useLiveRate(params.exchangeRate);
+  const { liveRate, liveUsdRate, effectiveRate, effectiveUsdRate, rateSource, rateLoading, fetchRate, setRateSource } = useLiveRate(params.exchangeRate, params.usdRate);
   // --- locale-aware currency formatter (¥ for zh, $ for en, ₽ for ru) ---
-  const fmt = useMemo(() => createCurrencyFormatter(lang, effectiveRate, params.usdRate), [lang, effectiveRate, params.usdRate]);
+  const fmt = useMemo(() => createCurrencyFormatter(lang, effectiveRate, effectiveUsdRate), [lang, effectiveRate, effectiveUsdRate]);
 
   // 实时汇率更新到 params
   useEffect(() => {
-    if (rateSource === "live" && liveRate && Math.abs(liveRate - params.exchangeRate) > 0.01) {
-      setParams(p => ({ ...p, exchangeRate: liveRate }));
+    if (rateSource === "live") {
+      setParams(p => {
+        const next = { ...p };
+        if (liveRate && Math.abs(liveRate - p.exchangeRate) > 0.01) next.exchangeRate = liveRate;
+        if (liveUsdRate && Math.abs(liveUsdRate - p.usdRate) > 0.01) next.usdRate = liveUsdRate;
+        return next;
+      });
     }
-  }, [liveRate, rateSource]);
+  }, [liveRate, liveUsdRate, rateSource]);
 
   // --- 启动时从 localStorage 加载 ---
   useEffect(() => {
@@ -697,7 +702,7 @@ function AppContent({ lang, setLang }) {
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               {/* Live rate indicator */}
               <span className="text-[10px] font-mono hidden sm:inline" style={{ color: rateSource === 'live' ? COLORS.emerald : COLORS.inkSoft }}>
-                {rateSource === 'live' ? '● ' : '○ '}1¥={effectiveRate.toFixed(2)}₽
+                {rateSource === 'live' ? '● ' : '○ '}1¥={effectiveRate.toFixed(2)}₽ · 1$={effectiveUsdRate.toFixed(1)}₽
               </span>
               {/* Language switcher */}
               <div className="flex gap-0 border rounded-sm overflow-hidden" style={{ borderColor: COLORS.line }}>

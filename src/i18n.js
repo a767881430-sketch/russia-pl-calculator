@@ -381,8 +381,9 @@ export const createCurrencyFormatter = (lang, exchangeRate, usdRate = 95) => {
 };
 
 // --- 实时汇率 Hook ---
-export const useLiveRate = (manualRate) => {
-  const [liveRate, setLiveRate] = useState(null);
+export const useLiveRate = (manualRate, manualUsdRate = 95) => {
+  const [liveRate, setLiveRate] = useState(null);       // CNY→RUB
+  const [liveUsdRate, setLiveUsdRate] = useState(null);  // USD→RUB
   const [rateSource, setRateSource] = useState("manual"); // "manual" | "live"
   const [rateLoading, setRateLoading] = useState(false);
 
@@ -394,6 +395,11 @@ export const useLiveRate = (manualRate) => {
       const data = await res.json();
       if (data.result === "success" && data.rates?.RUB) {
         setLiveRate(parseFloat(data.rates.RUB.toFixed(2)));
+        // USD→RUB = RUB_per_CNY / USD_per_CNY
+        if (data.rates?.USD) {
+          const usdRub = data.rates.RUB / data.rates.USD;
+          setLiveUsdRate(parseFloat(usdRub.toFixed(2)));
+        }
         setRateSource("live");
       }
     } catch (e) {
@@ -406,8 +412,9 @@ export const useLiveRate = (manualRate) => {
   useEffect(() => { fetchRate(); }, [fetchRate]);
 
   const effectiveRate = rateSource === "live" && liveRate ? liveRate : manualRate;
+  const effectiveUsdRate = rateSource === "live" && liveUsdRate ? liveUsdRate : manualUsdRate;
 
-  return { liveRate, effectiveRate, rateSource, rateLoading, fetchRate, setRateSource };
+  return { liveRate, liveUsdRate, effectiveRate, effectiveUsdRate, rateSource, rateLoading, fetchRate, setRateSource };
 };
 
 // --- 语言名称 & emoji ---
