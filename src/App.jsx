@@ -45,7 +45,7 @@ const TAX_SCHEMES = {
 };
 
 const DEFAULT_PARAMS = {
-  exchangeRate: 12.0, damageRate: 0.03, shippingPerUnit: 100, labelingPerUnit: 0,
+  exchangeRate: 12.0, usdRate: 95, damageRate: 0.03, shippingPerUnit: 100, labelingPerUnit: 0,
   taxScheme: "usn_15", vatRate: 0.22, profitTaxRate: 0.25, customTaxRate: 0.15,
   incomeBasis: "payout", oneTimeCosts: 0,
 };
@@ -503,8 +503,8 @@ function AppContent({ lang, setLang }) {
   // --- i18n ---
   const t = useMemo(() => createT(lang), [lang]);
   const { liveRate, effectiveRate, rateSource, rateLoading, fetchRate, setRateSource } = useLiveRate(params.exchangeRate);
-  // --- locale-aware currency formatter (¥ for zh, ₽ for en/ru) ---
-  const fmt = useMemo(() => createCurrencyFormatter(lang, effectiveRate), [lang, effectiveRate]);
+  // --- locale-aware currency formatter (¥ for zh, $ for en, ₽ for ru) ---
+  const fmt = useMemo(() => createCurrencyFormatter(lang, effectiveRate, params.usdRate), [lang, effectiveRate, params.usdRate]);
 
   // 实时汇率更新到 params
   useEffect(() => {
@@ -1641,6 +1641,7 @@ const TaxSchemePicker = ({ params, setParams, t }) => (
 const ParamsPanel = ({ params, setParams, t }) => {
   const items = [
     { label: t("paramExchangeRate"), k: "exchangeRate", suffix: "₽/¥", step: 0.1 },
+    { label: t("paramUsdRate"), k: "usdRate", suffix: "₽/$", step: 0.5 },
     { label: t("paramDamageRate"), k: "damageRate", suffix: "%", step: 0.5, multiplier: 100 },
     { label: t("paramShipping"), k: "shippingPerUnit", suffix: "₽" },
     { label: t("paramLabeling"), k: "labelingPerUnit", suffix: "₽" },

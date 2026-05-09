@@ -283,6 +283,7 @@ const DICT = {
 
   // === Params Panel ===
   paramExchangeRate: { zh: "汇率（1元 ≈ ? 卢布）", en: "Exchange Rate (1 CNY ≈ ? RUB)", ru: "Курс (1 CNY ≈ ? RUB)" },
+  paramUsdRate: { zh: "美元汇率（1$ ≈ ? 卢布）", en: "USD Rate (1 USD ≈ ? RUB)", ru: "Курс USD (1 $ ≈ ? RUB)" },
   paramDamageRate: { zh: "货损率", en: "Damage Rate", ru: "Процент потерь" },
   paramShipping: { zh: "到俄罗斯单件运费", en: "Shipping per Unit to Russia", ru: "Доставка за ед. в Россию" },
   paramLabeling: { zh: "诚实标签 (Честный знак)", en: "Labeling (Chestny Znak)", ru: "Маркировка (Честный знак)" },
@@ -325,9 +326,8 @@ export const createT = (lang) => (key, params) => {
 };
 
 // --- 货币格式化工厂 ---
-export const createCurrencyFormatter = (lang, exchangeRate) => {
-  // 主币种（大字显示的）
-  const primaryCurrency = lang === "ru" ? "RUB" : lang === "en" ? "USD" : "CNY";
+// exchangeRate = CNY→RUB,  usdRate = USD→RUB
+export const createCurrencyFormatter = (lang, exchangeRate, usdRate = 95) => {
 
   const fmtRub = (v, digits = 0) => "₽ " + (Number(v) || 0).toLocaleString("ru-RU", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
@@ -347,27 +347,37 @@ export const createCurrencyFormatter = (lang, exchangeRate) => {
     return "¥" + n.toFixed(0);
   };
 
+  const fmtUsd = (v) => "$ " + (Number(v) || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const fmtUsdShort = (v) => {
+    const n = Number(v) || 0;
+    if (Math.abs(n) >= 1e6) return "$" + (n / 1e6).toFixed(2) + "M";
+    if (Math.abs(n) >= 1e3) return "$" + (n / 1e3).toFixed(1) + "K";
+    return "$" + n.toFixed(0);
+  };
+
   const fmtPct = (v) => ((Number(v) || 0) * 100).toFixed(1) + "%";
 
-  // 主显示金额（根据语言，以用户习惯的币种显示大字）
+  // 主显示金额（zh=¥, en=$, ru=₽）
   const fmtPrimary = (rubValue) => {
     if (lang === "zh") return fmtCnyShort(rubValue / exchangeRate);
+    if (lang === "en") return fmtUsdShort(rubValue / usdRate);
     return fmtRubShort(rubValue);
   };
 
   // 主显示金额（完整精度，用于表格明细）
   const fmtPrimaryFull = (rubValue, digits = 0) => {
     if (lang === "zh") return fmtCny(rubValue / exchangeRate);
+    if (lang === "en") return fmtUsd(rubValue / usdRate);
     return fmtRub(rubValue, digits);
   };
 
-  // 辅显示金额（小字副信息）
+  // 辅显示金额（小字副信息：显示 ₽ 原始值）
   const fmtSecondary = (rubValue) => {
-    if (lang === "zh") return fmtRubShort(rubValue);
-    return fmtCny(rubValue / exchangeRate);
+    return fmtRubShort(rubValue);
   };
 
-  return { fmtRub, fmtRubShort, fmtCny, fmtCnyShort, fmtPct, fmtPrimary, fmtPrimaryFull, fmtSecondary };
+  return { fmtRub, fmtRubShort, fmtCny, fmtCnyShort, fmtUsd, fmtUsdShort, fmtPct, fmtPrimary, fmtPrimaryFull, fmtSecondary };
 };
 
 // --- 实时汇率 Hook ---
