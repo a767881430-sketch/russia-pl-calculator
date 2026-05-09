@@ -756,8 +756,8 @@ function AppContent({ lang, setLang }) {
 
       <footer className="border-t mt-8" style={{ borderColor: COLORS.line }}>
         <div className="max-w-[1500px] mx-auto px-6 py-4 text-xs" style={{ color: COLORS.inkSoft }}>
-          数据基于 联邦法 №425-FZ（2025.11.28，2026.1.1生效）。USN门槛 2026=20M / 2027=15M / 2028=10M ₽。
-          <span className="mx-2">·</span>本工具仅供测算参考，最终申报请咨询当地会计师。
+          {t("footerText")}
+          <span className="mx-2">·</span>{t("footerDisclaimer")}
         </div>
       </footer>
     </div>
@@ -905,14 +905,14 @@ const MonthlyPnLChart = ({ proj }) => {
 // ============================================================
 // 成本/税务结构
 // ============================================================
-const CostBar = ({ totals, params }) => {
+const CostBar = ({ totals, params, t }) => {
   const items = [
-    { label: "采购+到俄运输", value: totals.totalInvestment, color: COLORS.oxblood },
-    { label: "海外仓", value: totals.totalWarehouse, color: COLORS.gold },
-    { label: "管理费", value: totals.totalMgmt, color: COLORS.goldSoft },
-    { label: "税", value: totals.tax, color: COLORS.crimson },
-    { label: "一次性费用", value: params.oneTimeCosts, color: COLORS.inkSoft },
-    { label: "净利润", value: Math.max(0, totals.netProfit), color: COLORS.emerald },
+    { label: t("costProcure"), value: totals.totalInvestment, color: COLORS.oxblood },
+    { label: t("costWarehouse"), value: totals.totalWarehouse, color: COLORS.gold },
+    { label: t("costMgmt"), value: totals.totalMgmt, color: COLORS.goldSoft },
+    { label: t("costTax"), value: totals.tax, color: COLORS.crimson },
+    { label: t("costOneTime"), value: params.oneTimeCosts, color: COLORS.inkSoft },
+    { label: t("costNetProfit"), value: Math.max(0, totals.netProfit), color: COLORS.emerald },
   ].filter(x => x.value > 0);
   const total = items.reduce((a, b) => a + b.value, 0) || 1;
   return (
@@ -935,27 +935,27 @@ const CostBar = ({ totals, params }) => {
   );
 };
 
-const TaxBreakdown = ({ totals, params }) => {
+const TaxBreakdown = ({ totals, params, t }) => {
   const rows = [];
-  if (totals.vatPart > 0) rows.push({ label: "VAT 增值税净缴", value: totals.vatPart });
-  if (totals.usnPart > 0) rows.push({ label: "USN 简化税", value: totals.usnPart });
-  if (totals.profitTaxPart > 0) rows.push({ label: "利润税", value: totals.profitTaxPart });
-  if (rows.length === 0 && totals.tax > 0) rows.push({ label: "税额", value: totals.tax });
+  if (totals.vatPart > 0) rows.push({ label: "VAT", value: totals.vatPart });
+  if (totals.usnPart > 0) rows.push({ label: "USN", value: totals.usnPart });
+  if (totals.profitTaxPart > 0) rows.push({ label: t("costTax"), value: totals.profitTaxPart });
+  if (rows.length === 0 && totals.tax > 0) rows.push({ label: t("costTax"), value: totals.tax });
   const taxRate = totals.totalRevenue > 0 ? totals.tax / totals.totalRevenue : 0;
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3 text-center">
         <div className="p-3 border" style={{ borderColor: COLORS.line }}>
-          <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.inkSoft }}>税前利润</div>
+          <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.inkSoft }}>{t("preTaxProfit")}</div>
           <div className="font-display font-semibold text-lg mt-1 number-pill" style={{ color: totals.profitBeforeTax >= 0 ? COLORS.ink : COLORS.crimson }}>{fmtRubShort(totals.profitBeforeTax)}</div>
         </div>
         <div className="p-3 border" style={{ borderColor: COLORS.line, background: "rgba(164,25,61,0.05)" }}>
-          <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.crimson }}>总税额</div>
+          <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.crimson }}>{t("totalTax")}</div>
           <div className="font-display font-semibold text-lg mt-1 number-pill" style={{ color: COLORS.crimson }}>{fmtRubShort(totals.tax)}</div>
-          <div className="text-xs font-mono mt-1" style={{ color: COLORS.inkSoft }}>{fmtPct(taxRate)} 营收</div>
+          <div className="text-xs font-mono mt-1" style={{ color: COLORS.inkSoft }}>{fmtPct(taxRate)} {t("effectiveRate")}</div>
         </div>
         <div className="p-3 border" style={{ borderColor: COLORS.line, background: "rgba(31,79,46,0.05)" }}>
-          <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.emerald }}>税后净利</div>
+          <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.emerald }}>{t("cashNetProfit")}</div>
           <div className="font-display font-semibold text-lg mt-1 number-pill" style={{ color: COLORS.emerald }}>{fmtRubShort(totals.netProfit)}</div>
         </div>
       </div>
@@ -1015,39 +1015,34 @@ const ProductRanking = ({ calcs }) => {
 // ============================================================
 // 商品 Tab
 // ============================================================
-const ProductsTab = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, onAdd, onClear, params }) => (
+const ProductsTab = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, onAdd, onClear, params, t, lang }) => (
   <div className="space-y-4 anim-in">
     <div className="flex items-center justify-between flex-wrap gap-3">
       <div>
-        <h2 className="font-display text-2xl font-semibold">商品明细 · {calcs.length} 个SKU</h2>
+        <h2 className="font-display text-2xl font-semibold">{t("productsTitle")} · {t("productCount", { n: calcs.length })}</h2>
         <p className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>
-          点击行展开编辑（含申报价字段）。{params.taxScheme === "osn" && <span style={{ color: COLORS.oxblood }}> · OSN下申报价用于进项VAT计算</span>}
+          {t("productsHint")}
         </p>
       </div>
       <div className="flex gap-2">
         <button onClick={onClear} disabled={!calcs.length}
           className="flex items-center gap-1.5 px-3 py-2 text-xs border disabled:opacity-30"
           style={{ borderColor: COLORS.crimson, color: COLORS.crimson }}>
-          <Trash2 size={14} /> 清空
+          <Trash2 size={14} /> {t("clearAll")}
         </button>
         <button onClick={onAdd}
           className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium"
           style={{ background: COLORS.oxblood, color: COLORS.cream }}>
-          <Plus size={14} /> 添加商品
+          <Plus size={14} /> {t("addProduct")}
         </button>
       </div>
     </div>
     <ProductTable calcs={calcs} expandedRow={expandedRow} setExpandedRow={setExpandedRow}
-      onUpdate={onUpdate} onDelete={onDelete} params={params} />
-    <div className="text-xs p-3 border" style={{ borderColor: COLORS.line, background: COLORS.paper, color: COLORS.inkSoft }}>
-      <Info size={12} className="inline mr-1" />
-      <strong>说明：</strong>「单位回款」= 售价 − 平台费用。「现金净利」用<strong>实际成本</strong>（你真正花的钱），
-      「账面净利」用<strong>申报成本</strong>（俄罗斯税务局看到的数字）。两者在 OSN 下会有差异。
-    </div>
+      onUpdate={onUpdate} onDelete={onDelete} params={params} t={t} />
   </div>
 );
 
-const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, params }) => {
+const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, params, t }) => {
   const showDeclared = params.taxScheme === "osn";
   return (
     <div className="border overflow-x-auto" style={{ borderColor: COLORS.line, background: "white" }}>
@@ -1055,20 +1050,20 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
         <thead style={{ background: COLORS.paper }}>
           <tr className="text-[11px] tracking-wider uppercase" style={{ color: COLORS.inkSoft }}>
             <th className="text-left p-2 font-medium w-8"></th>
-            <th className="text-left p-2 font-medium">产品ID</th>
-            <th className="text-right p-2 font-medium">实¥</th>
-            {showDeclared && <th className="text-right p-2 font-medium" style={{ color: COLORS.oxblood }}>申报¥</th>}
-            <th className="text-right p-2 font-medium">数量</th>
-            <th className="text-right p-2 font-medium">售价₽</th>
-            <th className="text-right p-2 font-medium">平台费</th>
-            <th className="text-right p-2 font-medium">仓费</th>
-            <th className="text-right p-2 font-medium">管理</th>
-            <th className="text-right p-2 font-medium border-l" style={{ borderColor: COLORS.line }}>总投资</th>
-            <th className="text-right p-2 font-medium">总营收</th>
-            <th className="text-right p-2 font-medium">税</th>
-            <th className="text-right p-2 font-medium">净利₽</th>
-            <th className="text-right p-2 font-medium">ROI</th>
-            <th className="text-center p-2 font-medium" style={{ width: "70px" }}>操作</th>
+            <th className="text-left p-2 font-medium">{t("productId")}</th>
+            <th className="text-right p-2 font-medium">{t("costCny")}</th>
+            {showDeclared && <th className="text-right p-2 font-medium" style={{ color: COLORS.oxblood }}>Decl.¥</th>}
+            <th className="text-right p-2 font-medium">{t("qty")}</th>
+            <th className="text-right p-2 font-medium">{t("listPrice")}</th>
+            <th className="text-right p-2 font-medium">{t("platformFee")}</th>
+            <th className="text-right p-2 font-medium">{t("warehouseFee")}</th>
+            <th className="text-right p-2 font-medium">{t("mgmtFee")}</th>
+            <th className="text-right p-2 font-medium border-l" style={{ borderColor: COLORS.line }}>{t("investment")}</th>
+            <th className="text-right p-2 font-medium">{t("revenue")}</th>
+            <th className="text-right p-2 font-medium">{t("tax")}</th>
+            <th className="text-right p-2 font-medium">{t("netProfitCol")}</th>
+            <th className="text-right p-2 font-medium">{t("roi")}</th>
+            <th className="text-center p-2 font-medium" style={{ width: "70px" }}>{t("action")}</th>
           </tr>
         </thead>
         <tbody>
