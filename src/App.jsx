@@ -503,6 +503,8 @@ function AppContent({ lang, setLang }) {
   // --- i18n ---
   const t = useMemo(() => createT(lang), [lang]);
   const { liveRate, effectiveRate, rateSource, rateLoading, fetchRate, setRateSource } = useLiveRate(params.exchangeRate);
+  // --- locale-aware currency formatter (¥ for zh, ₽ for en/ru) ---
+  const fmt = useMemo(() => createCurrencyFormatter(lang, effectiveRate), [lang, effectiveRate]);
 
   // 实时汇率更新到 params
   useEffect(() => {
@@ -741,13 +743,13 @@ function AppContent({ lang, setLang }) {
 
       <main className="max-w-[1500px] mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div key={tab} className="page-enter">
-        {tab === "dashboard" && <Dashboard totals={totals} params={params} calcs={calcs} proj={proj} projection={projection} t={t} lang={lang} />}
+        {tab === "dashboard" && <Dashboard totals={totals} params={params} calcs={calcs} proj={proj} projection={projection} t={t} lang={lang} fmt={fmt} />}
         {tab === "products" && <ProductsTab calcs={calcs} expandedRow={expandedRow} setExpandedRow={setExpandedRow}
-          onUpdate={updateProduct} onDelete={deleteProduct} onAdd={addProduct} onClear={clearAllProducts} params={params} t={t} lang={lang} />}
+          onUpdate={updateProduct} onDelete={deleteProduct} onAdd={addProduct} onClear={clearAllProducts} params={params} t={t} lang={lang} fmt={fmt} />}
         {tab === "schedule" && <ScheduleTab products={products} projection={projection} setProjection={setProjection}
           scheduleStore={scheduleStore} updateSchedule={updateSchedule} applyCurve={applyScheduleCurve} t={t} lang={lang} />}
         {tab === "projection" && <ProjectionTab proj={proj} projection={projection} setProjection={setProjection}
-          params={params} totals={totals} t={t} lang={lang} />}
+          params={params} totals={totals} t={t} lang={lang} fmt={fmt} />}
         {tab === "settings" && <SettingsTab params={params} setParams={setParams} t={t} lang={lang}
           rateSource={rateSource} setRateSource={setRateSource} liveRate={liveRate} effectiveRate={effectiveRate} fetchRate={fetchRate} />}
         {tab === "help" && <HelpPanel t={t} lang={lang} />}
@@ -767,24 +769,22 @@ function AppContent({ lang, setLang }) {
 // ============================================================
 // 仪表盘
 // ============================================================
-const Dashboard = ({ totals, params, calcs, proj, projection, t, lang }) => {
+const Dashboard = ({ totals, params, calcs, proj, projection, t, lang, fmt }) => {
   const showBookDiff = params.taxScheme === "osn" && Math.abs(totals.netProfit - totals.bookNetProfit) > 1;
-  // Locale-aware: Chinese sees ¥ big / ₽ small; others see ₽ big / ¥ small
-  const fmtBig = lang === "zh" ? (v) => fmtCnyShort(v / params.exchangeRate) : fmtRubShort;
-  const fmtSub = lang === "zh" ? fmtRubShort : (v) => fmtCny(v / params.exchangeRate);
+  const F = fmt.fmtPrimary, Fs = fmt.fmtSecondary;
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
-          <Metric label={t("totalRevenue")} value={fmtBig(totals.totalRevenue)} sub={fmtSub(totals.totalRevenue)} big />
+          <Metric label={t("totalRevenue")} value={F(totals.totalRevenue)} sub={Fs(totals.totalRevenue)} big />
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
-          <Metric label={t("totalInvestment")} value={fmtBig(totals.totalCostBasis)} sub={fmtSub(totals.totalCostBasis)} big />
+          <Metric label={t("totalInvestment")} value={F(totals.totalCostBasis)} sub={Fs(totals.totalCostBasis)} big />
         </div>
         <div className="p-4 sm:p-5 card-hover rounded-sm border-2" style={{ borderColor: totals.netProfit >= 0 ? COLORS.emerald : COLORS.crimson, background: "rgba(255,255,255,0.7)" }}>
           <Metric label={t("cashNetProfit")}
-            value={fmtBig(totals.netProfit)}
-            sub={showBookDiff ? `${t("bookNetProfit")} ${fmtBig(totals.bookNetProfit)}` : fmtSub(totals.netProfit)}
+            value={F(totals.netProfit)}
+            sub={showBookDiff ? `${t("bookNetProfit")} ${F(totals.bookNetProfit)}` : Fs(totals.netProfit)}
             color={totals.netProfit >= 0 ? COLORS.emerald : COLORS.crimson} big />
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
@@ -794,7 +794,7 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card kicker={t("cumCashKicker")} title={t("cumCashTitle")} className="lg:col-span-2">
-          <CashFlowChart proj={proj} t={t} />
+          <CashFlowChart proj={proj} t={t} fmt={fmt} />
           {proj.breakEvenMonth ? (
             <div className="mt-3 flex items-center gap-2 text-sm">
               <span className="w-2 h-2 rounded-full" style={{ background: COLORS.emerald }}></span>
@@ -809,34 +809,34 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang }) => {
         </Card>
         <Card kicker={t("investorKicker")} title={t("investorTitle")}>
           <div className="space-y-4">
-            <Metric label={t("initialOutflow")} value={fmtBig(-proj.initialOutflow)}
-              sub={fmtSub(-proj.initialOutflow)} color={COLORS.crimson} />
-            <Metric label={t("maxDrawdown")} value={fmtBig(proj.maxDrawdown)}
-              sub={fmtSub(proj.maxDrawdown)} color={COLORS.crimson} />
-            <Metric label={t("finalCash")} value={fmtBig(proj.finalCash)}
-              sub={fmtSub(proj.finalCash)}
+            <Metric label={t("initialOutflow")} value={F(-proj.initialOutflow)}
+              sub={Fs(-proj.initialOutflow)} color={COLORS.crimson} />
+            <Metric label={t("maxDrawdown")} value={F(proj.maxDrawdown)}
+              sub={Fs(proj.maxDrawdown)} color={COLORS.crimson} />
+            <Metric label={t("finalCash")} value={F(proj.finalCash)}
+              sub={Fs(proj.finalCash)}
               color={proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson} />
-            <Metric label={t("avgMonthly")} value={fmtBig(proj.totalRevenue / projection.monthsHorizon)}
-              sub={fmtSub(proj.totalRevenue / projection.monthsHorizon)} color={COLORS.gold} />
+            <Metric label={t("avgMonthly")} value={F(proj.totalRevenue / projection.monthsHorizon)}
+              sub={Fs(proj.totalRevenue / projection.monthsHorizon)} color={COLORS.gold} />
           </div>
         </Card>
       </div>
 
       <Card kicker={t("monthlyPnLKicker")} title={t("monthlyPnL")}>
-        <MonthlyPnLChart proj={proj} t={t} />
+        <MonthlyPnLChart proj={proj} t={t} fmt={fmt} />
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card kicker={t("costKicker")} title={t("costStructure")}>
-          <CostBar totals={totals} params={params} t={t} />
+          <CostBar totals={totals} params={params} t={t} fmt={fmt} />
         </Card>
         <Card kicker={`Tax · ${TAX_SCHEMES[params.taxScheme].short}`} title={t("taxStructure")}>
-          <TaxBreakdown totals={totals} params={params} t={t} />
+          <TaxBreakdown totals={totals} params={params} t={t} fmt={fmt} />
         </Card>
       </div>
 
       <Card kicker={t("rankingKicker")} title={t("rankingTitle")}>
-        <ProductRanking calcs={calcs} t={t} />
+        <ProductRanking calcs={calcs} t={t} fmt={fmt} />
       </Card>
     </div>
   );
@@ -845,20 +845,22 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang }) => {
 // ============================================================
 // 图表
 // ============================================================
-const TooltipContent = ({ active, payload, label }) => {
+const TooltipContent = ({ active, payload, label, fmt: fmtProp }) => {
   if (!active || !payload || !payload.length) return null;
+  const _fmt = fmtProp || { fmtPrimaryFull: fmtRub };
   return (
     <div style={{ background: COLORS.ink, color: COLORS.cream, padding: "8px 12px", border: "none", fontSize: 11 }}>
       <div style={{ color: COLORS.goldSoft, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4, fontFamily: "Geist, sans-serif" }}>{label}</div>
       {payload.map((p, i) => (
-        <div key={i} style={{ fontFamily: "JetBrains Mono, monospace" }}>{p.name}: {fmtRub(p.value)}</div>
+        <div key={i} style={{ fontFamily: "JetBrains Mono, monospace" }}>{p.name}: {_fmt.fmtPrimaryFull(p.value)}</div>
       ))}
     </div>
   );
 };
 
-const CashFlowChart = ({ proj, t }) => {
+const CashFlowChart = ({ proj, t, fmt }) => {
   const _t = t || ((k) => k);
+  const _F = fmt ? fmt.fmtPrimary : fmtRubShort;
   const data = proj.months.map(m => ({ label: m.label, cumCash: m.cumCash, monthly: m.cashFlow }));
   return (
     <div style={{ width: "100%", height: 280 }}>
@@ -866,8 +868,8 @@ const CashFlowChart = ({ proj, t }) => {
         <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
           <CartesianGrid stroke={COLORS.line} strokeDasharray="3 3" />
           <XAxis dataKey="label" stroke={COLORS.inkSoft} fontSize={11} />
-          <YAxis stroke={COLORS.inkSoft} fontSize={11} tickFormatter={(v) => fmtRubShort(v)} />
-          <Tooltip content={<TooltipContent />} />
+          <YAxis stroke={COLORS.inkSoft} fontSize={11} tickFormatter={(v) => _F(v)} />
+          <Tooltip content={<TooltipContent fmt={fmt} />} />
           <ReferenceLine y={0} stroke={COLORS.ink} strokeWidth={1} />
           {proj.breakEvenMonth && (
             <ReferenceLine x={`M${proj.breakEvenMonth}`} stroke={COLORS.emerald} strokeDasharray="5 3"
@@ -881,8 +883,9 @@ const CashFlowChart = ({ proj, t }) => {
   );
 };
 
-const MonthlyPnLChart = ({ proj, t }) => {
+const MonthlyPnLChart = ({ proj, t, fmt }) => {
   const _t = t || ((k) => k);
+  const _F = fmt ? fmt.fmtPrimary : fmtRubShort;
   const data = proj.months.slice(1);
   return (
     <div style={{ width: "100%", height: 240 }}>
@@ -890,8 +893,8 @@ const MonthlyPnLChart = ({ proj, t }) => {
         <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
           <CartesianGrid stroke={COLORS.line} strokeDasharray="3 3" />
           <XAxis dataKey="label" stroke={COLORS.inkSoft} fontSize={11} />
-          <YAxis stroke={COLORS.inkSoft} fontSize={11} tickFormatter={(v) => fmtRubShort(v)} />
-          <Tooltip content={<TooltipContent />} />
+          <YAxis stroke={COLORS.inkSoft} fontSize={11} tickFormatter={(v) => _F(v)} />
+          <Tooltip content={<TooltipContent fmt={fmt} />} />
           <ReferenceLine y={0} stroke={COLORS.ink} />
           <Bar dataKey="netProfit" name={_t("chartMonthlyNet")}>
             {data.map((m, i) => (
@@ -907,7 +910,8 @@ const MonthlyPnLChart = ({ proj, t }) => {
 // ============================================================
 // 成本/税务结构
 // ============================================================
-const CostBar = ({ totals, params, t }) => {
+const CostBar = ({ totals, params, t, fmt }) => {
+  const F = fmt.fmtPrimary, Ff = fmt.fmtPrimaryFull;
   const items = [
     { label: t("costProcure"), value: totals.totalInvestment, color: COLORS.oxblood },
     { label: t("costWarehouse"), value: totals.totalWarehouse, color: COLORS.gold },
@@ -920,7 +924,7 @@ const CostBar = ({ totals, params, t }) => {
   return (
     <div className="space-y-3">
       <div className="flex h-8 w-full overflow-hidden border" style={{ borderColor: COLORS.line }}>
-        {items.map((it, i) => <div key={i} title={`${it.label}: ${fmtRub(it.value)}`} style={{ width: `${(it.value / total) * 100}%`, background: it.color }} />)}
+        {items.map((it, i) => <div key={i} title={`${it.label}: ${Ff(it.value)}`} style={{ width: `${(it.value / total) * 100}%`, background: it.color }} />)}
       </div>
       <div className="space-y-1.5">
         {items.map((it, i) => (
@@ -928,7 +932,7 @@ const CostBar = ({ totals, params, t }) => {
             <div className="flex items-center gap-2"><div className="w-3 h-3" style={{ background: it.color }} /><span>{it.label}</span></div>
             <div className="flex items-center gap-3">
               <span className="font-mono" style={{ color: COLORS.inkSoft }}>{((it.value / total) * 100).toFixed(1)}%</span>
-              <span className="font-mono font-semibold w-32 text-right">{fmtRubShort(it.value)}</span>
+              <span className="font-mono font-semibold w-32 text-right">{F(it.value)}</span>
             </div>
           </div>
         ))}
@@ -937,7 +941,8 @@ const CostBar = ({ totals, params, t }) => {
   );
 };
 
-const TaxBreakdown = ({ totals, params, t }) => {
+const TaxBreakdown = ({ totals, params, t, fmt }) => {
+  const F = fmt.fmtPrimary, Ff = fmt.fmtPrimaryFull;
   const rows = [];
   if (totals.vatPart > 0) rows.push({ label: "VAT", value: totals.vatPart });
   if (totals.usnPart > 0) rows.push({ label: "USN", value: totals.usnPart });
@@ -949,32 +954,32 @@ const TaxBreakdown = ({ totals, params, t }) => {
       <div className="grid grid-cols-3 gap-3 text-center">
         <div className="p-3 border" style={{ borderColor: COLORS.line }}>
           <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.inkSoft }}>{t("preTaxProfit")}</div>
-          <div className="font-display font-semibold text-lg mt-1 number-pill" style={{ color: totals.profitBeforeTax >= 0 ? COLORS.ink : COLORS.crimson }}>{fmtRubShort(totals.profitBeforeTax)}</div>
+          <div className="font-display font-semibold text-lg mt-1 number-pill" style={{ color: totals.profitBeforeTax >= 0 ? COLORS.ink : COLORS.crimson }}>{F(totals.profitBeforeTax)}</div>
         </div>
         <div className="p-3 border" style={{ borderColor: COLORS.line, background: "rgba(164,25,61,0.05)" }}>
           <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.crimson }}>{t("totalTax")}</div>
-          <div className="font-display font-semibold text-lg mt-1 number-pill" style={{ color: COLORS.crimson }}>{fmtRubShort(totals.tax)}</div>
+          <div className="font-display font-semibold text-lg mt-1 number-pill" style={{ color: COLORS.crimson }}>{F(totals.tax)}</div>
           <div className="text-xs font-mono mt-1" style={{ color: COLORS.inkSoft }}>{fmtPct(taxRate)} {t("effectiveRate")}</div>
         </div>
         <div className="p-3 border" style={{ borderColor: COLORS.line, background: "rgba(31,79,46,0.05)" }}>
           <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.emerald }}>{t("cashNetProfit")}</div>
-          <div className="font-display font-semibold text-lg mt-1 number-pill" style={{ color: COLORS.emerald }}>{fmtRubShort(totals.netProfit)}</div>
+          <div className="font-display font-semibold text-lg mt-1 number-pill" style={{ color: COLORS.emerald }}>{F(totals.netProfit)}</div>
         </div>
       </div>
       {rows.length > 0 && (
         <div className="space-y-1.5 pt-2 border-t" style={{ borderColor: COLORS.line }}>
           {rows.map((it, i) => (
             <div key={i} className="flex items-center justify-between text-sm">
-              <span>{it.label}</span><span className="font-mono">{fmtRub(it.value)}</span>
+              <span>{it.label}</span><span className="font-mono">{Ff(it.value)}</span>
             </div>
           ))}
           {params.taxScheme === "osn" && totals.totalInputVAT > 0 && (
             <>
               <div className="flex items-center justify-between text-xs pt-2 mt-2 border-t" style={{ borderColor: COLORS.line, color: COLORS.inkSoft }}>
-                <span>{t("inputVATLabel")}</span><span className="font-mono">{fmtRub(totals.totalInputVAT)}</span>
+                <span>{t("inputVATLabel")}</span><span className="font-mono">{Ff(totals.totalInputVAT)}</span>
               </div>
               <div className="flex items-center justify-between text-xs" style={{ color: COLORS.inkSoft }}>
-                <span>{t("outputVATLabel")}</span><span className="font-mono">{fmtRub(totals.totalOutputVAT)}</span>
+                <span>{t("outputVATLabel")}</span><span className="font-mono">{Ff(totals.totalOutputVAT)}</span>
               </div>
             </>
           )}
@@ -988,9 +993,10 @@ const TaxBreakdown = ({ totals, params, t }) => {
   );
 };
 
-const ProductRanking = ({ calcs, t }) => {
+const ProductRanking = ({ calcs, t, fmt }) => {
   const sorted = [...calcs].sort((a, b) => b.c.roi - a.c.roi);
   if (!sorted.length) return <div className="text-sm" style={{ color: COLORS.inkSoft }}>{t("noProducts")}</div>;
+  const F = fmt.fmtPrimary;
   const maxROI = Math.max(...sorted.map(r => r.c.roi), 0.01);
   const minROI = Math.min(...sorted.map(r => r.c.roi), 0);
   return (
@@ -1006,7 +1012,7 @@ const ProductRanking = ({ calcs, t }) => {
               <div className="h-full bar-shimmer rounded-sm" style={{ width: `${Math.max(2, w)}%`, background: color, transition: 'width 0.8s cubic-bezier(0.16,1,0.3,1)' }} />
             </div>
             <div className="w-16 sm:w-20 text-right font-mono text-xs sm:text-sm font-semibold" style={{ color }}>{fmtPct(r.c.roi)}</div>
-            <div className="w-20 sm:w-32 text-right font-mono text-[10px] sm:text-xs hidden sm:block" style={{ color: COLORS.inkSoft }}>{fmtRubShort(r.c.netProfit)}</div>
+            <div className="w-20 sm:w-32 text-right font-mono text-[10px] sm:text-xs hidden sm:block" style={{ color: COLORS.inkSoft }}>{F(r.c.netProfit)}</div>
           </div>
         );
       })}
@@ -1017,7 +1023,7 @@ const ProductRanking = ({ calcs, t }) => {
 // ============================================================
 // 商品 Tab
 // ============================================================
-const ProductsTab = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, onAdd, onClear, params, t, lang }) => (
+const ProductsTab = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, onAdd, onClear, params, t, lang, fmt }) => (
   <div className="space-y-4 anim-in">
     <div className="flex items-center justify-between flex-wrap gap-3">
       <div>
@@ -1040,11 +1046,12 @@ const ProductsTab = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, o
       </div>
     </div>
     <ProductTable calcs={calcs} expandedRow={expandedRow} setExpandedRow={setExpandedRow}
-      onUpdate={onUpdate} onDelete={onDelete} params={params} t={t} />
+      onUpdate={onUpdate} onDelete={onDelete} params={params} t={t} fmt={fmt} />
   </div>
 );
 
-const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, params, t }) => {
+const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, params, t, fmt }) => {
+  const F = fmt.fmtPrimary;
   const showDeclared = params.taxScheme === "osn";
   return (
     <div className="border overflow-x-auto" style={{ borderColor: COLORS.line, background: "white" }}>
@@ -1090,10 +1097,10 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
                   <td className="p-2 text-right font-mono text-xs">{r.platformFee?.toLocaleString("ru-RU")}</td>
                   <td className="p-2 text-right font-mono text-xs">{r.warehouse}</td>
                   <td className="p-2 text-right font-mono text-xs">{r.mgmt}</td>
-                  <td className="p-2 text-right font-mono text-xs border-l" style={{ borderColor: COLORS.line }}>{fmtRubShort(r.c.totalInvestment)}</td>
-                  <td className="p-2 text-right font-mono text-xs">{fmtRubShort(r.c.totalRevenue)}</td>
-                  <td className="p-2 text-right font-mono text-xs" style={{ color: COLORS.crimson }}>{fmtRubShort(r.c.tax)}</td>
-                  <td className="p-2 text-right font-mono text-xs font-semibold" style={{ color: profitable ? COLORS.emerald : COLORS.crimson }}>{fmtRubShort(r.c.netProfit)}</td>
+                  <td className="p-2 text-right font-mono text-xs border-l" style={{ borderColor: COLORS.line }}>{F(r.c.totalInvestment)}</td>
+                  <td className="p-2 text-right font-mono text-xs">{F(r.c.totalRevenue)}</td>
+                  <td className="p-2 text-right font-mono text-xs" style={{ color: COLORS.crimson }}>{F(r.c.tax)}</td>
+                  <td className="p-2 text-right font-mono text-xs font-semibold" style={{ color: profitable ? COLORS.emerald : COLORS.crimson }}>{F(r.c.netProfit)}</td>
                   <td className="p-2 text-right font-mono text-xs font-semibold" style={{ color: r.c.roi > 0.3 ? COLORS.emerald : r.c.roi > 0.1 ? COLORS.gold : COLORS.crimson }}>{fmtPct(r.c.roi)}</td>
                   <td className="p-2 text-center">
                     <button onClick={(e) => { e.stopPropagation(); if (confirm(t("confirmDeleteProd", { id: r.id }))) onDelete(idx); }}
@@ -1106,7 +1113,7 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
                 {isOpen && (
                   <tr style={{ background: "rgba(184,134,11,0.04)" }}>
                     <td colSpan={showDeclared ? 15 : 14} className="p-4">
-                      <ProductEditor product={r} idx={idx} onUpdate={onUpdate} calc={r.c} params={params} t={t} />
+                      <ProductEditor product={r} idx={idx} onUpdate={onUpdate} calc={r.c} params={params} t={t} fmt={fmt} />
                     </td>
                   </tr>
                 )}
@@ -1124,11 +1131,11 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
               <td className="p-2 text-right font-mono text-xs">{calcs.reduce((a, b) => a + (b.qty || 0), 0)}</td>
               <td colSpan={4}></td>
               <td className="p-2 text-right font-mono text-xs border-l" style={{ borderColor: COLORS.line }}>
-                {fmtRubShort(calcs.reduce((a, b) => a + b.c.totalInvestment, 0))}
+                {F(calcs.reduce((a, b) => a + b.c.totalInvestment, 0))}
               </td>
-              <td className="p-2 text-right font-mono text-xs">{fmtRubShort(calcs.reduce((a, b) => a + b.c.totalRevenue, 0))}</td>
-              <td className="p-2 text-right font-mono text-xs" style={{ color: COLORS.crimson }}>{fmtRubShort(calcs.reduce((a, b) => a + b.c.tax, 0))}</td>
-              <td className="p-2 text-right font-mono text-xs" style={{ color: COLORS.emerald }}>{fmtRubShort(calcs.reduce((a, b) => a + b.c.netProfit, 0))}</td>
+              <td className="p-2 text-right font-mono text-xs">{F(calcs.reduce((a, b) => a + b.c.totalRevenue, 0))}</td>
+              <td className="p-2 text-right font-mono text-xs" style={{ color: COLORS.crimson }}>{F(calcs.reduce((a, b) => a + b.c.tax, 0))}</td>
+              <td className="p-2 text-right font-mono text-xs" style={{ color: COLORS.emerald }}>{F(calcs.reduce((a, b) => a + b.c.netProfit, 0))}</td>
               <td colSpan={2}></td>
             </tr>
           </tfoot>
@@ -1138,7 +1145,8 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
   );
 };
 
-const ProductEditor = ({ product, idx, onUpdate, calc, params, t }) => {
+const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
+  const Ff = fmt ? fmt.fmtPrimaryFull : fmtRub;
   const fields = [
     { label: t("fieldProductId"), k: "id", type: "text" },
     { label: t("fieldActualCost"), k: "priceCNY", suffix: "¥", step: 0.01 },
@@ -1177,29 +1185,29 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t }) => {
       <div className="lg:col-span-2 space-y-3">
         <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.gold }}>{t("editorCalcDetail")}</div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono p-3" style={{ background: "white", border: `1px solid ${COLORS.line}` }}>
-          <div style={{ color: COLORS.inkSoft }}>{t("calcActualRub")}</div><div className="text-right">{fmtRub(calc.priceRUB, 2)}</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcActualRub")}</div><div className="text-right">{Ff(calc.priceRUB, 2)}</div>
           {declaredDiffers && (
             <>
               <div style={{ color: COLORS.oxblood }}>{t("calcDeclaredRub")}</div>
-              <div className="text-right" style={{ color: COLORS.oxblood }}>{fmtRub(calc.declaredRUB, 2)}</div>
+              <div className="text-right" style={{ color: COLORS.oxblood }}>{Ff(calc.declaredRUB, 2)}</div>
             </>
           )}
-          <div style={{ color: COLORS.inkSoft }}>{t("calcShipping")}</div><div className="text-right">{fmtRub(params.shippingPerUnit)}</div>
-          <div style={{ color: COLORS.inkSoft }}>{t("calcLabeling")}</div><div className="text-right">{fmtRub(params.labelingPerUnit)}</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcShipping")}</div><div className="text-right">{Ff(params.shippingPerUnit)}</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcLabeling")}</div><div className="text-right">{Ff(params.labelingPerUnit)}</div>
           <div className="border-t pt-1" style={{ borderColor: COLORS.line }}>{t("calcUnitCost")}</div>
-          <div className="text-right border-t pt-1" style={{ borderColor: COLORS.line }}>{fmtRub(calc.unitCost, 2)}</div>
-          <div style={{ color: COLORS.inkSoft }}>{t("calcUnitPayout")}</div><div className="text-right">{fmtRub(calc.unitPayout)}</div>
-          <div style={{ color: COLORS.inkSoft }}>{t("calcUnitGross")}</div><div className="text-right">{fmtRub(calc.unitPayout - calc.unitCost)}</div>
+          <div className="text-right border-t pt-1" style={{ borderColor: COLORS.line }}>{Ff(calc.unitCost, 2)}</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcUnitPayout")}</div><div className="text-right">{Ff(calc.unitPayout)}</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcUnitGross")}</div><div className="text-right">{Ff(calc.unitPayout - calc.unitCost)}</div>
           <div className="border-t pt-1" style={{ borderColor: COLORS.line }}>{t("calcUnitNet")}</div>
           <div className="text-right border-t pt-1" style={{ borderColor: COLORS.line, color: calc.unitNetProfit > 0 ? COLORS.emerald : COLORS.crimson }}>
-            {fmtRub(calc.unitNetProfit, 2)} ({fmtCny(calc.unitNetProfit / params.exchangeRate)})
+            {Ff(calc.unitNetProfit, 2)} ({fmt.fmtSecondary(calc.unitNetProfit)})
           </div>
           {params.taxScheme === "osn" && (
             <>
               <div className="pt-2 mt-1 border-t" style={{ borderColor: COLORS.line, color: COLORS.oxblood }}>{t("calcInputVAT")}</div>
-              <div className="text-right pt-2 mt-1 border-t" style={{ borderColor: COLORS.line, color: COLORS.oxblood }}>{fmtRub(calc.totalInputVAT / Math.max(1, product.qty), 2)}</div>
+              <div className="text-right pt-2 mt-1 border-t" style={{ borderColor: COLORS.line, color: COLORS.oxblood }}>{Ff(calc.totalInputVAT / Math.max(1, product.qty), 2)}</div>
               <div style={{ color: COLORS.oxblood }}>{t("calcOutputVAT")}</div>
-              <div className="text-right" style={{ color: COLORS.oxblood }}>{fmtRub(calc.totalOutputVAT / Math.max(1, calc.effectiveQty), 2)}</div>
+              <div className="text-right" style={{ color: COLORS.oxblood }}>{Ff(calc.totalOutputVAT / Math.max(1, calc.effectiveQty), 2)}</div>
             </>
           )}
         </div>
@@ -1409,8 +1417,9 @@ const VATThresholdMonitor = ({ proj, projection, updateProj, params, t }) => {
 // ============================================================
 // 现金流 Tab
 // ============================================================
-const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => {
+const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }) => {
   const updateProj = (k, v) => setProjection(p => ({ ...p, [k]: v }));
+  const F = fmt.fmtPrimary, Fs = fmt.fmtSecondary;
   return (
     <div className="space-y-6 anim-in">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1421,16 +1430,16 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => 
             color={proj.breakEvenMonth ? COLORS.emerald : COLORS.crimson} big />
         </div>
         <div className="p-5 border" style={{ borderColor: COLORS.line, background: "white" }}>
-          <Metric label={t("maxInvestment")} value={fmtRubShort(proj.maxDrawdown)}
-            sub={fmtCny(proj.maxDrawdown / params.exchangeRate)} color={COLORS.crimson} big />
+          <Metric label={t("maxInvestment")} value={F(proj.maxDrawdown)}
+            sub={Fs(proj.maxDrawdown)} color={COLORS.crimson} big />
         </div>
         <div className="p-5 border-2" style={{ borderColor: proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson, background: "white" }}>
-          <Metric label={t("cashBalance")} value={fmtRubShort(proj.finalCash)}
-            sub={fmtCny(proj.finalCash / params.exchangeRate)}
+          <Metric label={t("cashBalance")} value={F(proj.finalCash)}
+            sub={Fs(proj.finalCash)}
             color={proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson} big />
         </div>
         <div className="p-5 border" style={{ borderColor: COLORS.line, background: "white" }}>
-          <Metric label={t("totalTax")} value={fmtRubShort(proj.totalTax)}
+          <Metric label={t("totalTax")} value={F(proj.totalTax)}
             sub={`${t("effectiveRate")} ${fmtPct(proj.totalRevenue > 0 ? proj.totalTax / proj.totalRevenue : 0)}`}
             color={COLORS.gold} big />
         </div>
@@ -1441,11 +1450,11 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => 
       </Card>
 
       <Card kicker="Cumulative Cash" title={t("cumCashChart")}>
-        <CashFlowChart proj={proj} t={t} />
+        <CashFlowChart proj={proj} t={t} fmt={fmt} />
       </Card>
 
       <Card kicker="Monthly P&L" title={t("monthlyNetProfit")}>
-        <MonthlyPnLChart proj={proj} t={t} />
+        <MonthlyPnLChart proj={proj} t={t} fmt={fmt} />
       </Card>
 
       <Card kicker="Projection" title={t("projParams")}>
@@ -1473,7 +1482,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => 
           {params.taxScheme === "osn" && (
             <span style={{ color: COLORS.oxblood }}>
               {" "}{t("projInputVATNote")}
-              {proj.leftoverInputVAT > 0 ? t("projInputVATLeft", { amount: fmtRubShort(proj.leftoverInputVAT) }) : t("projInputVATUsed")}.
+              {proj.leftoverInputVAT > 0 ? t("projInputVATLeft", { amount: F(proj.leftoverInputVAT) }) : t("projInputVATUsed")}.
             </span>
           )}
         </div>
@@ -1514,18 +1523,18 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => 
                     {m.isInitial ? "—" : (m.vatTierLabel || "—")}
                   </td>
                   <td className="p-2 text-right font-mono">{m.soldQty || "—"}</td>
-                  <td className="p-2 text-right font-mono">{m.revenue ? fmtRubShort(m.revenue) : "—"}</td>
-                  <td className="p-2 text-right font-mono">{m.cogs ? fmtRubShort(m.cogs) : (m.isInitial ? fmtRubShort(-(proj.initialOutflow - (m.importVAT || 0))) : "—")}</td>
-                  <td className="p-2 text-right font-mono">{m.expenses ? fmtRubShort(m.expenses) : "—"}</td>
-                  <td className="p-2 text-right font-mono">{m.fixedCost ? fmtRubShort(m.fixedCost) : "—"}</td>
-                  <td className="p-2 text-right font-mono" style={{ color: m.tax > 0 ? COLORS.crimson : COLORS.inkSoft }}>{m.tax ? fmtRubShort(m.tax) : "—"}</td>
+                  <td className="p-2 text-right font-mono">{m.revenue ? F(m.revenue) : "—"}</td>
+                  <td className="p-2 text-right font-mono">{m.cogs ? F(m.cogs) : (m.isInitial ? F(-(proj.initialOutflow - (m.importVAT || 0))) : "—")}</td>
+                  <td className="p-2 text-right font-mono">{m.expenses ? F(m.expenses) : "—"}</td>
+                  <td className="p-2 text-right font-mono">{m.fixedCost ? F(m.fixedCost) : "—"}</td>
+                  <td className="p-2 text-right font-mono" style={{ color: m.tax > 0 ? COLORS.crimson : COLORS.inkSoft }}>{m.tax ? F(m.tax) : "—"}</td>
                   <td className="p-2 text-right font-mono font-semibold border-l" style={{ borderColor: COLORS.line, color: m.netProfit >= 0 ? COLORS.emerald : COLORS.crimson }}>
-                    {fmtRubShort(m.netProfit)}
+                    {F(m.netProfit)}
                   </td>
-                  <td className="p-2 text-right font-mono">{m.partnerPayout ? fmtRubShort(m.partnerPayout) : "—"}</td>
-                  <td className="p-2 text-right font-mono" style={{ color: m.cashFlow >= 0 ? COLORS.emerald : COLORS.crimson }}>{fmtRubShort(m.cashFlow)}</td>
+                  <td className="p-2 text-right font-mono">{m.partnerPayout ? F(m.partnerPayout) : "—"}</td>
+                  <td className="p-2 text-right font-mono" style={{ color: m.cashFlow >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(m.cashFlow)}</td>
                   <td className="p-2 text-right font-mono font-semibold border-l" style={{ borderColor: COLORS.line, color: m.cumCash >= 0 ? COLORS.emerald : COLORS.crimson }}>
-                    {fmtRubShort(m.cumCash)}
+                    {F(m.cumCash)}
                   </td>
                 </tr>
               ))}
@@ -1535,13 +1544,13 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => 
                 <td className="p-2">{t("totalRow")}</td>
                 <td className="p-2"></td>
                 <td className="p-2 text-right font-mono">{proj.months.reduce((a, b) => a + b.soldQty, 0)}</td>
-                <td className="p-2 text-right font-mono">{fmtRubShort(proj.totalRevenue)}</td>
+                <td className="p-2 text-right font-mono">{F(proj.totalRevenue)}</td>
                 <td colSpan={3}></td>
-                <td className="p-2 text-right font-mono" style={{ color: COLORS.crimson }}>{fmtRubShort(proj.totalTax)}</td>
+                <td className="p-2 text-right font-mono" style={{ color: COLORS.crimson }}>{F(proj.totalTax)}</td>
                 <td className="p-2 text-right font-mono border-l" style={{ borderColor: COLORS.line, color: proj.totalNetProfit >= 0 ? COLORS.emerald : COLORS.crimson }}>
-                  {fmtRubShort(proj.totalNetProfit)}
+                  {F(proj.totalNetProfit)}
                 </td>
-                <td className="p-2 text-right font-mono">{fmtRubShort(proj.totalPartnerPayout)}</td>
+                <td className="p-2 text-right font-mono">{F(proj.totalPartnerPayout)}</td>
                 <td colSpan={2}></td>
               </tr>
             </tfoot>

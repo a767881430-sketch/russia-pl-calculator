@@ -355,13 +355,19 @@ export const createCurrencyFormatter = (lang, exchangeRate) => {
     return fmtRubShort(rubValue);
   };
 
+  // 主显示金额（完整精度，用于表格明细）
+  const fmtPrimaryFull = (rubValue, digits = 0) => {
+    if (lang === "zh") return fmtCny(rubValue / exchangeRate);
+    return fmtRub(rubValue, digits);
+  };
+
   // 辅显示金额（小字副信息）
   const fmtSecondary = (rubValue) => {
     if (lang === "zh") return fmtRubShort(rubValue);
     return fmtCny(rubValue / exchangeRate);
   };
 
-  return { fmtRub, fmtRubShort, fmtCny, fmtCnyShort, fmtPct, fmtPrimary, fmtSecondary };
+  return { fmtRub, fmtRubShort, fmtCny, fmtCnyShort, fmtPct, fmtPrimary, fmtPrimaryFull, fmtSecondary };
 };
 
 // --- 实时汇率 Hook ---
