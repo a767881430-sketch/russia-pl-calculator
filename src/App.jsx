@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from "recharts";
-import { Plus, Trash2, Save, Info, ChevronDown, ChevronRight, RotateCcw, FileDown, AlertCircle, Sparkles } from "lucide-react";
+import { Plus, Trash2, Save, Info, ChevronDown, ChevronRight, RotateCcw, FileDown, AlertCircle, Sparkles, Globe } from "lucide-react";
+import { createT, createCurrencyFormatter, useLiveRate, LANG_OPTIONS } from "./i18n.js";
 
 // ============================================================
 // 字体 & 主题
@@ -98,7 +99,8 @@ const SAMPLE_PRODUCTS = [
 ];
 
 // ============================================================
-// 格式化
+// 格式化 — 现在从 i18n.js 的 createCurrencyFormatter 获取
+// 保留兼容函数供内部计算用
 // ============================================================
 const fmtRub = (v, digits = 0) => "₽ " + (Number(v) || 0).toLocaleString("ru-RU", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 const fmtRubShort = (v) => {
@@ -109,6 +111,12 @@ const fmtRubShort = (v) => {
 };
 const fmtCny = (v) => "¥ " + (Number(v) || 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (v) => ((Number(v) || 0) * 100).toFixed(1) + "%";
+const fmtCnyShort = (v) => {
+  const n = Number(v) || 0;
+  if (Math.abs(n) >= 1e6) return "¥" + (n / 1e6).toFixed(2) + "M";
+  if (Math.abs(n) >= 1e4) return "¥" + (n / 1e4).toFixed(1) + "万";
+  return "¥" + n.toFixed(0);
+};
 
 // ============================================================
 // 单品计算
@@ -404,11 +412,12 @@ const Metric = ({ label, value, sub, color, big }) => (
 // ============================================================
 const ACCESS_PASSWORD = "xhk2026";  // ← 修改此处设置你的密码
 
-const LoginGate = ({ children }) => {
+const LoginGate = ({ children, lang, setLang }) => {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem("ru_calc_auth") === "1");
   const [pwd, setPwd] = useState("");
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
+  const t = createT(lang);
 
   if (authed) return children;
 
@@ -418,7 +427,7 @@ const LoginGate = ({ children }) => {
       sessionStorage.setItem("ru_calc_auth", "1");
       setAuthed(true);
     } else {
-      setError("密码错误，请重试");
+      setError(t("loginError"));
       setShake(true);
       setTimeout(() => setShake(false), 500);
     }
@@ -434,24 +443,34 @@ const LoginGate = ({ children }) => {
           </div>
           <div>
             <div className="text-[10px] tracking-[0.25em] uppercase" style={{ color: COLORS.gold }}>Cross-border P&L</div>
-            <div className="font-display text-lg font-bold" style={{ color: COLORS.ink }}>损益计算器</div>
+            <div className="font-display text-lg font-bold" style={{ color: COLORS.ink }}>{t("loginTitle")}</div>
           </div>
         </div>
+        {/* Language switcher on login */}
+        <div className="flex justify-center gap-1 mb-5">
+          {LANG_OPTIONS.map(l => (
+            <button key={l.code} onClick={() => { setLang(l.code); localStorage.setItem("ru_calc_lang", l.code); }}
+              className="px-3 py-1.5 text-xs font-medium rounded-sm"
+              style={{ background: lang === l.code ? COLORS.oxblood : "transparent", color: lang === l.code ? COLORS.cream : COLORS.inkSoft, border: `1px solid ${lang === l.code ? COLORS.oxblood : COLORS.line}` }}>
+              {l.flag} {l.label}
+            </button>
+          ))}
+        </div>
         <form onSubmit={handleLogin}>
-          <label className="text-[10px] tracking-[0.18em] uppercase block mb-2" style={{ color: COLORS.inkSoft }}>访问密码</label>
+          <label className="text-[10px] tracking-[0.18em] uppercase block mb-2" style={{ color: COLORS.inkSoft }}>{t("loginLabel")}</label>
           <input type="password" value={pwd} onChange={e => setPwd(e.target.value)}
             className="w-full px-3 py-3 border font-mono text-sm rounded-sm mb-1 input-glow"
             style={{ borderColor: COLORS.line, background: "white", color: COLORS.ink }}
-            placeholder="请输入密码" autoFocus />
+            placeholder={t("loginPlaceholder")} autoFocus />
           {error && <div className="text-xs mt-1 mb-2" style={{ color: COLORS.crimson }}>{error}</div>}
           <button type="submit"
             className="btn-interact w-full mt-4 px-4 py-3 text-sm font-medium rounded-sm"
             style={{ background: COLORS.oxblood, color: COLORS.cream }}>
-            进入系统
+            {t("loginButton")}
           </button>
         </form>
         <div className="mt-4 text-center text-[10px]" style={{ color: COLORS.inkSoft }}>
-          星哈酷 · 投资效益分析工具
+          {t("loginFooter")}
         </div>
       </div>
     </div>
@@ -462,14 +481,15 @@ const LoginGate = ({ children }) => {
 // 主组件
 // ============================================================
 export default function App() {
+  const [lang, setLang] = useState(() => localStorage.getItem("ru_calc_lang") || "zh");
   return (
-    <LoginGate>
-      <AppContent />
+    <LoginGate lang={lang} setLang={setLang}>
+      <AppContent lang={lang} setLang={setLang} />
     </LoginGate>
   );
 }
 
-function AppContent() {
+function AppContent({ lang, setLang }) {
   const [params, setParams] = useState(DEFAULT_PARAMS);
   const [products, setProducts] = useState(SAMPLE_PRODUCTS);
   const [scheduleStore, setScheduleStore] = useState({});
@@ -479,6 +499,17 @@ function AppContent() {
   const [storageStatus, setStorageStatus] = useState("");
   const [storageBusy, setStorageBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
+
+  // --- i18n ---
+  const t = useMemo(() => createT(lang), [lang]);
+  const { liveRate, effectiveRate, rateSource, rateLoading, fetchRate, setRateSource } = useLiveRate(params.exchangeRate);
+
+  // 实时汇率更新到 params
+  useEffect(() => {
+    if (rateSource === "live" && liveRate && Math.abs(liveRate - params.exchangeRate) > 0.01) {
+      setParams(p => ({ ...p, exchangeRate: liveRate }));
+    }
+  }, [liveRate, rateSource]);
 
   // --- 启动时从 localStorage 加载 ---
   useEffect(() => {
@@ -490,7 +521,7 @@ function AppContent() {
         if (Array.isArray(parsed.products)) setProducts(parsed.products);
         if (parsed.scheduleStore) setScheduleStore(parsed.scheduleStore);
         if (parsed.projection) setProjection({ ...DEFAULT_PROJECTION, ...parsed.projection });
-        setStorageStatus("已加载本地数据");
+        setStorageStatus(t("loadedLocal"));
         setTimeout(() => setStorageStatus(""), 2200);
       }
     } catch (e) {}
@@ -499,7 +530,7 @@ function AppContent() {
 
   // --- 数据变化时自动保存到 localStorage ---
   useEffect(() => {
-    if (!loaded) return; // 等初始加载完成后再自动保存
+    if (!loaded) return;
     try {
       localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, projection }));
     } catch (e) {}
@@ -509,8 +540,8 @@ function AppContent() {
     setStorageBusy(true);
     try {
       localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, projection }));
-      setStorageStatus("✓ 已保存");
-    } catch (e) { setStorageStatus("保存失败"); }
+      setStorageStatus(t("saved"));
+    } catch (e) { setStorageStatus(t("saveFail")); }
     finally { setStorageBusy(false); setTimeout(() => setStorageStatus(""), 2200); }
   };
 
@@ -563,10 +594,10 @@ function AppContent() {
     if (expandedRow === idx) setExpandedRow(null);
   };
   const clearAllProducts = () => {
-    if (confirm("确定清空所有商品？此操作不可撤销。")) { setProducts([]); setScheduleStore({}); setExpandedRow(null); }
+    if (confirm(t("confirmClear"))) { setProducts([]); setScheduleStore({}); setExpandedRow(null); }
   };
   const resetSample = () => {
-    if (confirm("重置为样例数据？当前编辑会丢失。")) {
+    if (confirm(t("confirmReset"))) {
       setProducts(SAMPLE_PRODUCTS); setParams(DEFAULT_PARAMS);
       setProjection(DEFAULT_PROJECTION); setScheduleStore({});
     }
@@ -638,12 +669,12 @@ function AppContent() {
   };
 
   const tabs = [
-    { id: "dashboard", label: "总览仪表盘" },
-    { id: "products", label: "商品明细" },
-    { id: "schedule", label: "销售排期" },
-    { id: "projection", label: "现金流预测" },
-    { id: "settings", label: "参数与税制" },
-    { id: "help", label: "税制说明" },
+    { id: "dashboard", label: t("tabDashboard") },
+    { id: "products", label: t("tabProducts") },
+    { id: "schedule", label: t("tabSchedule") },
+    { id: "projection", label: t("tabProjection") },
+    { id: "settings", label: t("tabSettings") },
+    { id: "help", label: t("tabHelp") },
   ];
 
   return (
@@ -657,25 +688,39 @@ function AppContent() {
                 <span className="font-display text-lg sm:text-xl font-bold">Р</span>
               </div>
               <div>
-                <div className="text-[9px] sm:text-[10px] tracking-[0.25em] uppercase hidden sm:block" style={{ color: COLORS.gold }}>Cross-border P&L · Россия 2026</div>
-                <h1 className="font-display text-lg sm:text-2xl font-bold">俄罗斯电商损益与现金流计算器</h1>
+                <div className="text-[9px] sm:text-[10px] tracking-[0.25em] uppercase hidden sm:block" style={{ color: COLORS.gold }}>{t("brandSub")}</div>
+                <h1 className="font-display text-lg sm:text-2xl font-bold">{t("brandTitle")}</h1>
               </div>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              {/* Live rate indicator */}
+              <span className="text-[10px] font-mono hidden sm:inline" style={{ color: rateSource === 'live' ? COLORS.emerald : COLORS.inkSoft }}>
+                {rateSource === 'live' ? '● ' : '○ '}1¥={effectiveRate.toFixed(2)}₽
+              </span>
+              {/* Language switcher */}
+              <div className="flex gap-0 border rounded-sm overflow-hidden" style={{ borderColor: COLORS.line }}>
+                {LANG_OPTIONS.map(l => (
+                  <button key={l.code} onClick={() => { setLang(l.code); localStorage.setItem("ru_calc_lang", l.code); }}
+                    className="px-2 py-1.5 text-[10px] font-medium"
+                    style={{ background: lang === l.code ? COLORS.oxblood : "transparent", color: lang === l.code ? COLORS.cream : COLORS.inkSoft }}>
+                    {l.flag}
+                  </button>
+                ))}
+              </div>
               {storageStatus && <span className="text-xs font-mono" style={{ color: COLORS.gold }}>{storageStatus}</span>}
               <button onClick={saveToCloud} disabled={storageBusy}
                 className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border disabled:opacity-50 rounded-sm"
                 style={{ borderColor: COLORS.oxblood, color: COLORS.oxblood }}>
-                <Save size={14} /> <span className="hidden sm:inline">{storageBusy ? "保存中…" : "保存到云端"}</span>
+                <Save size={14} /> <span className="hidden sm:inline">{storageBusy ? t("saving") : t("saveCloud")}</span>
               </button>
               <button onClick={exportCSV}
                 className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-sm"
                 style={{ background: COLORS.oxblood, color: COLORS.cream }}>
-                <FileDown size={14} /> <span className="hidden sm:inline">导出 CSV</span>
+                <FileDown size={14} /> <span className="hidden sm:inline">{t("exportCSV")}</span>
               </button>
               <button onClick={resetSample}
                 className="btn-interact flex items-center gap-1.5 px-2 py-2 text-xs rounded-sm"
-                style={{ color: COLORS.inkSoft }} title="重置样例">
+                style={{ color: COLORS.inkSoft }} title={t("resetSample")}>
                 <RotateCcw size={14} />
               </button>
             </div>
@@ -696,15 +741,16 @@ function AppContent() {
 
       <main className="max-w-[1500px] mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div key={tab} className="page-enter">
-        {tab === "dashboard" && <Dashboard totals={totals} params={params} calcs={calcs} proj={proj} projection={projection} />}
+        {tab === "dashboard" && <Dashboard totals={totals} params={params} calcs={calcs} proj={proj} projection={projection} t={t} lang={lang} />}
         {tab === "products" && <ProductsTab calcs={calcs} expandedRow={expandedRow} setExpandedRow={setExpandedRow}
-          onUpdate={updateProduct} onDelete={deleteProduct} onAdd={addProduct} onClear={clearAllProducts} params={params} />}
+          onUpdate={updateProduct} onDelete={deleteProduct} onAdd={addProduct} onClear={clearAllProducts} params={params} t={t} lang={lang} />}
         {tab === "schedule" && <ScheduleTab products={products} projection={projection} setProjection={setProjection}
-          scheduleStore={scheduleStore} updateSchedule={updateSchedule} applyCurve={applyScheduleCurve} />}
+          scheduleStore={scheduleStore} updateSchedule={updateSchedule} applyCurve={applyScheduleCurve} t={t} lang={lang} />}
         {tab === "projection" && <ProjectionTab proj={proj} projection={projection} setProjection={setProjection}
-          params={params} totals={totals} />}
-        {tab === "settings" && <SettingsTab params={params} setParams={setParams} />}
-        {tab === "help" && <HelpPanel />}
+          params={params} totals={totals} t={t} lang={lang} />}
+        {tab === "settings" && <SettingsTab params={params} setParams={setParams} t={t} lang={lang}
+          rateSource={rateSource} setRateSource={setRateSource} liveRate={liveRate} effectiveRate={effectiveRate} fetchRate={fetchRate} />}
+        {tab === "help" && <HelpPanel t={t} lang={lang} />}
         </div>
       </main>
 
@@ -721,72 +767,75 @@ function AppContent() {
 // ============================================================
 // 仪表盘
 // ============================================================
-const Dashboard = ({ totals, params, calcs, proj, projection }) => {
+const Dashboard = ({ totals, params, calcs, proj, projection, t, lang }) => {
   const showBookDiff = params.taxScheme === "osn" && Math.abs(totals.netProfit - totals.bookNetProfit) > 1;
+  // Locale-aware: Chinese sees ¥ big / ₽ small; others see ₽ big / ¥ small
+  const fmtBig = lang === "zh" ? (v) => fmtCnyShort(v / params.exchangeRate) : fmtRubShort;
+  const fmtSub = lang === "zh" ? fmtRubShort : (v) => fmtCny(v / params.exchangeRate);
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
-          <Metric label="总营收" value={fmtRubShort(totals.totalRevenue)} sub={fmtCny(totals.totalRevenue / params.exchangeRate)} big />
+          <Metric label={t("totalRevenue")} value={fmtBig(totals.totalRevenue)} sub={fmtSub(totals.totalRevenue)} big />
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
-          <Metric label="总投资" value={fmtRubShort(totals.totalCostBasis)} sub={fmtCny(totals.totalCostBasis / params.exchangeRate)} big />
+          <Metric label={t("totalInvestment")} value={fmtBig(totals.totalCostBasis)} sub={fmtSub(totals.totalCostBasis)} big />
         </div>
         <div className="p-4 sm:p-5 card-hover rounded-sm border-2" style={{ borderColor: totals.netProfit >= 0 ? COLORS.emerald : COLORS.crimson, background: "rgba(255,255,255,0.7)" }}>
-          <Metric label="现金净利"
-            value={fmtRubShort(totals.netProfit)}
-            sub={showBookDiff ? `账面净利 ${fmtRubShort(totals.bookNetProfit)}` : fmtCny(totals.netProfitCNY)}
+          <Metric label={t("cashNetProfit")}
+            value={fmtBig(totals.netProfit)}
+            sub={showBookDiff ? `${t("bookNetProfit")} ${fmtBig(totals.bookNetProfit)}` : fmtSub(totals.netProfit)}
             color={totals.netProfit >= 0 ? COLORS.emerald : COLORS.crimson} big />
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
-          <Metric label="ROI / 投资回报" value={fmtPct(totals.roi)} sub={`净利率 ${fmtPct(totals.profitMargin)}`} color={COLORS.gold} big />
+          <Metric label={t("roiLabel")} value={fmtPct(totals.roi)} sub={`${t("netMargin")} ${fmtPct(totals.profitMargin)}`} color={COLORS.gold} big />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card kicker="Cumulative Cash" title="累积现金流" className="lg:col-span-2">
+        <Card kicker={t("cumCashKicker")} title={t("cumCashTitle")} className="lg:col-span-2">
           <CashFlowChart proj={proj} />
           {proj.breakEvenMonth ? (
             <div className="mt-3 flex items-center gap-2 text-sm">
               <span className="w-2 h-2 rounded-full" style={{ background: COLORS.emerald }}></span>
-              <span style={{ color: COLORS.emeraldSoft }}><strong>第 {proj.breakEvenMonth} 个月</strong>回本（达成盈亏平衡）</span>
+              <span style={{ color: COLORS.emeraldSoft }}>{t("breakEvenMsg", { n: proj.breakEvenMonth })}</span>
             </div>
           ) : (
             <div className="mt-3 flex items-center gap-2 text-sm">
               <AlertCircle size={14} style={{ color: COLORS.crimson }} />
-              <span style={{ color: COLORS.crimson }}>预测期内未回本，可调整销售排期或延长预测期</span>
+              <span style={{ color: COLORS.crimson }}>{t("noBreakEven")}</span>
             </div>
           )}
         </Card>
-        <Card kicker="Investor Metrics" title="投资人关注">
+        <Card kicker={t("investorKicker")} title={t("investorTitle")}>
           <div className="space-y-4">
-            <Metric label="初始投入" value={fmtRubShort(-proj.initialOutflow)}
-              sub={fmtCny(-proj.initialOutflow / params.exchangeRate)} color={COLORS.crimson} />
-            <Metric label="最大资金压力" value={fmtRubShort(proj.maxDrawdown)}
-              sub={fmtCny(proj.maxDrawdown / params.exchangeRate)} color={COLORS.crimson} />
-            <Metric label="期末现金" value={fmtRubShort(proj.finalCash)}
-              sub={fmtCny(proj.finalCash / params.exchangeRate)}
+            <Metric label={t("initialOutflow")} value={fmtBig(-proj.initialOutflow)}
+              sub={fmtSub(-proj.initialOutflow)} color={COLORS.crimson} />
+            <Metric label={t("maxDrawdown")} value={fmtBig(proj.maxDrawdown)}
+              sub={fmtSub(proj.maxDrawdown)} color={COLORS.crimson} />
+            <Metric label={t("finalCash")} value={fmtBig(proj.finalCash)}
+              sub={fmtSub(proj.finalCash)}
               color={proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson} />
-            <Metric label="平均月回款" value={fmtRubShort(proj.totalRevenue / projection.monthsHorizon)}
-              sub={fmtCny(proj.totalRevenue / projection.monthsHorizon / params.exchangeRate)} color={COLORS.gold} />
+            <Metric label={t("avgMonthly")} value={fmtBig(proj.totalRevenue / projection.monthsHorizon)}
+              sub={fmtSub(proj.totalRevenue / projection.monthsHorizon)} color={COLORS.gold} />
           </div>
         </Card>
       </div>
 
-      <Card kicker="Monthly P&L" title="月度净利分布">
+      <Card kicker={t("monthlyPnLKicker")} title={t("monthlyPnL")}>
         <MonthlyPnLChart proj={proj} />
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card kicker="Cost Structure" title="成本结构">
-          <CostBar totals={totals} params={params} />
+        <Card kicker={t("costKicker")} title={t("costStructure")}>
+          <CostBar totals={totals} params={params} t={t} />
         </Card>
-        <Card kicker={`Tax · ${TAX_SCHEMES[params.taxScheme].short}`} title="税务结构">
-          <TaxBreakdown totals={totals} params={params} />
+        <Card kicker={`Tax · ${TAX_SCHEMES[params.taxScheme].short}`} title={t("taxStructure")}>
+          <TaxBreakdown totals={totals} params={params} t={t} />
         </Card>
       </div>
 
-      <Card kicker="Profitability Ranking" title="商品盈利排行 (按ROI)">
+      <Card kicker={t("rankingKicker")} title={t("rankingTitle")}>
         <ProductRanking calcs={calcs} />
       </Card>
     </div>
