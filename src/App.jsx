@@ -1214,46 +1214,44 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params }) => {
 // ============================================================
 // 销售排期 Tab
 // ============================================================
-const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updateSchedule, applyCurve }) => {
+const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updateSchedule, applyCurve, t, lang }) => {
   const months = projection.monthsHorizon;
   const totalAllProducts = products.reduce((a, b) => a + (b.qty || 0), 0);
   return (
     <div className="space-y-4 anim-in">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="font-display text-2xl font-semibold">销售排期 · 按月预估销量</h2>
-          <p className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>
-            填入每个SKU每月预估销量。空白单元格 = 自动平均分配。"已分配" 列检查是否对齐总数。
-          </p>
+          <h2 className="font-display text-2xl font-semibold">{t("scheduleTitle")}</h2>
+          <p className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>{t("scheduleHint")}</p>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs" style={{ color: COLORS.inkSoft }}>预测月数：</span>
+          <span className="text-xs" style={{ color: COLORS.inkSoft }}>{t("forecastMonths")}:</span>
           <select value={months} onChange={(e) => setProjection(p => ({ ...p, monthsHorizon: parseInt(e.target.value) }))}
             className="px-2 py-1.5 border bg-white text-xs font-mono"
             style={{ borderColor: COLORS.line, color: COLORS.ink }}>
-            {[6, 8, 10, 12, 18, 24].map(n => <option key={n} value={n}>{n} 个月</option>)}
+            {[6, 8, 10, 12, 18, 24].map(n => <option key={n} value={n}>{n} {t("months")}</option>)}
           </select>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2 items-center text-xs" style={{ color: COLORS.inkSoft }}>
-        <Sparkles size={12} /> 一键应用曲线（覆盖所有SKU）：
-        <button onClick={() => applyCurve("linear")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>线性平均</button>
-        <button onClick={() => applyCurve("frontload")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>前重后轻</button>
-        <button onClick={() => applyCurve("bell")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>钟形曲线</button>
-        <button onClick={() => applyCurve("reset")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white", color: COLORS.crimson }}>清空（自动均分）</button>
+        <Sparkles size={12} />
+        <button onClick={() => applyCurve("linear")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>{t("linearDist")}</button>
+        <button onClick={() => applyCurve("frontload")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>{t("frontload")}</button>
+        <button onClick={() => applyCurve("bell")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>{t("bellCurve")}</button>
+        <button onClick={() => applyCurve("reset")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white", color: COLORS.crimson }}>{t("resetDist")}</button>
       </div>
 
       <div className="border overflow-x-auto" style={{ borderColor: COLORS.line, background: "white" }}>
         <table className="w-full text-xs">
           <thead style={{ background: COLORS.paper }}>
             <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
-              <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: "120px" }}>SKU</th>
-              <th className="text-right p-2" style={{ minWidth: "60px" }}>总数</th>
+              <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: "120px" }}>{t("sku")}</th>
+              <th className="text-right p-2" style={{ minWidth: "60px" }}>{t("total")}</th>
               {Array.from({ length: months }, (_, i) => (
-                <th key={i} className="text-center p-2 font-mono" style={{ minWidth: "60px" }}>M{i + 1}</th>
+                <th key={i} className="text-center p-2 font-mono" style={{ minWidth: "60px" }}>{t("monthLabel")}{i + 1}</th>
               ))}
-              <th className="text-right p-2" style={{ minWidth: "70px" }}>已分配</th>
+              <th className="text-right p-2" style={{ minWidth: "70px" }}>{t("allocated")}</th>
             </tr>
           </thead>
           <tbody>
@@ -1281,7 +1279,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
           </tbody>
           <tfoot style={{ background: COLORS.paper }}>
             <tr className="font-semibold">
-              <td className="p-2 sticky left-0" style={{ background: COLORS.paper }}>合计</td>
+              <td className="p-2 sticky left-0" style={{ background: COLORS.paper }}>{t("total")}</td>
               <td className="p-2 text-right font-mono">{totalAllProducts}</td>
               {Array.from({ length: months }, (_, i) => {
                 const sum = products.reduce((acc, p) => {
@@ -1299,6 +1297,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
     </div>
   );
 };
+
 
 // ============================================================
 // VAT 阈值监控（动态税档）
@@ -1416,61 +1415,61 @@ const VATThresholdMonitor = ({ proj, projection, updateProj, params }) => {
 // ============================================================
 // 现金流 Tab
 // ============================================================
-const ProjectionTab = ({ proj, projection, setProjection, params }) => {
+const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => {
   const updateProj = (k, v) => setProjection(p => ({ ...p, [k]: v }));
   return (
     <div className="space-y-6 anim-in">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-5 border" style={{ borderColor: COLORS.line, background: "white" }}>
-          <Metric label="回本月份"
-            value={proj.breakEvenMonth ? `第 ${proj.breakEvenMonth} 月` : "未回本"}
-            sub={proj.breakEvenMonth ? `约 ${proj.breakEvenMonth.toFixed(1)} 个月` : `延长预测期`}
+          <Metric label={t("currentMonth")}
+            value={proj.breakEvenMonth ? t("monthN", { n: proj.breakEvenMonth }) : "—"}
+            sub={proj.breakEvenMonth ? t("breakEvenMsg", { n: proj.breakEvenMonth }) : t("noBreakEven")}
             color={proj.breakEvenMonth ? COLORS.emerald : COLORS.crimson} big />
         </div>
         <div className="p-5 border" style={{ borderColor: COLORS.line, background: "white" }}>
-          <Metric label="最大资金压力" value={fmtRubShort(proj.maxDrawdown)}
+          <Metric label={t("maxInvestment")} value={fmtRubShort(proj.maxDrawdown)}
             sub={fmtCny(proj.maxDrawdown / params.exchangeRate)} color={COLORS.crimson} big />
         </div>
         <div className="p-5 border-2" style={{ borderColor: proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson, background: "white" }}>
-          <Metric label={`第 ${projection.monthsHorizon} 月期末现金`} value={fmtRubShort(proj.finalCash)}
+          <Metric label={t("cashBalance")} value={fmtRubShort(proj.finalCash)}
             sub={fmtCny(proj.finalCash / params.exchangeRate)}
             color={proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson} big />
         </div>
         <div className="p-5 border" style={{ borderColor: COLORS.line, background: "white" }}>
-          <Metric label="累计税费" value={fmtRubShort(proj.totalTax)}
-            sub={`占营收 ${fmtPct(proj.totalRevenue > 0 ? proj.totalTax / proj.totalRevenue : 0)}`}
+          <Metric label={t("totalTax")} value={fmtRubShort(proj.totalTax)}
+            sub={`${t("effectiveRate")} ${fmtPct(proj.totalRevenue > 0 ? proj.totalTax / proj.totalRevenue : 0)}`}
             color={COLORS.gold} big />
         </div>
       </div>
 
-      <Card kicker="VAT Threshold · 2026" title="VAT 触发阈值监控">
+      <Card kicker="VAT Threshold · 2026" title={t("vatThreshold")}>
         <VATThresholdMonitor proj={proj} projection={projection} updateProj={updateProj} params={params} />
       </Card>
 
-      <Card kicker="Cumulative Cash Position" title="累积现金流（含投资支出）">
+      <Card kicker="Cumulative Cash" title={t("cumCashChart")}>
         <CashFlowChart proj={proj} />
       </Card>
 
-      <Card kicker="Monthly Net Profit" title="月度净利分布">
+      <Card kicker="Monthly P&L" title={t("monthlyNetProfit")}>
         <MonthlyPnLChart proj={proj} />
       </Card>
 
-      <Card kicker="Projection Settings" title="预测参数">
+      <Card kicker="Projection" title={t("projParams")}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="text-xs" style={{ color: COLORS.inkSoft }}>预测月数</label>
-            <NumInput value={projection.monthsHorizon} onChange={(v) => updateProj("monthsHorizon", Math.max(1, Math.min(36, v)))} suffix="月" className="mt-1" />
+            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("projMonths")}</label>
+            <NumInput value={projection.monthsHorizon} onChange={(v) => updateProj("monthsHorizon", Math.max(1, Math.min(36, v)))} suffix={t("months")} className="mt-1" />
           </div>
           <div>
-            <label className="text-xs" style={{ color: COLORS.inkSoft }}>合伙人月度分成（按当月利润）</label>
+            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("partnerShare")}</label>
             <NumInput value={projection.partnerSharePct} onChange={(v) => updateProj("partnerSharePct", Math.max(0, Math.min(100, v)))} suffix="%" step={1} className="mt-1" />
           </div>
           <div>
-            <label className="text-xs" style={{ color: COLORS.inkSoft }}>每月固定支出（房租/工资）</label>
+            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("fixedCost")}</label>
             <NumInput value={projection.monthlyFixedCost} onChange={(v) => updateProj("monthlyFixedCost", Math.max(0, v))} suffix="₽" step={1000} className="mt-1" />
           </div>
           <div>
-            <label className="text-xs" style={{ color: COLORS.inkSoft }}>本年已累计营收（开始预测前）</label>
+            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("priorRevenue")}</label>
             <NumInput value={projection.priorYearRevenue} onChange={(v) => updateProj("priorYearRevenue", Math.max(0, v))} suffix="₽" step={100000} className="mt-1" />
           </div>
         </div>
@@ -1486,7 +1485,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params }) => {
         </div>
       </Card>
 
-      <Card kicker="Monthly P&L" title="月度损益与现金流明细">
+      <Card kicker="Monthly P&L" title={t("cashFlowDetail")}>
         <div className="text-xs mb-3 p-2 border-l-2" style={{ borderColor: COLORS.gold, background: COLORS.paper, color: COLORS.inkSoft }}>
           <Info size={12} className="inline mr-1" />
           <strong style={{ color: COLORS.ink }}>"当月净利" vs "现金流"两个不同视角：</strong>
@@ -1562,22 +1561,19 @@ const ProjectionTab = ({ proj, projection, setProjection, params }) => {
 // ============================================================
 // 设置 Tab
 // ============================================================
-const SettingsTab = ({ params, setParams }) => (
+const SettingsTab = ({ params, setParams, t, lang, rateSource, setRateSource, liveRate, effectiveRate, fetchRate }) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 anim-in">
-    <Card kicker="Tax Regime · 2026" title="俄罗斯税制选择">
+    <Card kicker={t("taxRegimeKicker")} title={t("taxRegime")}>
       <TaxSchemePicker params={params} setParams={setParams} />
     </Card>
-    <Card kicker="Global Parameters" title="全局参数">
-      <ParamsPanel params={params} setParams={setParams} />
+    <Card kicker={t("globalParamsKicker")} title={t("globalParams")}>
+      <ParamsPanel params={params} setParams={setParams} t={t} rateSource={rateSource} setRateSource={setRateSource} liveRate={liveRate} effectiveRate={effectiveRate} fetchRate={fetchRate} />
     </Card>
-    <Card kicker="Income Recognition" title="收入确认基础" className="lg:col-span-2">
-      <p className="text-sm mb-3" style={{ color: COLORS.inkSoft }}>
-        俄罗斯USN下"收入"口径在不同会计师之间略有分歧：
-      </p>
+    <Card kicker={t("incomeBasisKicker")} title={t("incomeBasis")} className="lg:col-span-2">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {[
-          { id: "payout", label: "平台到手金额（R = 售价 − 平台费用）", desc: "实务最常用：以平台实际付款金额为收入。" },
-          { id: "list", label: "全额上架价（M = 售价）", desc: "更保守：把平台佣金视为支出。USN 6%下税额会更高。" },
+          { id: "payout", label: t("basisPayout"), desc: t("basisPayoutDesc") },
+          { id: "list", label: t("basisList"), desc: t("basisListDesc") },
         ].map(opt => (
           <button key={opt.id} onClick={() => setParams(p => ({ ...p, incomeBasis: opt.id }))}
             className="text-left p-3 border-2"
