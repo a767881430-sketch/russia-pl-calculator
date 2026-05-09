@@ -400,9 +400,76 @@ const Metric = ({ label, value, sub, color, big }) => (
 );
 
 // ============================================================
+// 密码登录门
+// ============================================================
+const ACCESS_PASSWORD = "xhk2026";  // ← 修改此处设置你的密码
+
+const LoginGate = ({ children }) => {
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem("ru_calc_auth") === "1");
+  const [pwd, setPwd] = useState("");
+  const [error, setError] = useState("");
+  const [shake, setShake] = useState(false);
+
+  if (authed) return children;
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (pwd === ACCESS_PASSWORD) {
+      sessionStorage.setItem("ru_calc_auth", "1");
+      setAuthed(true);
+    } else {
+      setError("密码错误，请重试");
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center font-body" style={{ background: COLORS.cream }}>
+      <FontStyles />
+      <div className={`glass-card p-8 sm:p-10 w-full max-w-sm mx-4 ${shake ? 'animate-shake' : ''}`}>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 flex items-center justify-center rounded-sm" style={{ background: COLORS.oxblood, color: COLORS.cream }}>
+            <span className="font-display text-xl font-bold">Р</span>
+          </div>
+          <div>
+            <div className="text-[10px] tracking-[0.25em] uppercase" style={{ color: COLORS.gold }}>Cross-border P&L</div>
+            <div className="font-display text-lg font-bold" style={{ color: COLORS.ink }}>损益计算器</div>
+          </div>
+        </div>
+        <form onSubmit={handleLogin}>
+          <label className="text-[10px] tracking-[0.18em] uppercase block mb-2" style={{ color: COLORS.inkSoft }}>访问密码</label>
+          <input type="password" value={pwd} onChange={e => setPwd(e.target.value)}
+            className="w-full px-3 py-3 border font-mono text-sm rounded-sm mb-1 input-glow"
+            style={{ borderColor: COLORS.line, background: "white", color: COLORS.ink }}
+            placeholder="请输入密码" autoFocus />
+          {error && <div className="text-xs mt-1 mb-2" style={{ color: COLORS.crimson }}>{error}</div>}
+          <button type="submit"
+            className="btn-interact w-full mt-4 px-4 py-3 text-sm font-medium rounded-sm"
+            style={{ background: COLORS.oxblood, color: COLORS.cream }}>
+            进入系统
+          </button>
+        </form>
+        <div className="mt-4 text-center text-[10px]" style={{ color: COLORS.inkSoft }}>
+          星哈酷 · 投资效益分析工具
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
 // 主组件
 // ============================================================
 export default function App() {
+  return (
+    <LoginGate>
+      <AppContent />
+    </LoginGate>
+  );
+}
+
+function AppContent() {
   const [params, setParams] = useState(DEFAULT_PARAMS);
   const [products, setProducts] = useState(SAMPLE_PRODUCTS);
   const [scheduleStore, setScheduleStore] = useState({});
@@ -411,34 +478,38 @@ export default function App() {
   const [expandedRow, setExpandedRow] = useState(null);
   const [storageStatus, setStorageStatus] = useState("");
   const [storageBusy, setStorageBusy] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
+  // --- 启动时从 localStorage 加载 ---
   useEffect(() => {
-    (async () => {
-      try {
-        if (typeof window !== "undefined" && window.storage) {
-          const r = await window.storage.get("ru_calc_v2");
-          if (r && r.value) {
-            const parsed = JSON.parse(r.value);
-            if (parsed.params) setParams({ ...DEFAULT_PARAMS, ...parsed.params });
-            if (Array.isArray(parsed.products)) setProducts(parsed.products);
-            if (parsed.scheduleStore) setScheduleStore(parsed.scheduleStore);
-            if (parsed.projection) setProjection({ ...DEFAULT_PROJECTION, ...parsed.projection });
-            setStorageStatus("已从云端加载");
-            setTimeout(() => setStorageStatus(""), 2200);
-          }
-        }
-      } catch (e) {}
-    })();
+    try {
+      const saved = localStorage.getItem("ru_calc_v2");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.params) setParams({ ...DEFAULT_PARAMS, ...parsed.params });
+        if (Array.isArray(parsed.products)) setProducts(parsed.products);
+        if (parsed.scheduleStore) setScheduleStore(parsed.scheduleStore);
+        if (parsed.projection) setProjection({ ...DEFAULT_PROJECTION, ...parsed.projection });
+        setStorageStatus("已加载本地数据");
+        setTimeout(() => setStorageStatus(""), 2200);
+      }
+    } catch (e) {}
+    setLoaded(true);
   }, []);
 
-  const saveToCloud = async () => {
-    if (typeof window === "undefined" || !window.storage) {
-      setStorageStatus("当前环境不支持持久化"); setTimeout(() => setStorageStatus(""), 2200); return;
-    }
+  // --- 数据变化时自动保存到 localStorage ---
+  useEffect(() => {
+    if (!loaded) return; // 等初始加载完成后再自动保存
+    try {
+      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, projection }));
+    } catch (e) {}
+  }, [params, products, scheduleStore, projection, loaded]);
+
+  const saveToCloud = () => {
     setStorageBusy(true);
     try {
-      await window.storage.set("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, projection }));
-      setStorageStatus("已保存");
+      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, projection }));
+      setStorageStatus("✓ 已保存");
     } catch (e) { setStorageStatus("保存失败"); }
     finally { setStorageBusy(false); setTimeout(() => setStorageStatus(""), 2200); }
   };

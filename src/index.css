@@ -202,4 +202,17 @@
 ::-webkit-scrollbar-thumb:hover { background: #B8860B; }
 
 /* --- Smooth Scroll --- */
+/* --- Smooth Scroll --- */
 html { scroll-behavior: smooth; }
+
+/* --- Login Shake Animation --- */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+.animate-shake {
+  animation: shake 0.4s ease-out;
+}
