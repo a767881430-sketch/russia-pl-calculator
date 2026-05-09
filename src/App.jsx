@@ -36,12 +36,12 @@ const COLORS = {
 // 2026 俄罗斯税制
 // ============================================================
 const TAX_SCHEMES = {
-  usn_6:        { label: "УСН 6%（按收入）",                 short: "USN 6%",     desc: "按全部收入征6%。营收 ≤ 20M₽ (2026) 免VAT。" },
-  usn_15:       { label: "УСН 15%（收入−支出）",             short: "USN 15%",    desc: "(收入−支出) × 15%，最低 1% × 收入。营收 ≤ 20M₽ 免VAT。" },
-  usn_15_vat5:  { label: "УСН 15% + VAT 5%（无进项抵扣）",    short: "USN+VAT 5%", desc: "营收 20–250M₽ 适用。VAT 5% 不可抵扣进项。" },
-  usn_15_vat7:  { label: "УСН 15% + VAT 7%（无进项抵扣）",    short: "USN+VAT 7%", desc: "营收 250–450M₽ 适用。VAT 7% 不可抵扣进项。" },
-  osn:          { label: "ОСН（VAT 22% + 利润税 25%）",       short: "OSN",        desc: "2026年VAT 20→22%，可用申报价进项VAT抵扣。利润税 25%。" },
-  custom:       { label: "自定义税率",                         short: "自定义",      desc: "按税前利润 × 自定义税率。" },
+  usn_6:        { labelKey: "taxUsn6Label", short: "USN 6%",     descKey: "taxUsn6Desc" },
+  usn_15:       { labelKey: "taxUsn15Label", short: "USN 15%",    descKey: "taxUsn15Desc" },
+  usn_15_vat5:  { labelKey: "taxUsn15v5Label", short: "USN+VAT 5%", descKey: "taxUsn15v5Desc" },
+  usn_15_vat7:  { labelKey: "taxUsn15v7Label", short: "USN+VAT 7%", descKey: "taxUsn15v7Desc" },
+  osn:          { labelKey: "taxOsnLabel", short: "OSN",        descKey: "taxOsnDesc" },
+  custom:       { labelKey: "taxCustomLabel", short: "Custom",   descKey: "taxCustomDesc" },
 };
 
 const DEFAULT_PARAMS = {
@@ -794,7 +794,7 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card kicker={t("cumCashKicker")} title={t("cumCashTitle")} className="lg:col-span-2">
-          <CashFlowChart proj={proj} />
+          <CashFlowChart proj={proj} t={t} />
           {proj.breakEvenMonth ? (
             <div className="mt-3 flex items-center gap-2 text-sm">
               <span className="w-2 h-2 rounded-full" style={{ background: COLORS.emerald }}></span>
@@ -823,7 +823,7 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang }) => {
       </div>
 
       <Card kicker={t("monthlyPnLKicker")} title={t("monthlyPnL")}>
-        <MonthlyPnLChart proj={proj} />
+        <MonthlyPnLChart proj={proj} t={t} />
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -836,7 +836,7 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang }) => {
       </div>
 
       <Card kicker={t("rankingKicker")} title={t("rankingTitle")}>
-        <ProductRanking calcs={calcs} />
+        <ProductRanking calcs={calcs} t={t} />
       </Card>
     </div>
   );
@@ -857,7 +857,8 @@ const TooltipContent = ({ active, payload, label }) => {
   );
 };
 
-const CashFlowChart = ({ proj }) => {
+const CashFlowChart = ({ proj, t }) => {
+  const _t = t || ((k) => k);
   const data = proj.months.map(m => ({ label: m.label, cumCash: m.cumCash, monthly: m.cashFlow }));
   return (
     <div style={{ width: "100%", height: 280 }}>
@@ -870,17 +871,18 @@ const CashFlowChart = ({ proj }) => {
           <ReferenceLine y={0} stroke={COLORS.ink} strokeWidth={1} />
           {proj.breakEvenMonth && (
             <ReferenceLine x={`M${proj.breakEvenMonth}`} stroke={COLORS.emerald} strokeDasharray="5 3"
-              label={{ value: "回本", fill: COLORS.emerald, fontSize: 11, position: "top" }} />
+              label={{ value: _t("chartBreakEven"), fill: COLORS.emerald, fontSize: 11, position: "top" }} />
           )}
           <Line type="monotone" dataKey="cumCash" stroke={COLORS.oxblood} strokeWidth={2.5}
-            dot={{ fill: COLORS.oxblood, r: 3 }} activeDot={{ r: 5 }} name="累积现金" />
+            dot={{ fill: COLORS.oxblood, r: 3 }} activeDot={{ r: 5 }} name={_t("chartCumCash")} />
         </LineChart>
       </ResponsiveContainer>
     </div>
   );
 };
 
-const MonthlyPnLChart = ({ proj }) => {
+const MonthlyPnLChart = ({ proj, t }) => {
+  const _t = t || ((k) => k);
   const data = proj.months.slice(1);
   return (
     <div style={{ width: "100%", height: 240 }}>
@@ -891,7 +893,7 @@ const MonthlyPnLChart = ({ proj }) => {
           <YAxis stroke={COLORS.inkSoft} fontSize={11} tickFormatter={(v) => fmtRubShort(v)} />
           <Tooltip content={<TooltipContent />} />
           <ReferenceLine y={0} stroke={COLORS.ink} />
-          <Bar dataKey="netProfit" name="月度净利">
+          <Bar dataKey="netProfit" name={_t("chartMonthlyNet")}>
             {data.map((m, i) => (
               <Cell key={i} fill={m.netProfit >= 0 ? COLORS.emeraldSoft : COLORS.crimson} />
             ))}
@@ -969,26 +971,26 @@ const TaxBreakdown = ({ totals, params, t }) => {
           {params.taxScheme === "osn" && totals.totalInputVAT > 0 && (
             <>
               <div className="flex items-center justify-between text-xs pt-2 mt-2 border-t" style={{ borderColor: COLORS.line, color: COLORS.inkSoft }}>
-                <span>· 进项VAT（按申报价计提）</span><span className="font-mono">{fmtRub(totals.totalInputVAT)}</span>
+                <span>{t("inputVATLabel")}</span><span className="font-mono">{fmtRub(totals.totalInputVAT)}</span>
               </div>
               <div className="flex items-center justify-between text-xs" style={{ color: COLORS.inkSoft }}>
-                <span>· 销项VAT（向消费者收取）</span><span className="font-mono">{fmtRub(totals.totalOutputVAT)}</span>
+                <span>{t("outputVATLabel")}</span><span className="font-mono">{fmtRub(totals.totalOutputVAT)}</span>
               </div>
             </>
           )}
         </div>
       )}
       <div className="text-xs p-3" style={{ background: COLORS.paper, color: COLORS.inkSoft }}>
-        当前方案：<strong style={{ color: COLORS.oxblood }}>{TAX_SCHEMES[params.taxScheme].label}</strong>
-        <br />{TAX_SCHEMES[params.taxScheme].desc}
+        {t("currentScheme")}<strong style={{ color: COLORS.oxblood }}>{t(TAX_SCHEMES[params.taxScheme].labelKey)}</strong>
+        <br />{t(TAX_SCHEMES[params.taxScheme].descKey)}
       </div>
     </div>
   );
 };
 
-const ProductRanking = ({ calcs }) => {
+const ProductRanking = ({ calcs, t }) => {
   const sorted = [...calcs].sort((a, b) => b.c.roi - a.c.roi);
-  if (!sorted.length) return <div className="text-sm" style={{ color: COLORS.inkSoft }}>暂无商品。</div>;
+  if (!sorted.length) return <div className="text-sm" style={{ color: COLORS.inkSoft }}>{t("noProducts")}</div>;
   const maxROI = Math.max(...sorted.map(r => r.c.roi), 0.01);
   const minROI = Math.min(...sorted.map(r => r.c.roi), 0);
   return (
@@ -1094,17 +1096,17 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
                   <td className="p-2 text-right font-mono text-xs font-semibold" style={{ color: profitable ? COLORS.emerald : COLORS.crimson }}>{fmtRubShort(r.c.netProfit)}</td>
                   <td className="p-2 text-right font-mono text-xs font-semibold" style={{ color: r.c.roi > 0.3 ? COLORS.emerald : r.c.roi > 0.1 ? COLORS.gold : COLORS.crimson }}>{fmtPct(r.c.roi)}</td>
                   <td className="p-2 text-center">
-                    <button onClick={(e) => { e.stopPropagation(); if (confirm(`删除 ${r.id}？`)) onDelete(idx); }}
+                    <button onClick={(e) => { e.stopPropagation(); if (confirm(t("confirmDeleteProd", { id: r.id }))) onDelete(idx); }}
                       className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium border"
                       style={{ borderColor: COLORS.crimson, color: COLORS.crimson, background: "rgba(164,25,61,0.05)" }}>
-                      <Trash2 size={11} /> 删除
+                      <Trash2 size={11} /> {t("deleteBtn")}
                     </button>
                   </td>
                 </tr>
                 {isOpen && (
                   <tr style={{ background: "rgba(184,134,11,0.04)" }}>
                     <td colSpan={showDeclared ? 15 : 14} className="p-4">
-                      <ProductEditor product={r} idx={idx} onUpdate={onUpdate} calc={r.c} params={params} />
+                      <ProductEditor product={r} idx={idx} onUpdate={onUpdate} calc={r.c} params={params} t={t} />
                     </td>
                   </tr>
                 )}
@@ -1116,7 +1118,7 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
           <tfoot style={{ background: COLORS.paper }}>
             <tr className="font-semibold">
               <td className="p-2"></td>
-              <td className="p-2 font-mono text-xs">合计</td>
+              <td className="p-2 font-mono text-xs">{t("totalRow")}</td>
               <td className="p-2"></td>
               {showDeclared && <td className="p-2"></td>}
               <td className="p-2 text-right font-mono text-xs">{calcs.reduce((a, b) => a + (b.qty || 0), 0)}</td>
@@ -1136,29 +1138,29 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
   );
 };
 
-const ProductEditor = ({ product, idx, onUpdate, calc, params }) => {
+const ProductEditor = ({ product, idx, onUpdate, calc, params, t }) => {
   const fields = [
-    { label: "产品 ID", k: "id", type: "text" },
-    { label: "实际采购价 (元)", k: "priceCNY", suffix: "¥", step: 0.01 },
-    { label: "申报/账面价 (元)", k: "declaredCNY", suffix: "¥", step: 0.01, highlight: true },
-    { label: "数量 (件)", k: "qty", suffix: "件" },
-    { label: "重量 (kg)", k: "weight", suffix: "kg", step: 0.01 },
-    { label: "上架售价 (₽)", k: "list", suffix: "₽" },
-    { label: "平台费用 (₽/件)", k: "platformFee", suffix: "₽" },
-    { label: "海外仓 (₽/件)", k: "warehouse", suffix: "₽" },
-    { label: "管理费 (₽/件)", k: "mgmt", suffix: "₽" },
+    { label: t("fieldProductId"), k: "id", type: "text" },
+    { label: t("fieldActualCost"), k: "priceCNY", suffix: "¥", step: 0.01 },
+    { label: t("fieldDeclaredCost"), k: "declaredCNY", suffix: "¥", step: 0.01, highlight: true },
+    { label: t("fieldQty"), k: "qty", suffix: "pcs" },
+    { label: t("fieldWeight"), k: "weight", suffix: "kg", step: 0.01 },
+    { label: t("fieldListPrice"), k: "list", suffix: "₽" },
+    { label: t("fieldPlatformFee"), k: "platformFee", suffix: "₽" },
+    { label: t("fieldWarehouse"), k: "warehouse", suffix: "₽" },
+    { label: t("fieldMgmt"), k: "mgmt", suffix: "₽" },
   ];
   const declaredDiffers = (product.declaredCNY ?? product.priceCNY) !== product.priceCNY;
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div className="lg:col-span-2 space-y-3">
-        <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.gold }}>编辑字段</div>
+        <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.gold }}>{t("editorFields")}</div>
         <div className="grid grid-cols-2 gap-2">
           {fields.map(f => (
             <div key={f.k} className="flex flex-col gap-1">
               <label className="text-[11px] flex items-center gap-1" style={{ color: COLORS.inkSoft }}>
                 {f.label}
-                {f.highlight && <Tag color={COLORS.oxblood}>VAT基础</Tag>}
+                {f.highlight && <Tag color={COLORS.oxblood}>{t("vatBasisTag")}</Tag>}
               </label>
               {f.type === "text" ? (
                 <input type="text" value={product[f.k] || ""} onChange={(e) => onUpdate(idx, f.k, e.target.value)}
@@ -1173,38 +1175,38 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params }) => {
         </div>
       </div>
       <div className="lg:col-span-2 space-y-3">
-        <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.gold }}>计算明细 / 单位</div>
+        <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.gold }}>{t("editorCalcDetail")}</div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono p-3" style={{ background: "white", border: `1px solid ${COLORS.line}` }}>
-          <div style={{ color: COLORS.inkSoft }}>实际卢布单价</div><div className="text-right">{fmtRub(calc.priceRUB, 2)}</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcActualRub")}</div><div className="text-right">{fmtRub(calc.priceRUB, 2)}</div>
           {declaredDiffers && (
             <>
-              <div style={{ color: COLORS.oxblood }}>申报卢布单价</div>
+              <div style={{ color: COLORS.oxblood }}>{t("calcDeclaredRub")}</div>
               <div className="text-right" style={{ color: COLORS.oxblood }}>{fmtRub(calc.declaredRUB, 2)}</div>
             </>
           )}
-          <div style={{ color: COLORS.inkSoft }}>+ 到俄运费</div><div className="text-right">{fmtRub(params.shippingPerUnit)}</div>
-          <div style={{ color: COLORS.inkSoft }}>+ 诚实标签</div><div className="text-right">{fmtRub(params.labelingPerUnit)}</div>
-          <div className="border-t pt-1" style={{ borderColor: COLORS.line }}>= 实际单位成本</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcShipping")}</div><div className="text-right">{fmtRub(params.shippingPerUnit)}</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcLabeling")}</div><div className="text-right">{fmtRub(params.labelingPerUnit)}</div>
+          <div className="border-t pt-1" style={{ borderColor: COLORS.line }}>{t("calcUnitCost")}</div>
           <div className="text-right border-t pt-1" style={{ borderColor: COLORS.line }}>{fmtRub(calc.unitCost, 2)}</div>
-          <div style={{ color: COLORS.inkSoft }}>单位回款</div><div className="text-right">{fmtRub(calc.unitPayout)}</div>
-          <div style={{ color: COLORS.inkSoft }}>单位毛利</div><div className="text-right">{fmtRub(calc.unitPayout - calc.unitCost)}</div>
-          <div className="border-t pt-1" style={{ borderColor: COLORS.line }}>单位净利</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcUnitPayout")}</div><div className="text-right">{fmtRub(calc.unitPayout)}</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcUnitGross")}</div><div className="text-right">{fmtRub(calc.unitPayout - calc.unitCost)}</div>
+          <div className="border-t pt-1" style={{ borderColor: COLORS.line }}>{t("calcUnitNet")}</div>
           <div className="text-right border-t pt-1" style={{ borderColor: COLORS.line, color: calc.unitNetProfit > 0 ? COLORS.emerald : COLORS.crimson }}>
             {fmtRub(calc.unitNetProfit, 2)} ({fmtCny(calc.unitNetProfit / params.exchangeRate)})
           </div>
           {params.taxScheme === "osn" && (
             <>
-              <div className="pt-2 mt-1 border-t" style={{ borderColor: COLORS.line, color: COLORS.oxblood }}>· 进项VAT/件</div>
+              <div className="pt-2 mt-1 border-t" style={{ borderColor: COLORS.line, color: COLORS.oxblood }}>{t("calcInputVAT")}</div>
               <div className="text-right pt-2 mt-1 border-t" style={{ borderColor: COLORS.line, color: COLORS.oxblood }}>{fmtRub(calc.totalInputVAT / Math.max(1, product.qty), 2)}</div>
-              <div style={{ color: COLORS.oxblood }}>· 销项VAT/件</div>
+              <div style={{ color: COLORS.oxblood }}>{t("calcOutputVAT")}</div>
               <div className="text-right" style={{ color: COLORS.oxblood }}>{fmtRub(calc.totalOutputVAT / Math.max(1, calc.effectiveQty), 2)}</div>
             </>
           )}
         </div>
         <div className="text-[11px] flex flex-wrap gap-2">
-          <Tag color={COLORS.emerald}>净利率 {fmtPct(calc.profitMargin)}</Tag>
+          <Tag color={COLORS.emerald}>{t("tagMargin")} {fmtPct(calc.profitMargin)}</Tag>
           <Tag color={COLORS.gold}>ROI {fmtPct(calc.roi)}</Tag>
-          <Tag>有效件数 {calc.effectiveQty.toFixed(1)}</Tag>
+          <Tag>{t("tagEffQty")} {calc.effectiveQty.toFixed(1)}</Tag>
         </div>
       </div>
     </div>
@@ -1302,17 +1304,15 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
 // ============================================================
 // VAT 阈值监控（动态税档）
 // ============================================================
-const VATThresholdMonitor = ({ proj, projection, updateProj, params }) => {
+const VATThresholdMonitor = ({ proj, projection, updateProj, params, t }) => {
   const final = proj.finalCumRevenue || 0;
   const T1 = 20_000_000, T2 = 250_000_000, T3 = 450_000_000;
-  // 可视化条：以 max(本期最终累计, 30M) 为条尾
   const condEnd = Math.max(final * 1.1, 30_000_000);
   const pctOf = (v) => (Math.min(v, condEnd) / condEnd * 100);
   const isUSN = params.taxScheme === "usn_6" || params.taxScheme === "usn_15";
 
   return (
     <div className="space-y-4">
-      {/* 自动跨档开关（仅USN下可见） */}
       {isUSN ? (
         <div className="flex items-start gap-3 p-3 border" style={{ borderColor: COLORS.line, background: "white" }}>
           <input
@@ -1323,43 +1323,39 @@ const VATThresholdMonitor = ({ proj, projection, updateProj, params }) => {
             style={{ accentColor: COLORS.oxblood, width: 16, height: 16 }}
           />
           <div className="flex-1">
-            <div className="font-semibold text-sm">营收过20M ₽自动触发VAT</div>
+            <div className="font-semibold text-sm">{t("vatAutoTrigger")}</div>
             <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>
-              开启后，模型会跟踪你年度累计营收：
-              <strong> 0–20M</strong> 免VAT；
-              <strong style={{ color: COLORS.gold }}> 20M–250M</strong> 自动加VAT 5%；
-              <strong style={{ color: COLORS.oxbloodSoft }}> 250M–450M</strong> VAT 7%；
-              <strong style={{ color: COLORS.crimson }}> 450M+</strong> 强制 OSN（VAT 22% + 利润税）。
+              {t("vatAutoDesc")}
+              <strong> 0–20M</strong>{t("vatTier0Desc")};
+              <strong style={{ color: COLORS.gold }}> 20M–250M</strong>{t("vatTier1Desc")};
+              <strong style={{ color: COLORS.oxbloodSoft }}> 250M–450M</strong>{t("vatTier2Desc")};
+              <strong style={{ color: COLORS.crimson }}> 450M+</strong>{t("vatTier3Desc")}
             </div>
           </div>
         </div>
       ) : (
         <div className="text-xs p-3 border" style={{ borderColor: COLORS.line, background: COLORS.paper, color: COLORS.inkSoft }}>
           <Info size={12} className="inline mr-1" />
-          当前已固定为 <strong style={{ color: COLORS.oxblood }}>{TAX_SCHEMES[params.taxScheme].short}</strong>。
-          想看动态触发效果，请先在"参数与税制"切回 USN 6% 或 USN 15%。
+          {t("vatFixedNote")} <strong style={{ color: COLORS.oxblood }}>{TAX_SCHEMES[params.taxScheme].short}</strong>.
+          {" "}{t("vatSwitchHint")}
         </div>
       )}
 
-      {/* 阈值进度条 */}
       <div>
         <div className="flex items-baseline justify-between mb-2">
-          <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.inkSoft }}>本年累计营收（含起始值）</div>
+          <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.inkSoft }}>{t("vatCumRevenue")}</div>
           <div className="font-display text-xl font-semibold number-pill" style={{ color: COLORS.ink }}>
             {fmtRubShort(final)}
           </div>
         </div>
         <div className="relative h-7 w-full" style={{ background: COLORS.paper, border: `1px solid ${COLORS.line}` }}>
-          {/* 三个档位的背景区 */}
           <div className="absolute h-full" style={{ left: 0, width: `${pctOf(T1)}%`, background: "rgba(31,79,46,0.10)" }} />
           <div className="absolute h-full" style={{ left: `${pctOf(T1)}%`, width: `${pctOf(T2) - pctOf(T1)}%`, background: "rgba(184,134,11,0.10)" }} />
           <div className="absolute h-full" style={{ left: `${pctOf(T2)}%`, width: `${pctOf(T3) - pctOf(T2)}%`, background: "rgba(122,42,44,0.12)" }} />
           <div className="absolute h-full" style={{ left: `${pctOf(T3)}%`, right: 0, background: "rgba(164,25,61,0.18)" }} />
-          {/* 当前进度填充 */}
           <div className="absolute h-full" style={{ left: 0, width: `${pctOf(final)}%`, background: COLORS.oxblood, opacity: 0.7 }} />
-          {/* 阈值标记线 */}
-          {[T1, T2, T3].map((t, i) => (
-            <div key={i} className="absolute h-full" style={{ left: `${pctOf(t)}%`, width: 2, background: COLORS.ink }} />
+          {[T1, T2, T3].map((th, i) => (
+            <div key={i} className="absolute h-full" style={{ left: `${pctOf(th)}%`, width: 2, background: COLORS.ink }} />
           ))}
         </div>
         <div className="flex text-[10px] mt-1.5 font-mono" style={{ color: COLORS.inkSoft }}>
@@ -1369,26 +1365,25 @@ const VATThresholdMonitor = ({ proj, projection, updateProj, params }) => {
           <div style={{ flex: 1, textAlign: "left" }}>450M</div>
         </div>
         <div className="flex flex-wrap gap-2 mt-3 text-[11px]">
-          <Tag color={COLORS.emerald}>免VAT 0–20M</Tag>
-          <Tag color={COLORS.gold}>VAT 5% 20M–250M</Tag>
-          <Tag color={COLORS.oxbloodSoft}>VAT 7% 250M–450M</Tag>
-          <Tag color={COLORS.crimson}>OSN 22% &gt;450M</Tag>
+          <Tag color={COLORS.emerald}>{t("vatTagNoVat")}</Tag>
+          <Tag color={COLORS.gold}>{t("vatTag5")}</Tag>
+          <Tag color={COLORS.oxbloodSoft}>{t("vatTag7")}</Tag>
+          <Tag color={COLORS.crimson}>{t("vatTagOsn")}</Tag>
         </div>
       </div>
 
-      {/* 触发提醒 */}
       {projection.autoVATEscalation && isUSN && proj.vatTriggered && (
         <div className="p-3 border-l-2" style={{ borderColor: COLORS.crimson, background: "rgba(164,25,61,0.05)" }}>
           <div className="flex items-start gap-2">
             <AlertCircle size={16} style={{ color: COLORS.crimson, flexShrink: 0, marginTop: 2 }} />
             <div className="flex-1 text-sm">
               <div className="font-semibold" style={{ color: COLORS.crimson }}>
-                第 {proj.vatTriggerMonth} 个月起触发 VAT
+                {t("vatTriggeredTitle", { n: proj.vatTriggerMonth })}
               </div>
               <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>
-                累计营收在 M{proj.vatTriggerMonth} 突破 20M ₽，从该月起自动加 VAT 5%。
-                如果到下一年度，本年累计会重置 — 但若全年都超过门槛，下一整年都需要继续缴 VAT。
-                总计 VAT 缴纳：<strong style={{ color: COLORS.crimson }}>{fmtRubShort(proj.totalVAT)}</strong>。
+                {t("vatTriggeredDesc1", { n: proj.vatTriggerMonth })}
+                {" "}{t("vatTriggeredDesc2")}
+                {" "}{t("vatTriggeredTotal")}<strong style={{ color: COLORS.crimson }}>{fmtRubShort(proj.totalVAT)}</strong>
               </div>
             </div>
           </div>
@@ -1399,10 +1394,9 @@ const VATThresholdMonitor = ({ proj, projection, updateProj, params }) => {
           <div className="flex items-start gap-2">
             <Sparkles size={16} style={{ color: COLORS.emerald, flexShrink: 0, marginTop: 2 }} />
             <div className="flex-1 text-sm">
-              <div className="font-semibold" style={{ color: COLORS.emerald }}>预测期内未触发 VAT</div>
+              <div className="font-semibold" style={{ color: COLORS.emerald }}>{t("vatNotTriggered")}</div>
               <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>
-                离 20M 阈值还有 <strong>{fmtRubShort(T1 - final)}</strong>。如果要扩大销售规模，
-                可以延长预测期或提高月销量看看在第几个月会被触发。
+                {t("vatDistanceHint", { amount: fmtRubShort(T1 - final) })}
               </div>
             </div>
           </div>
@@ -1443,15 +1437,15 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => 
       </div>
 
       <Card kicker="VAT Threshold · 2026" title={t("vatThreshold")}>
-        <VATThresholdMonitor proj={proj} projection={projection} updateProj={updateProj} params={params} />
+        <VATThresholdMonitor proj={proj} projection={projection} updateProj={updateProj} params={params} t={t} />
       </Card>
 
       <Card kicker="Cumulative Cash" title={t("cumCashChart")}>
-        <CashFlowChart proj={proj} />
+        <CashFlowChart proj={proj} t={t} />
       </Card>
 
       <Card kicker="Monthly P&L" title={t("monthlyNetProfit")}>
-        <MonthlyPnLChart proj={proj} />
+        <MonthlyPnLChart proj={proj} t={t} />
       </Card>
 
       <Card kicker="Projection" title={t("projParams")}>
@@ -1475,11 +1469,11 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => 
         </div>
         <div className="mt-3 text-xs" style={{ color: COLORS.inkSoft }}>
           <Info size={12} className="inline mr-1" />
-          月度税：每月按当月利润现算（实际USN为季度申报，OSN月度VAT；这里按月分摊以便观察）。
+          {t("projTaxNote")}
           {params.taxScheme === "osn" && (
             <span style={{ color: COLORS.oxblood }}>
-              {" "}进项VAT余额随月度销项VAT滚动抵扣；
-              {proj.leftoverInputVAT > 0 ? `期末仍有 ${fmtRubShort(proj.leftoverInputVAT)} 未用完` : "已用完"}。
+              {" "}{t("projInputVATNote")}
+              {proj.leftoverInputVAT > 0 ? t("projInputVATLeft", { amount: fmtRubShort(proj.leftoverInputVAT) }) : t("projInputVATUsed")}.
             </span>
           )}
         </div>
@@ -1488,33 +1482,33 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => 
       <Card kicker="Monthly P&L" title={t("cashFlowDetail")}>
         <div className="text-xs mb-3 p-2 border-l-2" style={{ borderColor: COLORS.gold, background: COLORS.paper, color: COLORS.inkSoft }}>
           <Info size={12} className="inline mr-1" />
-          <strong style={{ color: COLORS.ink }}>"当月净利" vs "现金流"两个不同视角：</strong>
-          <br />· <strong>当月净利</strong> = 营收 − 销货成本 − 仓+管理 − 税（会计利润，反映该月经营成果）
-          <br />· <strong>现金流</strong> = 营收 − 仓+管理 − 税 − 合伙人分成（M0已付全部库存款，月度不再扣销货成本，避免重复计算）
+          <strong style={{ color: COLORS.ink }}>{t("projCashVsPnl")}</strong>
+          <br />· <strong>{t("projNetLabel")}</strong> {t("projNetDesc")}
+          <br />· <strong>{t("projCashLabel")}</strong> {t("projCashDesc")}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs" style={{ minWidth: "1100px" }}>
             <thead style={{ background: COLORS.paper }}>
               <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
-                <th className="text-left p-2">月份</th>
-                <th className="text-left p-2">税档</th>
-                <th className="text-right p-2">销售件数</th>
-                <th className="text-right p-2">营收</th>
-                <th className="text-right p-2">销货成本</th>
-                <th className="text-right p-2">仓+管理</th>
-                <th className="text-right p-2">固定支出</th>
-                <th className="text-right p-2">税</th>
-                <th className="text-right p-2 border-l" style={{ borderColor: COLORS.line }}>当月净利</th>
-                <th className="text-right p-2">合伙人</th>
-                <th className="text-right p-2">现金流</th>
-                <th className="text-right p-2 border-l" style={{ borderColor: COLORS.line }}>累计现金</th>
+                <th className="text-left p-2">{t("thMonth")}</th>
+                <th className="text-left p-2">{t("thTaxTier")}</th>
+                <th className="text-right p-2">{t("thSoldQtyD")}</th>
+                <th className="text-right p-2">{t("thRevenueD")}</th>
+                <th className="text-right p-2">{t("thCogsD")}</th>
+                <th className="text-right p-2">{t("thWhMgmt")}</th>
+                <th className="text-right p-2">{t("thFixedCost")}</th>
+                <th className="text-right p-2">{t("thTax")}</th>
+                <th className="text-right p-2 border-l" style={{ borderColor: COLORS.line }}>{t("thMonthlyNet")}</th>
+                <th className="text-right p-2">{t("thPartner")}</th>
+                <th className="text-right p-2">{t("thCashFlowD")}</th>
+                <th className="text-right p-2 border-l" style={{ borderColor: COLORS.line }}>{t("thCumCashD")}</th>
               </tr>
             </thead>
             <tbody>
               {proj.months.map(m => (
                 <tr key={m.label} className="border-t ledger-row" style={{ borderColor: COLORS.line, background: m.isInitial ? "rgba(164,25,61,0.04)" : "transparent" }}>
                   <td className="p-2 font-mono font-semibold">
-                    {m.label}{m.isInitial && <span className="ml-1 text-[10px]" style={{ color: COLORS.crimson }}>(投资)</span>}
+                    {m.label}{m.isInitial && <span className="ml-1 text-[10px]" style={{ color: COLORS.crimson }}>{t("investLabel")}</span>}
                   </td>
                   <td className="p-2 text-[10px]" style={{ color: m.vatTierLabel && m.vatTierLabel.startsWith("VAT") && !m.vatTierLabel.includes("固定") ? COLORS.crimson : COLORS.inkSoft }}>
                     {m.isInitial ? "—" : (m.vatTierLabel || "—")}
@@ -1538,7 +1532,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => 
             </tbody>
             <tfoot style={{ background: COLORS.paper }}>
               <tr className="font-semibold">
-                <td className="p-2">合计</td>
+                <td className="p-2">{t("totalRow")}</td>
                 <td className="p-2"></td>
                 <td className="p-2 text-right font-mono">{proj.months.reduce((a, b) => a + b.soldQty, 0)}</td>
                 <td className="p-2 text-right font-mono">{fmtRubShort(proj.totalRevenue)}</td>
@@ -1564,7 +1558,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang }) => 
 const SettingsTab = ({ params, setParams, t, lang, rateSource, setRateSource, liveRate, effectiveRate, fetchRate }) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 anim-in">
     <Card kicker={t("taxRegimeKicker")} title={t("taxRegime")}>
-      <TaxSchemePicker params={params} setParams={setParams} />
+      <TaxSchemePicker params={params} setParams={setParams} t={t} />
     </Card>
     <Card kicker={t("globalParamsKicker")} title={t("globalParams")}>
       <ParamsPanel params={params} setParams={setParams} t={t} rateSource={rateSource} setRateSource={setRateSource} liveRate={liveRate} effectiveRate={effectiveRate} fetchRate={fetchRate} />
@@ -1590,7 +1584,7 @@ const SettingsTab = ({ params, setParams, t, lang, rateSource, setRateSource, li
   </div>
 );
 
-const TaxSchemePicker = ({ params, setParams }) => (
+const TaxSchemePicker = ({ params, setParams, t }) => (
   <div className="space-y-3">
     {Object.entries(TAX_SCHEMES).map(([k, v]) => (
       <button key={k} onClick={() => setParams(p => ({ ...p, taxScheme: k }))}
@@ -1601,8 +1595,8 @@ const TaxSchemePicker = ({ params, setParams }) => (
         }}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
-            <div className="font-semibold text-sm">{v.label}</div>
-            <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>{v.desc}</div>
+            <div className="font-semibold text-sm">{t(v.labelKey)}</div>
+            <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>{t(v.descKey)}</div>
           </div>
           <Tag color={params.taxScheme === k ? COLORS.oxblood : COLORS.inkSoft}>{v.short}</Tag>
         </div>
@@ -1610,7 +1604,7 @@ const TaxSchemePicker = ({ params, setParams }) => (
     ))}
     {params.taxScheme === "custom" && (
       <div className="pt-3 border-t" style={{ borderColor: COLORS.line }}>
-        <label className="text-xs" style={{ color: COLORS.inkSoft }}>自定义税率（按税前利润）</label>
+        <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("customTaxRateLabel")}</label>
         <NumInput value={params.customTaxRate * 100} onChange={(v) => setParams(p => ({ ...p, customTaxRate: v / 100 }))} suffix="%" step={0.1} className="mt-1" />
       </div>
     )}
@@ -1618,30 +1612,30 @@ const TaxSchemePicker = ({ params, setParams }) => (
       <div className="pt-3 border-t space-y-2" style={{ borderColor: COLORS.line }}>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs" style={{ color: COLORS.inkSoft }}>VAT率 (2026: 22%)</label>
+            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("vatRateLabel")}</label>
             <NumInput value={params.vatRate * 100} onChange={(v) => setParams(p => ({ ...p, vatRate: v / 100 }))} suffix="%" step={0.5} className="mt-1" />
           </div>
           <div>
-            <label className="text-xs" style={{ color: COLORS.inkSoft }}>利润税率 (默认 25%)</label>
+            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("profitTaxLabel")}</label>
             <NumInput value={params.profitTaxRate * 100} onChange={(v) => setParams(p => ({ ...p, profitTaxRate: v / 100 }))} suffix="%" step={0.5} className="mt-1" />
           </div>
         </div>
         <div className="text-xs p-2" style={{ background: "rgba(184,134,11,0.08)", color: COLORS.ink }}>
           <Info size={11} className="inline mr-1" />
-          OSN下，每个SKU可单独填"申报价(元)"。进项VAT = 申报价 × 汇率 × 数量 × 22%（导入时支付），可滚动抵扣月度销项VAT。
+          {t("osnNote")}
         </div>
       </div>
     )}
   </div>
 );
 
-const ParamsPanel = ({ params, setParams }) => {
+const ParamsPanel = ({ params, setParams, t }) => {
   const items = [
-    { label: "汇率（1元 ≈ ? 卢布）", k: "exchangeRate", suffix: "₽/¥", step: 0.1 },
-    { label: "货损率", k: "damageRate", suffix: "%", step: 0.5, multiplier: 100 },
-    { label: "到俄罗斯单件运费", k: "shippingPerUnit", suffix: "₽" },
-    { label: "诚实标签 (Честный знак)", k: "labelingPerUnit", suffix: "₽" },
-    { label: "首批一次性费用 (设计/拍照/合规)", k: "oneTimeCosts", suffix: "₽", step: 100 },
+    { label: t("paramExchangeRate"), k: "exchangeRate", suffix: "₽/¥", step: 0.1 },
+    { label: t("paramDamageRate"), k: "damageRate", suffix: "%", step: 0.5, multiplier: 100 },
+    { label: t("paramShipping"), k: "shippingPerUnit", suffix: "₽" },
+    { label: t("paramLabeling"), k: "labelingPerUnit", suffix: "₽" },
+    { label: t("paramOneTime"), k: "oneTimeCosts", suffix: "₽", step: 100 },
   ];
   return (
     <div className="space-y-3">
@@ -1660,64 +1654,56 @@ const ParamsPanel = ({ params, setParams }) => {
 // ============================================================
 // 帮助
 // ============================================================
-const HelpPanel = () => (
+const HelpPanel = ({ t }) => (
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 anim-in">
-    <Card kicker="2026 Reform" title="2026年俄罗斯税制要点" className="lg:col-span-2">
+    <Card kicker="2026 Reform" title={t("helpTitle")} className="lg:col-span-2">
       <div className="space-y-4 text-sm">
         <div>
-          <div className="font-display font-semibold text-base mb-1">VAT 标准税率：20% → 22%</div>
-          <p style={{ color: COLORS.inkSoft }}>联邦法 №425-FZ（2025.11.28），2026.1.1起VAT基础税率上调至22%。食品、儿童用品、药品保留10%。</p>
+          <div className="font-display font-semibold text-base mb-1">{t("helpVatTitle")}</div>
+          <p style={{ color: COLORS.inkSoft }}>{t("helpVatDesc")}</p>
         </div>
         <div>
-          <div className="font-display font-semibold text-base mb-1">USN 触发VAT门槛大幅下调</div>
+          <div className="font-display font-semibold text-base mb-1">{t("helpUsnTitle")}</div>
           <ul className="list-disc list-inside space-y-1" style={{ color: COLORS.inkSoft }}>
             <li>2025: 60M ₽</li>
             <li className="font-semibold" style={{ color: COLORS.oxblood }}>2026: 20M ₽</li>
             <li>2027: 15M ₽</li>
             <li>2028: 10M ₽</li>
           </ul>
-          <p className="mt-2" style={{ color: COLORS.inkSoft }}>超过门槛后可选：5%（20–250M）/ 7%（250–450M）无进项抵扣，或标准 0%/10%/22% 可抵扣。</p>
+          <p className="mt-2" style={{ color: COLORS.inkSoft }}>{t("helpUsnDesc")}</p>
         </div>
         <div>
-          <div className="font-display font-semibold text-base mb-1">USN 基本税率不变</div>
-          <p style={{ color: COLORS.inkSoft }}>6%（按收入）和15%（按收入−支出）保持不变。USN 15%最低税额为收入1%。</p>
+          <div className="font-display font-semibold text-base mb-1">{t("helpUsnBaseTitle")}</div>
+          <p style={{ color: COLORS.inkSoft }}>{t("helpUsnBaseDesc")}</p>
         </div>
         <div>
-          <div className="font-display font-semibold text-base mb-1">利润税：25%（OSN）</div>
-          <p style={{ color: COLORS.inkSoft }}>2025起从20%上调。IT企业有5%优惠（至2030）。</p>
+          <div className="font-display font-semibold text-base mb-1">{t("helpProfitTitle")}</div>
+          <p style={{ color: COLORS.inkSoft }}>{t("helpProfitDesc")}</p>
         </div>
         <div>
-          <div className="font-display font-semibold text-base mb-1">22% 是什么税？</div>
-          <p style={{ color: COLORS.inkSoft }}>2026年最常对应：① <strong>新VAT基础税率</strong>；② NDFL（个税）最高累进档（年收入&gt;50M ₽）。计算器把22%按VAT处理。</p>
+          <div className="font-display font-semibold text-base mb-1">{t("helpVat22Title")}</div>
+          <p style={{ color: COLORS.inkSoft }}>{t("helpVat22Desc")}</p>
         </div>
       </div>
     </Card>
 
-    <Card kicker="Practical Tips" title="跨境电商实务">
+    <Card kicker="Practical Tips" title={t("helpPractical")}>
       <div className="space-y-3 text-sm">
         <div className="p-3 border-l-2" style={{ borderColor: COLORS.gold, background: COLORS.paper }}>
-          <div className="font-semibold mb-1">📦 申报价 vs 实际价</div>
-          <p className="text-xs" style={{ color: COLORS.inkSoft }}>
-            报关申报价决定进项VAT和关税基础。OSN下用申报价计算可抵扣的进项VAT。"现金净利"用实际成本，"账面净利"用申报成本，OSN下两者会有差异。
-          </p>
+          <div className="font-semibold mb-1">{t("helpDeclaredTitle")}</div>
+          <p className="text-xs" style={{ color: COLORS.inkSoft }}>{t("helpDeclaredDesc")}</p>
         </div>
         <div className="p-3 border-l-2" style={{ borderColor: COLORS.crimson, background: COLORS.paper }}>
-          <div className="font-semibold mb-1">⚠️ 营收逼近20M的策略</div>
-          <p className="text-xs" style={{ color: COLORS.inkSoft }}>
-            ① 拆分两个法人保持小规模；② 主动过线选5%/7%。5%无进项抵扣，但若你本来进项VAT就少，5%可能比15%标准USN更划算。
-          </p>
+          <div className="font-semibold mb-1">{t("helpThresholdTitle")}</div>
+          <p className="text-xs" style={{ color: COLORS.inkSoft }}>{t("helpThresholdDesc")}</p>
         </div>
         <div className="p-3 border-l-2" style={{ borderColor: COLORS.emerald, background: COLORS.paper }}>
-          <div className="font-semibold mb-1">💰 USN 6% vs 15% 经验法则</div>
-          <p className="text-xs" style={{ color: COLORS.inkSoft }}>
-            可证明支出 &gt; 收入60% → 选15%；否则选6%。跨境电商通常采购+物流+平台费占比高，多数情况15%更优。
-          </p>
+          <div className="font-semibold mb-1">{t("helpUsn6v15Title")}</div>
+          <p className="text-xs" style={{ color: COLORS.inkSoft }}>{t("helpUsn6v15Desc")}</p>
         </div>
         <div className="p-3 border-l-2" style={{ borderColor: COLORS.oxblood, background: COLORS.paper }}>
-          <div className="font-semibold mb-1">📊 货损双计修正</div>
-          <p className="text-xs" style={{ color: COLORS.inkSoft }}>
-            原表"货损"被重复扣除。本计算器仅通过减少有效销量(97%)体现货损，不再额外重复扣减。
-          </p>
+          <div className="font-semibold mb-1">{t("helpDamageTitle")}</div>
+          <p className="text-xs" style={{ color: COLORS.inkSoft }}>{t("helpDamageDesc")}</p>
         </div>
       </div>
     </Card>
