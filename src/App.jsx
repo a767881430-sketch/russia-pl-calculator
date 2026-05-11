@@ -373,7 +373,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
     maxDrawdown: Math.min(...months.map(mm => mm.cumCash)),
     finalCash: months[months.length - 1].cumCash,
     totalRevenue: months.reduce((a, b) => a + b.revenue, 0),
-    totalNetProfit: months.reduce((a, b) => a + b.netProfit, 0),
+    totalNetProfit: months.filter(m => !m.isInitial).reduce((a, b) => a + b.netProfit, 0),
     totalTax: months.reduce((a, b) => a + b.tax, 0),
     totalVAT: months.reduce((a, b) => a + (b.vatRemit || 0), 0),
     totalPartnerPayout: months.reduce((a, b) => a + b.partnerPayout, 0),
