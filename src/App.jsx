@@ -380,6 +380,21 @@ const NumInput = ({ value, onChange, suffix, prefix, step = 1, className = "", .
   </div>
 );
 
+// 防抖文本输入：使用本地 state，仅在 blur / Enter 时提交，避免每次击键触发父级重渲染
+const DebouncedTextInput = ({ value, onCommit, className = "", style = {}, ...rest }) => {
+  const [local, setLocal] = useState(value || "");
+  const committed = React.useRef(value);
+  useEffect(() => { if (value !== committed.current) { setLocal(value || ""); committed.current = value; } }, [value]);
+  const doCommit = () => { if (local !== committed.current) { committed.current = local; onCommit(local); } };
+  return (
+    <input type="text" value={local}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={doCommit}
+      onKeyDown={(e) => { if (e.key === "Enter") { doCommit(); e.target.blur(); } }}
+      className={className} style={style} {...rest} />
+  );
+};
+
 const Tag = ({ children, color = COLORS.gold, bg }) => (
   <span className="inline-block px-2 py-0.5 text-[10px] tracking-widest uppercase font-body font-semibold tag-pill rounded-sm"
     style={{ color, background: bg || color + "1A", border: `1px solid ${color}40` }}>
@@ -1086,7 +1101,7 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
             const profitable = r.c.netProfit > 0;
             const declaredDiffers = (r.declaredCNY ?? r.priceCNY) !== r.priceCNY;
             return (
-              <React.Fragment key={r.id + idx}>
+              <React.Fragment key={idx}>
                 <tr className="border-t row-glow cursor-pointer" style={{ borderColor: COLORS.line }}
                   onClick={() => setExpandedRow(isOpen ? null : idx)}>
                   <td className="p-2">{isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</td>
@@ -1176,7 +1191,7 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
                 {f.highlight && <Tag color={COLORS.oxblood}>{t("vatBasisTag")}</Tag>}
               </label>
               {f.type === "text" ? (
-                <input type="text" value={product[f.k] || ""} onChange={(e) => onUpdate(idx, f.k, e.target.value)}
+                <DebouncedTextInput value={product[f.k] || ""} onCommit={(v) => onUpdate(idx, f.k, v)}
                   className="px-2 py-1.5 bg-white border font-mono text-sm"
                   style={{ borderColor: COLORS.line, color: COLORS.ink }} />
               ) : (
