@@ -289,6 +289,17 @@ const DICT = {
   paramLabeling: { zh: "诚实标签 (Честный знак)", en: "Labeling (Chestny Znak)", ru: "Маркировка (Честный знак)" },
   paramOneTime: { zh: "首批一次性费用 (设计/拍照/合规)", en: "One-time Costs (design/photo/compliance)", ru: "Разовые расходы (дизайн/фото/серт.)" },
 
+  // === Price Schedule ===
+  priceScheduleTitle: { zh: "售价排期 · 按月调价", en: "Price Schedule · Monthly Pricing", ru: "График цен · Помесячно" },
+  priceScheduleHint: { zh: "默认继承商品统一售价，修改后变色显示。空白/0 = 使用默认值。", en: "Defaults to product base price. Modified values shown in color. Empty/0 = default.", ru: "По умолчанию базовая цена. Изменённые выделены цветом. Пусто/0 = по умолчанию." },
+  feeScheduleTitle: { zh: "平台费排期 · 按月调整", en: "Fee Schedule · Monthly Fees", ru: "График комиссий · Помесячно" },
+  feeScheduleHint: { zh: "默认继承商品统一平台费。", en: "Defaults to product base platform fee.", ru: "По умолчанию базовая комиссия." },
+  defaultPrice: { zh: "默认", en: "Default", ru: "По умолч." },
+  resetPrices: { zh: "重置售价", en: "Reset Prices", ru: "Сброс цен" },
+  resetFees: { zh: "重置平台费", en: "Reset Fees", ru: "Сброс комиссий" },
+  priceLabel: { zh: "售价₽", en: "Price₽", ru: "Цена₽" },
+  feeLabel: { zh: "平台费₽", en: "Fee₽", ru: "Комиссия₽" },
+
   // === Help Panel ===
   helpTitle: { zh: "2026年俄罗斯税制要点", en: "2026 Russian Tax Reform", ru: "Налоговая реформа РФ 2026" },
   helpPractical: { zh: "跨境电商实务", en: "Cross-border E-commerce Tips", ru: "Практика кросс-бордер" },

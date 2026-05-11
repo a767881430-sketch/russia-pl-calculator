@@ -219,7 +219,21 @@ const VAT_TIER = (cumRevenue) => {
   return { rate: 0.22, label: "VAT 22% (OSN)", tier: 3 };
 };
 
-const calcProjection = (products, params, projection, store) => {
+// 获取某月的售价/平台费，未设置则用默认值
+const getPriceForMonth = (productId, monthIdx, defaultVal, priceStore) => {
+  const entry = priceStore?.[productId];
+  if (!entry?.list) return defaultVal;
+  const v = entry.list[monthIdx];
+  return (v && v > 0) ? v : defaultVal;
+};
+const getFeeForMonth = (productId, monthIdx, defaultVal, priceStore) => {
+  const entry = priceStore?.[productId];
+  if (!entry?.fee) return defaultVal;
+  const v = entry.fee[monthIdx];
+  return (v && v > 0) ? v : defaultVal;
+};
+
+const calcProjection = (products, params, projection, store, priceStore = {}) => {
   const { monthsHorizon, partnerSharePct, monthlyFixedCost, autoVATEscalation, priorYearRevenue } = projection;
   const months = [];
 
@@ -263,11 +277,14 @@ const calcProjection = (products, params, projection, store) => {
       soldQty += q;
       const unitCost = (p.priceCNY || 0) * params.exchangeRate + params.shippingPerUnit + params.labelingPerUnit;
       const declaredUnit = declaredCNY * params.exchangeRate + params.shippingPerUnit + params.labelingPerUnit;
-      revenue += q * ((p.list || 0) - (p.platformFee || 0));
+      // 按月取售价/平台费
+      const monthList = getPriceForMonth(p.id, m - 1, p.list || 0, priceStore);
+      const monthFee = getFeeForMonth(p.id, m - 1, p.platformFee || 0, priceStore);
+      revenue += q * (monthList - monthFee);
       cogs += q * unitCost;
       declaredCogs += q * declaredUnit;
       expenses += q * ((p.warehouse || 0) + (p.mgmt || 0));
-      listSum += q * (p.list || 0);
+      listSum += q * monthList;
     }
 
     cumRevenue += revenue;
@@ -508,6 +525,7 @@ function AppContent({ lang, setLang }) {
   const [params, setParams] = useState(DEFAULT_PARAMS);
   const [products, setProducts] = useState(SAMPLE_PRODUCTS);
   const [scheduleStore, setScheduleStore] = useState({});
+  const [priceScheduleStore, setPriceScheduleStore] = useState({});
   const [projection, setProjection] = useState(DEFAULT_PROJECTION);
   const [tab, setTab] = useState("dashboard");
   const [expandedRow, setExpandedRow] = useState(null);
@@ -542,6 +560,7 @@ function AppContent({ lang, setLang }) {
         if (parsed.params) setParams({ ...DEFAULT_PARAMS, ...parsed.params });
         if (Array.isArray(parsed.products)) setProducts(parsed.products);
         if (parsed.scheduleStore) setScheduleStore(parsed.scheduleStore);
+        if (parsed.priceScheduleStore) setPriceScheduleStore(parsed.priceScheduleStore);
         if (parsed.projection) setProjection({ ...DEFAULT_PROJECTION, ...parsed.projection });
         setStorageStatus(t("loadedLocal"));
         setTimeout(() => setStorageStatus(""), 2200);
@@ -554,14 +573,14 @@ function AppContent({ lang, setLang }) {
   useEffect(() => {
     if (!loaded) return;
     try {
-      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, projection }));
+      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, projection }));
     } catch (e) {}
-  }, [params, products, scheduleStore, projection, loaded]);
+  }, [params, products, scheduleStore, priceScheduleStore, projection, loaded]);
 
   const saveToCloud = () => {
     setStorageBusy(true);
     try {
-      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, projection }));
+      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, projection }));
       setStorageStatus(t("saved"));
     } catch (e) { setStorageStatus(t("saveFail")); }
     finally { setStorageBusy(false); setTimeout(() => setStorageStatus(""), 2200); }
@@ -593,8 +612,8 @@ function AppContent({ lang, setLang }) {
     return a;
   }, [calcs, params.oneTimeCosts, params.exchangeRate]);
 
-  const proj = useMemo(() => calcProjection(products, params, projection, scheduleStore),
-    [products, params, projection, scheduleStore]);
+  const proj = useMemo(() => calcProjection(products, params, projection, scheduleStore, priceScheduleStore),
+    [products, params, projection, scheduleStore, priceScheduleStore]);
 
   const updateProduct = (idx, field, val) => {
     const oldId = products[idx]?.id;
@@ -767,7 +786,9 @@ function AppContent({ lang, setLang }) {
         {tab === "products" && <ProductsTab calcs={calcs} expandedRow={expandedRow} setExpandedRow={setExpandedRow}
           onUpdate={updateProduct} onDelete={deleteProduct} onAdd={addProduct} onClear={clearAllProducts} params={params} t={t} lang={lang} fmt={fmt} />}
         {tab === "schedule" && <ScheduleTab products={products} projection={projection} setProjection={setProjection}
-          scheduleStore={scheduleStore} updateSchedule={updateSchedule} applyCurve={applyScheduleCurve} t={t} lang={lang} />}
+          scheduleStore={scheduleStore} updateSchedule={updateSchedule} applyCurve={applyScheduleCurve}
+          priceScheduleStore={priceScheduleStore} setPriceScheduleStore={setPriceScheduleStore}
+          t={t} lang={lang} />}
         {tab === "projection" && <ProjectionTab proj={proj} projection={projection} setProjection={setProjection}
           params={params} totals={totals} t={t} lang={lang} fmt={fmt} />}
         {tab === "settings" && <SettingsTab params={params} setParams={setParams} t={t} lang={lang}
@@ -1242,13 +1263,66 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
 };
 
 // ============================================================
-// 销售排期 Tab
+// 销售排期 Tab（含售价/平台费排期）
 // ============================================================
-const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updateSchedule, applyCurve, t, lang }) => {
+const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updateSchedule, applyCurve,
+  priceScheduleStore, setPriceScheduleStore, t, lang }) => {
   const months = projection.monthsHorizon;
   const totalAllProducts = products.reduce((a, b) => a + (b.qty || 0), 0);
+
+  // 更新某SKU某月的售价
+  const updatePrice = (productId, monthIdx, val) => {
+    setPriceScheduleStore(s => {
+      const entry = { ...(s[productId] || {}) };
+      const arr = [...(entry.list || Array(months).fill(0))];
+      while (arr.length < months) arr.push(0);
+      arr[monthIdx] = Math.max(0, val);
+      entry.list = arr;
+      return { ...s, [productId]: entry };
+    });
+  };
+
+  // 更新某SKU某月的平台费
+  const updateFee = (productId, monthIdx, val) => {
+    setPriceScheduleStore(s => {
+      const entry = { ...(s[productId] || {}) };
+      const arr = [...(entry.fee || Array(months).fill(0))];
+      while (arr.length < months) arr.push(0);
+      arr[monthIdx] = Math.max(0, val);
+      entry.fee = arr;
+      return { ...s, [productId]: entry };
+    });
+  };
+
+  // 重置所有售价排期
+  const resetPrices = () => {
+    setPriceScheduleStore(s => {
+      const next = { ...s };
+      for (const id of Object.keys(next)) {
+        if (next[id]) next[id] = { ...next[id], list: undefined };
+      }
+      return next;
+    });
+  };
+
+  // 重置所有平台费排期
+  const resetFees = () => {
+    setPriceScheduleStore(s => {
+      const next = { ...s };
+      for (const id of Object.keys(next)) {
+        if (next[id]) next[id] = { ...next[id], fee: undefined };
+      }
+      return next;
+    });
+  };
+
+  // 折叠状态
+  const [showPriceSchedule, setShowPriceSchedule] = useState(false);
+  const [showFeeSchedule, setShowFeeSchedule] = useState(false);
+
   return (
-    <div className="space-y-4 anim-in">
+    <div className="space-y-6 anim-in">
+      {/* 销量排期标题 + 预测月数选择 */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="font-display text-2xl font-semibold">{t("scheduleTitle")}</h2>
@@ -1264,6 +1338,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
         </div>
       </div>
 
+      {/* 销量分配快捷按钮 */}
       <div className="flex flex-wrap gap-2 items-center text-xs" style={{ color: COLORS.inkSoft }}>
         <Sparkles size={12} />
         <button onClick={() => applyCurve("linear")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>{t("linearDist")}</button>
@@ -1272,6 +1347,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
         <button onClick={() => applyCurve("reset")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white", color: COLORS.crimson }}>{t("resetDist")}</button>
       </div>
 
+      {/* ===== 销量排期表格 ===== */}
       <div className="border overflow-x-auto" style={{ borderColor: COLORS.line, background: "white" }}>
         <table className="w-full text-xs">
           <thead style={{ background: COLORS.paper }}>
@@ -1323,6 +1399,130 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
             </tr>
           </tfoot>
         </table>
+      </div>
+
+      {/* ===== 售价排期表格（可折叠） ===== */}
+      <div className="border" style={{ borderColor: COLORS.line, background: "white" }}>
+        <button
+          onClick={() => setShowPriceSchedule(!showPriceSchedule)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left"
+          style={{ background: COLORS.paper }}
+        >
+          <div className="flex items-center gap-2">
+            {showPriceSchedule ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            <div>
+              <span className="font-display font-semibold text-sm">{t("priceScheduleTitle")}</span>
+              <span className="text-[10px] ml-2" style={{ color: COLORS.inkSoft }}>{t("priceScheduleHint")}</span>
+            </div>
+          </div>
+          {showPriceSchedule && (
+            <button onClick={(e) => { e.stopPropagation(); resetPrices(); }}
+              className="px-2 py-1 text-[11px] border" style={{ borderColor: COLORS.crimson, color: COLORS.crimson }}>
+              {t("resetPrices")}
+            </button>
+          )}
+        </button>
+        {showPriceSchedule && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead style={{ background: COLORS.paper }}>
+                <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
+                  <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: "120px" }}>{t("sku")}</th>
+                  <th className="text-right p-2" style={{ minWidth: "60px" }}>{t("defaultPrice")}</th>
+                  {Array.from({ length: months }, (_, i) => (
+                    <th key={i} className="text-center p-2 font-mono" style={{ minWidth: "70px" }}>{t("monthLabel")}{i + 1}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {products.map(p => {
+                  const entry = priceScheduleStore[p.id];
+                  const listArr = entry?.list || [];
+                  return (
+                    <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
+                      <td className="p-2 font-mono sticky left-0 z-10" style={{ background: "white" }}>{p.id}</td>
+                      <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{(p.list || 0).toLocaleString("ru-RU")}</td>
+                      {Array.from({ length: months }, (_, i) => {
+                        const v = listArr[i] || 0;
+                        const isCustom = v > 0 && v !== (p.list || 0);
+                        return (
+                          <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
+                            <input type="number" value={v || ""} min="0"
+                              placeholder={String(p.list || 0)}
+                              onChange={(e) => updatePrice(p.id, i, parseInt(e.target.value) || 0)}
+                              style={{ color: isCustom ? COLORS.oxblood : undefined, fontWeight: isCustom ? 600 : undefined }} />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ===== 平台费排期表格（可折叠） ===== */}
+      <div className="border" style={{ borderColor: COLORS.line, background: "white" }}>
+        <button
+          onClick={() => setShowFeeSchedule(!showFeeSchedule)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left"
+          style={{ background: COLORS.paper }}
+        >
+          <div className="flex items-center gap-2">
+            {showFeeSchedule ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            <div>
+              <span className="font-display font-semibold text-sm">{t("feeScheduleTitle")}</span>
+              <span className="text-[10px] ml-2" style={{ color: COLORS.inkSoft }}>{t("feeScheduleHint")}</span>
+            </div>
+          </div>
+          {showFeeSchedule && (
+            <button onClick={(e) => { e.stopPropagation(); resetFees(); }}
+              className="px-2 py-1 text-[11px] border" style={{ borderColor: COLORS.crimson, color: COLORS.crimson }}>
+              {t("resetFees")}
+            </button>
+          )}
+        </button>
+        {showFeeSchedule && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead style={{ background: COLORS.paper }}>
+                <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
+                  <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: "120px" }}>{t("sku")}</th>
+                  <th className="text-right p-2" style={{ minWidth: "60px" }}>{t("defaultPrice")}</th>
+                  {Array.from({ length: months }, (_, i) => (
+                    <th key={i} className="text-center p-2 font-mono" style={{ minWidth: "70px" }}>{t("monthLabel")}{i + 1}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {products.map(p => {
+                  const entry = priceScheduleStore[p.id];
+                  const feeArr = entry?.fee || [];
+                  return (
+                    <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
+                      <td className="p-2 font-mono sticky left-0 z-10" style={{ background: "white" }}>{p.id}</td>
+                      <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{(p.platformFee || 0).toLocaleString("ru-RU")}</td>
+                      {Array.from({ length: months }, (_, i) => {
+                        const v = feeArr[i] || 0;
+                        const isCustom = v > 0 && v !== (p.platformFee || 0);
+                        return (
+                          <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
+                            <input type="number" value={v || ""} min="0"
+                              placeholder={String(p.platformFee || 0)}
+                              onChange={(e) => updateFee(p.id, i, parseInt(e.target.value) || 0)}
+                              style={{ color: isCustom ? COLORS.gold : undefined, fontWeight: isCustom ? 600 : undefined }} />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
