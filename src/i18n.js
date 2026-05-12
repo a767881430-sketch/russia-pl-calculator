@@ -175,6 +175,7 @@ const DICT = {
   thOwner: { zh: "自己", en: "Owner", ru: "Владелец" },
   thCashFlow: { zh: "现金流", en: "Cash Flow", ru: "Кэш" },
   thCumCash: { zh: "累计现金", en: "Cum. Cash", ru: "Накоп. кэш" },
+  thDamageLoss: { zh: "货损", en: "Damage", ru: "Потери" },
   initialRow: { zh: "初始（备货）", en: "Initial (Stock)", ru: "Начальные" },
 
   // === Settings Tab ===

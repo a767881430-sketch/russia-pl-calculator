@@ -326,7 +326,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
   let triggeredRate = 0; // 一旦触发就锁定到该年度结束
 
   for (let m = 1; m <= monthsHorizon; m++) {
-    let revenue = 0, cogs = 0, declaredCogs = 0, expenses = 0;
+    let revenue = 0, cogs = 0, declaredCogs = 0, expenses = 0, damageLoss = 0;
     let soldQty = 0, listSum = 0;
     let monthRestockQty = 0, monthRestockCost = 0;
 
@@ -347,6 +347,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
       declaredCogs += q * declaredUnit;
       expenses += qSellable * ((p.warehouse || 0) + (p.mgmt || 0)); // 仓费管理费按可售算
       listSum += qSellable * monthList;
+      damageLoss += q * params.damageRate * unitCost; // 货损 = 损坏数量 × 单位成本
 
       // 补货：读取该月补货数量，更新库存
       const rSched = getRestockSchedule(p.id, p.qty || 0, monthsHorizon, restockStore);
@@ -447,7 +448,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
     cumCash += cashFlow;
 
     months.push({
-      monthIdx: m, label: `M${m}`, revenue, cogs, expenses, fixedCost, grossProfit,
+      monthIdx: m, label: `M${m}`, revenue, cogs, expenses, fixedCost, grossProfit, damageLoss,
       tax, vatRemit, netProfit, distributed, partnerPayout, ownerPayout, cashFlow, cumCash, soldQty, isInitial: false,
       effectiveScheme, vatTierKey, cumRevenue, vatRate: params.vatRate,
       restockQty: monthRestockQty, restockCost: monthRestockCost, stockEnd, stockWarning,
@@ -2631,7 +2632,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
           <br />· <strong>{t("projCashLabel")}</strong> {t("projCashDesc")}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs" style={{ minWidth: "1550px" }}>
+          <table className="w-full text-xs" style={{ minWidth: "1650px" }}>
             <thead style={{ background: COLORS.paper }}>
               <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
                 <th className="text-left p-2">{t("thMonth")}</th>
@@ -2644,6 +2645,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
                 <th className="text-right p-2">{t("thWhMgmt")}</th>
                 <th className="text-right p-2">{t("thFixedCost")}</th>
                 <th className="text-right p-2">{t("thTax")}</th>
+                <th className="text-right p-2" style={{ color: COLORS.crimson }}>{t("thDamageLoss")}</th>
                 <th className="text-right p-2 border-l" style={{ borderColor: COLORS.line }}>{t("thMonthlyNet")}</th>
                 <th className="text-right p-2" style={{ color: COLORS.gold }}>{t("thDistributed")}</th>
                 <th className="text-right p-2">{t("thPartner")}</th>
@@ -2674,6 +2676,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
                   <td className="p-2 text-right font-mono">{m.expenses ? F(m.expenses) : "—"}</td>
                   <td className="p-2 text-right font-mono">{m.fixedCost ? F(m.fixedCost) : "—"}</td>
                   <td className="p-2 text-right font-mono" style={{ color: m.tax > 0 ? COLORS.crimson : COLORS.inkSoft }}>{m.tax ? F(m.tax) : "—"}</td>
+                  <td className="p-2 text-right font-mono" style={{ color: COLORS.crimson }}>{m.damageLoss ? F(m.damageLoss) : "—"}</td>
                   <td className="p-2 text-right font-mono font-semibold border-l" style={{ borderColor: COLORS.line, color: m.netProfit >= 0 ? COLORS.emerald : COLORS.crimson }}>
                     {F(m.netProfit)}
                   </td>
@@ -2701,6 +2704,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
                 <td className="p-2 text-right font-mono">{F(proj.totalRevenue)}</td>
                 <td colSpan={3}></td>
                 <td className="p-2 text-right font-mono" style={{ color: COLORS.crimson }}>{F(proj.totalTax)}</td>
+                <td className="p-2 text-right font-mono" style={{ color: COLORS.crimson }}>{F(proj.months.filter(m => !m.isInitial).reduce((a, b) => a + (b.damageLoss || 0), 0))}</td>
                 <td className="p-2 text-right font-mono border-l" style={{ borderColor: COLORS.line, color: proj.totalNetProfit >= 0 ? COLORS.emerald : COLORS.crimson }}>
                   {F(proj.totalNetProfit)}
                 </td>
