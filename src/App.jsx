@@ -208,12 +208,13 @@ const calcProduct = (p, params) => {
 
   const netProfit = totalRevenue - expenses - tax;
   const bookNetProfit = totalRevenue - (totalDeclaredCost + totalWarehouse + totalMgmt) - tax;
-  const profitMargin = totalRevenue > 0 ? netProfit / totalRevenue : 0;
+  const totalGMV = (p.list || 0) * effectiveQty;
+  const profitMargin = totalGMV > 0 ? netProfit / totalGMV : 0;
   const roi = totalInvestment > 0 ? netProfit / totalInvestment : 0;
 
   return {
     priceRUB, declaredRUB, unitCost, declaredUnitCost, totalInvestment, totalDeclaredCost,
-    unitPayout, effectiveQty, totalRevenue, totalWarehouse, totalMgmt,
+    unitPayout, effectiveQty, totalRevenue, totalGMV, totalWarehouse, totalMgmt,
     totalInputVAT, totalOutputVAT, expenses, profitBeforeTax,
     tax, vatPart, usnPart, profitTaxPart,
     netProfit, bookNetProfit, profitMargin, roi,
@@ -627,7 +628,7 @@ function AppContent({ lang, setLang }) {
   const calcs = useMemo(() => products.map(p => ({ ...p, c: calcProduct(p, params) })), [products, params]);
 
   const totals = useMemo(() => {
-    const a = { qty: 0, totalInvestment: 0, totalDeclaredCost: 0, totalRevenue: 0, totalWarehouse: 0, totalMgmt: 0,
+    const a = { qty: 0, totalInvestment: 0, totalDeclaredCost: 0, totalRevenue: 0, totalGMV: 0, totalWarehouse: 0, totalMgmt: 0,
       tax: 0, vatPart: 0, usnPart: 0, profitTaxPart: 0, totalInputVAT: 0, totalOutputVAT: 0,
       netProfit: 0, bookNetProfit: 0, profitBeforeTax: 0 };
     for (const r of calcs) {
@@ -635,6 +636,7 @@ function AppContent({ lang, setLang }) {
       a.totalInvestment += r.c.totalInvestment;
       a.totalDeclaredCost += r.c.totalDeclaredCost;
       a.totalRevenue += r.c.totalRevenue;
+      a.totalGMV += r.c.totalGMV;
       a.totalWarehouse += r.c.totalWarehouse;
       a.totalMgmt += r.c.totalMgmt;
       a.tax += r.c.tax; a.vatPart += r.c.vatPart; a.usnPart += r.c.usnPart; a.profitTaxPart += r.c.profitTaxPart;
@@ -644,7 +646,7 @@ function AppContent({ lang, setLang }) {
     a.netProfit -= params.oneTimeCosts;
     a.bookNetProfit -= params.oneTimeCosts;
     a.totalCostBasis = a.totalInvestment + params.oneTimeCosts;
-    a.profitMargin = a.totalRevenue > 0 ? a.netProfit / a.totalRevenue : 0;
+    a.profitMargin = a.totalGMV > 0 ? a.netProfit / a.totalGMV : 0;
     a.roi = a.totalCostBasis > 0 ? a.netProfit / a.totalCostBasis : 0;
     a.netProfitCNY = a.netProfit / params.exchangeRate;
     return a;
