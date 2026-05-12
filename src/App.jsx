@@ -71,7 +71,7 @@ const hasImportVATInvoice = (product) => {
 };
 
 const DEFAULT_PROJECTION = {
-  monthsHorizon: 8, partnerSharePct: 0, monthlyFixedCost: 0,
+  monthsHorizon: 8, partnerSharePct: 0, withdrawalPct: 100, monthlyFixedCost: 0,
   autoVATEscalation: true,    // 自动按累计营收触发VAT
   priorYearRevenue: 0,        // 进入本预测期前的累计营收（如已经卖了一段时间）
 };
@@ -272,7 +272,7 @@ const getFeeForMonth = (productId, monthIdx, defaultVal, priceStore) => {
 };
 
 const calcProjection = (products, params, projection, store, priceStore = {}, restockStore = {}) => {
-  const { monthsHorizon, partnerSharePct, monthlyFixedCost, autoVATEscalation, priorYearRevenue } = projection;
+  const { monthsHorizon, partnerSharePct, withdrawalPct, monthlyFixedCost, autoVATEscalation, priorYearRevenue } = projection;
   const months = [];
 
   // 计算每个产品的单位成本（供补货成本计算用）
@@ -436,7 +436,9 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
     }
 
     const netProfit = grossProfit - tax;
-    const partnerPayout = Math.max(0, netProfit) * (partnerSharePct / 100);
+    // 利润分配：先按提取率提出，再按分润比例分给合伙人
+    const distributed = Math.max(0, netProfit) * ((withdrawalPct ?? 100) / 100);
+    const partnerPayout = distributed * (partnerSharePct / 100);
     // 现金流 = 营收 - 费用 - 税 - 合伙人 - 补货支出
     const cashFlow = revenue - expenses - fixedCost - tax - partnerPayout - monthRestockCost;
     cumCash += cashFlow;
@@ -2435,6 +2437,10 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
           <div>
             <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("partnerShare")}</label>
             <NumInput value={projection.partnerSharePct} onChange={(v) => updateProj("partnerSharePct", Math.max(0, Math.min(100, v)))} suffix="%" step={1} className="mt-1" />
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("withdrawalRate")}</label>
+            <NumInput value={projection.withdrawalPct ?? 100} onChange={(v) => updateProj("withdrawalPct", Math.max(0, Math.min(100, v)))} suffix="%" step={5} className="mt-1" />
           </div>
           <div>
             <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("fixedCost")}</label>
