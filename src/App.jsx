@@ -334,6 +334,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
       const declaredCNY = (p.declaredCNY ?? p.priceCNY) || 0;
       const sched = getSchedule(p.id, p.qty || 0, monthsHorizon, store);
       const q = sched[m - 1] || 0;
+      const qSellable = q * (1 - params.damageRate); // 实际可售 = 排期数量 × (1 - 货损率)
       soldQty += q;
       const unitCost = productUnitCosts[p.id];
       const shipPerUnit = calcShipping(p, params);
@@ -341,11 +342,11 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
       // 按月取售价/平台费
       const monthList = getPriceForMonth(p.id, m - 1, p.list || 0, priceStore);
       const monthFee = getFeeForMonth(p.id, m - 1, p.platformFee || 0, priceStore);
-      revenue += q * (monthList - monthFee);
-      cogs += q * unitCost;
+      revenue += qSellable * (monthList - monthFee); // 只有可售的才产生收入
+      cogs += q * unitCost; // 全部数量都花了钱（含货损部分）
       declaredCogs += q * declaredUnit;
-      expenses += q * ((p.warehouse || 0) + (p.mgmt || 0));
-      listSum += q * monthList;
+      expenses += qSellable * ((p.warehouse || 0) + (p.mgmt || 0)); // 仓费管理费按可售算
+      listSum += qSellable * monthList;
 
       // 补货：读取该月补货数量，更新库存
       const rSched = getRestockSchedule(p.id, p.qty || 0, monthsHorizon, restockStore);
