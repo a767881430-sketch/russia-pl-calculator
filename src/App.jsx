@@ -71,7 +71,7 @@ const hasImportVATInvoice = (product) => {
 };
 
 const DEFAULT_PROJECTION = {
-  monthsHorizon: 8, partnerSharePct: 0, withdrawalPct: 100, monthlyFixedCost: 0,
+  monthsHorizon: 8, partnerSharePct: 50, monthlyFixedCost: 0,
   autoVATEscalation: true,    // 自动按累计营收触发VAT
   priorYearRevenue: 0,        // 进入本预测期前的累计营收（如已经卖了一段时间）
 };
@@ -271,8 +271,8 @@ const getFeeForMonth = (productId, monthIdx, defaultVal, priceStore) => {
   return (v && v > 0) ? v : defaultVal;
 };
 
-const calcProjection = (products, params, projection, store, priceStore = {}, restockStore = {}) => {
-  const { monthsHorizon, partnerSharePct, withdrawalPct, monthlyFixedCost, autoVATEscalation, priorYearRevenue } = projection;
+const calcProjection = (products, params, projection, store, priceStore = {}, restockStore = {}, withdrawalStore = {}) => {
+  const { monthsHorizon, partnerSharePct, monthlyFixedCost, autoVATEscalation, priorYearRevenue } = projection;
   const months = [];
 
   // 计算每个产品的单位成本（供补货成本计算用）
@@ -436,8 +436,9 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
     }
 
     const netProfit = grossProfit - tax;
-    // 利润分配：先按提取率提出，再按分润比例分给合伙人
-    const distributed = Math.max(0, netProfit) * ((withdrawalPct ?? 100) / 100);
+    // 利润分配：按用户指定的每月提取金额，再按分润比例分给合伙人
+    const withdrawalAmount = (withdrawalStore?.amounts?.[m - 1]) || 0;
+    const distributed = Math.min(withdrawalAmount, Math.max(0, netProfit)); // 不能超过当月净利
     const partnerPayout = distributed * (partnerSharePct / 100);
     // 现金流 = 营收 - 费用 - 税 - 合伙人 - 补货支出
     const cashFlow = revenue - expenses - fixedCost - tax - partnerPayout - monthRestockCost;
@@ -612,6 +613,7 @@ function AppContent({ lang, setLang }) {
   const [scheduleStore, setScheduleStore] = useState({});
   const [priceScheduleStore, setPriceScheduleStore] = useState({});
   const [restockStore, setRestockStore] = useState({});
+  const [withdrawalStore, setWithdrawalStore] = useState({ amounts: [] });
   const [projection, setProjection] = useState(DEFAULT_PROJECTION);
   const [tab, setTab] = useState("dashboard");
   const [expandedRow, setExpandedRow] = useState(null);
@@ -648,6 +650,7 @@ function AppContent({ lang, setLang }) {
         if (parsed.scheduleStore) setScheduleStore(parsed.scheduleStore);
         if (parsed.priceScheduleStore) setPriceScheduleStore(parsed.priceScheduleStore);
         if (parsed.restockStore) setRestockStore(parsed.restockStore);
+        if (parsed.withdrawalStore) setWithdrawalStore(parsed.withdrawalStore);
         if (parsed.projection) setProjection({ ...DEFAULT_PROJECTION, ...parsed.projection });
         setStorageStatus(t("loadedLocal"));
         setTimeout(() => setStorageStatus(""), 2200);
@@ -660,14 +663,14 @@ function AppContent({ lang, setLang }) {
   useEffect(() => {
     if (!loaded) return;
     try {
-      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, restockStore, projection }));
+      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection }));
     } catch (e) {}
-  }, [params, products, scheduleStore, priceScheduleStore, restockStore, projection, loaded]);
+  }, [params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection, loaded]);
 
   const saveToCloud = () => {
     setStorageBusy(true);
     try {
-      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, restockStore, projection }));
+      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection }));
       setStorageStatus(t("saved"));
     } catch (e) { setStorageStatus(t("saveFail")); }
     finally { setStorageBusy(false); setTimeout(() => setStorageStatus(""), 2200); }
@@ -700,8 +703,8 @@ function AppContent({ lang, setLang }) {
     return a;
   }, [calcs, params.oneTimeCosts, params.exchangeRate]);
 
-  const proj = useMemo(() => calcProjection(products, params, projection, scheduleStore, priceScheduleStore, restockStore),
-    [products, params, projection, scheduleStore, priceScheduleStore, restockStore]);
+  const proj = useMemo(() => calcProjection(products, params, projection, scheduleStore, priceScheduleStore, restockStore, withdrawalStore),
+    [products, params, projection, scheduleStore, priceScheduleStore, restockStore, withdrawalStore]);
 
   const updateProduct = (idx, field, val) => {
     const oldId = products[idx]?.id;
@@ -727,12 +730,12 @@ function AppContent({ lang, setLang }) {
     if (expandedRow === idx) setExpandedRow(null);
   };
   const clearAllProducts = () => {
-    if (confirm(t("confirmClear"))) { setProducts([]); setScheduleStore({}); setRestockStore({}); setExpandedRow(null); }
+    if (confirm(t("confirmClear"))) { setProducts([]); setScheduleStore({}); setRestockStore({}); setWithdrawalStore({ amounts: [] }); setExpandedRow(null); }
   };
   const resetSample = () => {
     if (confirm(t("confirmReset"))) {
       setProducts(SAMPLE_PRODUCTS); setParams(DEFAULT_PARAMS);
-      setProjection(DEFAULT_PROJECTION); setScheduleStore({}); setRestockStore({});
+      setProjection(DEFAULT_PROJECTION); setScheduleStore({}); setRestockStore({}); setWithdrawalStore({ amounts: [] });
     }
   };
 
@@ -1415,6 +1418,7 @@ function AppContent({ lang, setLang }) {
           scheduleStore={scheduleStore} updateSchedule={updateSchedule} applyCurve={applyScheduleCurve}
           priceScheduleStore={priceScheduleStore} setPriceScheduleStore={setPriceScheduleStore}
           restockStore={restockStore} updateRestock={updateRestock} setRestockStore={setRestockStore}
+          withdrawalStore={withdrawalStore} setWithdrawalStore={setWithdrawalStore}
           t={t} lang={lang} />}
         {tab === "projection" && <ProjectionTab proj={proj} projection={projection} setProjection={setProjection}
           params={params} totals={totals} t={t} lang={lang} fmt={fmt} />}
@@ -1936,7 +1940,8 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
 // 销售排期 Tab（含售价/平台费排期）
 // ============================================================
 const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updateSchedule, applyCurve,
-  priceScheduleStore, setPriceScheduleStore, restockStore, updateRestock, setRestockStore, t, lang }) => {
+  priceScheduleStore, setPriceScheduleStore, restockStore, updateRestock, setRestockStore,
+  withdrawalStore, setWithdrawalStore, t, lang }) => {
   const months = projection.monthsHorizon;
   const totalAllProducts = products.reduce((a, b) => a + (b.qty || 0), 0);
 
@@ -1990,6 +1995,16 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
   const [showPriceSchedule, setShowPriceSchedule] = useState(false);
   const [showFeeSchedule, setShowFeeSchedule] = useState(false);
   const [showRestockSchedule, setShowRestockSchedule] = useState(false);
+  const [showWithdrawalSchedule, setShowWithdrawalSchedule] = useState(false);
+
+  const updateWithdrawal = (monthIdx, val) => {
+    setWithdrawalStore(s => {
+      const arr = [...(s.amounts || Array(months).fill(0))];
+      while (arr.length < months) arr.push(0);
+      arr[monthIdx] = Math.max(0, val);
+      return { ...s, amounts: arr };
+    });
+  };
 
   return (
     <div className="space-y-6 anim-in">
@@ -2275,6 +2290,56 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
           </div>
         )}
       </div>
+
+      {/* ===== 分润排期 ===== */}
+      <div className="border" style={{ borderColor: COLORS.line, background: 'white' }}>
+        <button className="w-full text-left p-3 flex items-center justify-between text-sm font-semibold"
+          onClick={() => setShowWithdrawalSchedule(v => !v)} style={{ color: COLORS.ink }}>
+          <span>{t("withdrawalTitle")}</span>
+          <span className="text-[10px] font-mono" style={{ color: COLORS.inkSoft }}>{showWithdrawalSchedule ? '▲' : '▼'}</span>
+        </button>
+        {showWithdrawalSchedule && (
+          <div className="border-t overflow-x-auto" style={{ borderColor: COLORS.line }}>
+            <div className="px-3 py-2 text-xs" style={{ color: COLORS.inkSoft, background: COLORS.paper }}>
+              {t("withdrawalHint")}
+              <button onClick={() => setWithdrawalStore({ amounts: [] })} className="ml-3 px-2 py-0.5 border text-[10px]"
+                style={{ borderColor: COLORS.line, color: COLORS.crimson }}>{t("resetWithdrawal")}</button>
+            </div>
+            <table className="w-full text-xs">
+              <thead style={{ background: COLORS.paper }}>
+                <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
+                  <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: '120px' }}>{t("withdrawalLabel")}</th>
+                  {Array.from({ length: months }, (_, i) => (
+                    <th key={i} className="text-center p-2 font-mono" style={{ minWidth: '80px' }}>{t("monthLabel")}{i + 1}</th>
+                  ))}
+                  <th className="text-right p-2" style={{ minWidth: '80px' }}>{t("total")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
+                  <td className="p-2 font-mono sticky left-0 z-10" style={{ background: 'white' }}>{t("withdrawalAmount")}</td>
+                  {Array.from({ length: months }, (_, i) => {
+                    const v = (withdrawalStore?.amounts?.[i]) || 0;
+                    return (
+                      <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
+                        <input type="number" value={v || 0} min="0" step="1000"
+                          onChange={(e) => updateWithdrawal(i, parseInt(e.target.value) || 0)}
+                          style={{ color: v > 0 ? COLORS.emerald : undefined, fontWeight: v > 0 ? 600 : undefined }} />
+                      </td>
+                    );
+                  })}
+                  <td className="p-2 text-right font-mono font-semibold" style={{ color: COLORS.emerald }}>
+                    {((withdrawalStore?.amounts || []).reduce((a, b) => a + (b || 0), 0)).toLocaleString('ru-RU')}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div className="px-3 py-2 text-[10px]" style={{ color: COLORS.inkSoft, background: COLORS.paper }}>
+              {t("withdrawalSplitNote", { pct: projection.partnerSharePct || 0 })}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -2437,10 +2502,6 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
           <div>
             <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("partnerShare")}</label>
             <NumInput value={projection.partnerSharePct} onChange={(v) => updateProj("partnerSharePct", Math.max(0, Math.min(100, v)))} suffix="%" step={1} className="mt-1" />
-          </div>
-          <div>
-            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("withdrawalRate")}</label>
-            <NumInput value={projection.withdrawalPct ?? 100} onChange={(v) => updateProj("withdrawalPct", Math.max(0, Math.min(100, v)))} suffix="%" step={5} className="mt-1" />
           </div>
           <div>
             <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("fixedCost")}</label>
