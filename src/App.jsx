@@ -334,7 +334,6 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
       const declaredCNY = (p.declaredCNY ?? p.priceCNY) || 0;
       const sched = getSchedule(p.id, p.qty || 0, monthsHorizon, store);
       const q = sched[m - 1] || 0;
-      const qSellable = q * (1 - params.damageRate); // 实际可售 = 排期数量 × (1 - 货损率)
       soldQty += q;
       const unitCost = productUnitCosts[p.id];
       const shipPerUnit = calcShipping(p, params);
@@ -342,12 +341,13 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
       // 按月取售价/平台费
       const monthList = getPriceForMonth(p.id, m - 1, p.list || 0, priceStore);
       const monthFee = getFeeForMonth(p.id, m - 1, p.platformFee || 0, priceStore);
-      revenue += qSellable * (monthList - monthFee); // 只有可售的才产生收入
-      cogs += q * unitCost; // 全部数量都花了钱（含货损部分）
+      const unitPayout = monthList - monthFee;
+      revenue += q * unitPayout; // 100%营收（假设全卖出）
+      damageLoss += q * params.damageRate * unitPayout; // 货损 = 损坏数量 × 单位回款（丢失的收入）
+      cogs += q * unitCost;
       declaredCogs += q * declaredUnit;
-      expenses += qSellable * ((p.warehouse || 0) + (p.mgmt || 0)); // 仓费管理费按可售算
-      listSum += qSellable * monthList;
-      damageLoss += q * params.damageRate * unitCost; // 货损 = 损坏数量 × 单位成本
+      expenses += q * (1 - params.damageRate) * ((p.warehouse || 0) + (p.mgmt || 0));
+      listSum += q * (1 - params.damageRate) * monthList;
 
       // 补货：读取该月补货数量，更新库存
       const rSched = getRestockSchedule(p.id, p.qty || 0, monthsHorizon, restockStore);
@@ -364,10 +364,10 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
       if ((stockByProduct[p.id] || 0) < 0) stockWarning = true;
     }
 
-    cumRevenue += revenue;
+    cumRevenue += (revenue - damageLoss); // 实际收入 = 营收 - 货损
     const fixedCost = monthlyFixedCost || 0;
-    const grossProfit = revenue - cogs - expenses - fixedCost;
-    const incomeBase = params.incomeBasis === "list" ? listSum : revenue;
+    const grossProfit = revenue - damageLoss - cogs - expenses - fixedCost; // 明确扣除货损
+    const incomeBase = params.incomeBasis === "list" ? listSum : (revenue - damageLoss);
 
     // 决定本月用什么税制
     let effectiveScheme = params.taxScheme;
@@ -443,8 +443,8 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
     const distributed = Math.min(withdrawalAmount, Math.max(0, netProfit));
     const partnerPayout = distributed * (partnerSharePct / 100);
     const ownerPayout = distributed - partnerPayout;
-    // 现金流 = 营收 - 费用 - 税 - 合伙人 - 补货支出
-    const cashFlow = revenue - expenses - fixedCost - tax - partnerPayout - monthRestockCost;
+    // 现金流 = 营收 - 货损 - 费用 - 税 - 合伙人 - 补货支出
+    const cashFlow = revenue - damageLoss - expenses - fixedCost - tax - partnerPayout - monthRestockCost;
     cumCash += cashFlow;
 
     months.push({
