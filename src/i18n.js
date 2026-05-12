@@ -54,6 +54,7 @@ const DICT = {
   // === Dashboard Metrics ===
   totalRevenue: { zh: "总营收", en: "Total Revenue", ru: "Общая выручка" },
   totalInvestment: { zh: "总投资", en: "Total Investment", ru: "Инвестиции" },
+  russiaCollections: { zh: "俄罗斯回款", en: "Russia Collections", ru: "Поступления из РФ" },
   cashNetProfit: { zh: "现金净利", en: "Net Profit", ru: "Чистая прибыль" },
   projNetProfit: { zh: "预测净利润", en: "Projected Profit", ru: "Прогноз прибыли" },
   endingCash: { zh: "期末现金", en: "Ending Cash", ru: "Остаток на конец" },
