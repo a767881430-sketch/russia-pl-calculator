@@ -648,20 +648,27 @@ function AppContent({ lang, setLang }) {
     }
   }, [liveRate, liveUsdRate, rateSource]);
 
-  // --- 启动时加载数据：优先从分享链接，其次 localStorage ---
+  // --- 启动时加载数据：优先从分享链接 hash，其次 localStorage ---
   useEffect(() => {
-    const loadFromCloud = async (id) => {
+    const loadShared = async (b64) => {
       try {
-        const res = await fetch(`https://jsonblob.com/api/jsonBlob/${id}`);
-        if (!res.ok) throw new Error('fetch failed');
-        const parsed = await res.json();
-        if (parsed.params) setParams({ ...DEFAULT_PARAMS, ...parsed.params });
-        if (Array.isArray(parsed.products)) setProducts(parsed.products);
-        if (parsed.scheduleStore) setScheduleStore(parsed.scheduleStore);
-        if (parsed.priceScheduleStore) setPriceScheduleStore(parsed.priceScheduleStore);
-        if (parsed.restockStore) setRestockStore(parsed.restockStore);
-        if (parsed.withdrawalStore) setWithdrawalStore(parsed.withdrawalStore);
-        if (parsed.projection) setProjection({ ...DEFAULT_PROJECTION, ...parsed.projection });
+        const bin = atob(decodeURIComponent(b64));
+        const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+        const ds = new DecompressionStream('gzip');
+        const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
+        const json = await decompressed.text();
+        const parsed = JSON.parse(json);
+        // 支持精简格式(p/pr/pj)和完整格式(params/products)
+        const pp = parsed.p || parsed.params;
+        const pr = parsed.pr || parsed.products;
+        if (pp) setParams({ ...DEFAULT_PARAMS, ...pp });
+        if (Array.isArray(pr)) setProducts(pr);
+        if (parsed.ss || parsed.scheduleStore) setScheduleStore(parsed.ss || parsed.scheduleStore);
+        if (parsed.ps || parsed.priceScheduleStore) setPriceScheduleStore(parsed.ps || parsed.priceScheduleStore);
+        if (parsed.rs || parsed.restockStore) setRestockStore(parsed.rs || parsed.restockStore);
+        if (parsed.ws || parsed.withdrawalStore) setWithdrawalStore(parsed.ws || parsed.withdrawalStore);
+        const pj = parsed.pj || parsed.projection;
+        if (pj) setProjection({ ...DEFAULT_PROJECTION, ...pj });
         setStorageStatus(t("loadedShare"));
         setTimeout(() => setStorageStatus(""), 3000);
         window.history.replaceState(null, '', window.location.pathname);
@@ -674,10 +681,7 @@ function AppContent({ lang, setLang }) {
     };
 
     const hash = window.location.hash;
-    if (hash.startsWith('#s=')) {
-      loadFromCloud(hash.slice(3));
-      return;
-    }
+    if (hash.startsWith('#share=')) { loadShared(hash.slice(7)); return; }
 
     // Fallback: localStorage
     try {
@@ -715,22 +719,32 @@ function AppContent({ lang, setLang }) {
     finally { setStorageBusy(false); setTimeout(() => setStorageStatus(""), 2200); }
   };
 
-  // === 分享链接：上传状态到 jsonblob.com，生成短链接 ===
+  // === 分享链接：压缩精简后的状态到 URL hash ===
   const shareLink = async () => {
     try {
-      setStorageStatus(t("shareUploading"));
-      const data = { params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection };
-      const res = await fetch('https://jsonblob.com/api/jsonBlob', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(data),
+      // 精简数据：去掉默认值参数，去掉空 store，缩短产品字段名
+      const minParams = {};
+      for (const [k, v] of Object.entries(params)) {
+        if (v !== DEFAULT_PARAMS[k]) minParams[k] = v;
+      }
+      const minProducts = products.map(p => {
+        const mp = {};
+        for (const [k, v] of Object.entries(p)) { if (v !== 0 && v !== '' && v != null) mp[k] = v; }
+        return mp;
       });
-      if (!res.ok) throw new Error('upload failed');
-      // jsonblob returns the URL in the Location header
-      const loc = res.headers.get('Location') || '';
-      const id = loc.split('/').pop();
-      if (!id) throw new Error('no id returned');
-      const url = `${window.location.origin}${window.location.pathname}#s=${id}`;
+      const compact = { p: minParams, pr: minProducts, pj: projection };
+      if (Object.keys(scheduleStore).length) compact.ss = scheduleStore;
+      if (Object.keys(priceScheduleStore).length) compact.ps = priceScheduleStore;
+      if (Object.keys(restockStore).length) compact.rs = restockStore;
+      if (withdrawalStore?.amounts?.some(v => v > 0)) compact.ws = withdrawalStore;
+
+      const data = JSON.stringify(compact);
+      const blob = new Blob([data]);
+      const cs = new CompressionStream('gzip');
+      const compressedBlob = await new Response(blob.stream().pipeThrough(cs)).blob();
+      const buf = await compressedBlob.arrayBuffer();
+      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+      const url = `${window.location.origin}${window.location.pathname}#share=${encodeURIComponent(b64)}`;
       await navigator.clipboard.writeText(url);
       setStorageStatus(t("shareCopied"));
       setTimeout(() => setStorageStatus(""), 3000);
