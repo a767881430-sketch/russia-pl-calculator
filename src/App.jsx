@@ -743,7 +743,13 @@ function AppContent({ lang, setLang }) {
       const cs = new CompressionStream('gzip');
       const compressedBlob = await new Response(blob.stream().pipeThrough(cs)).blob();
       const buf = await compressedBlob.arrayBuffer();
-      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+      // 分块转 base64，避免 spread 爆栈
+      const bytes = new Uint8Array(buf);
+      let binStr = '';
+      for (let i = 0; i < bytes.length; i += 8192) {
+        binStr += String.fromCharCode(...bytes.subarray(i, i + 8192));
+      }
+      const b64 = btoa(binStr);
       const url = `${window.location.origin}${window.location.pathname}#share=${encodeURIComponent(b64)}`;
       await navigator.clipboard.writeText(url);
       setStorageStatus(t("shareCopied"));
