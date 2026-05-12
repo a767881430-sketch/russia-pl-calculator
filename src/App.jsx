@@ -2103,6 +2103,95 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
         </table>
       </div>
 
+      {/* ===== 补货排期 ===== */}
+      <div className="border" style={{ borderColor: COLORS.line, background: 'white' }}>
+        <button
+          onClick={() => setShowRestockSchedule(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left"
+          style={{ background: COLORS.paper }}
+        >
+          <div className="flex items-center gap-2">
+            {showRestockSchedule ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            <div>
+              <span className="font-display font-semibold text-sm">{t("restockTitle")}</span>
+              <span className="text-[10px] ml-2" style={{ color: COLORS.inkSoft }}>{t("restockHint")}</span>
+            </div>
+          </div>
+          {showRestockSchedule && (
+            <button onClick={(e) => { e.stopPropagation(); setRestockStore({}); }}
+              className="px-2 py-1 text-[11px] border" style={{ borderColor: COLORS.crimson, color: COLORS.crimson }}>
+              {t("resetRestock")}
+            </button>
+          )}
+        </button>
+        {showRestockSchedule && (
+          <div className="border-t overflow-x-auto" style={{ borderColor: COLORS.line }}>
+            <table className="w-full text-xs">
+              <thead style={{ background: COLORS.paper }}>
+                <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
+                  <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: '120px' }}>{t("sku")}</th>
+                  <th className="text-center p-2" style={{ minWidth: '60px', color: COLORS.oxblood }}>{t("initialBatch")}</th>
+                  {Array.from({ length: months }, (_, i) => (
+                    <th key={i} className="text-center p-2 font-mono" style={{ minWidth: '60px' }}>{t("monthLabel")}{i + 1}</th>
+                  ))}
+                  <th className="text-right p-2" style={{ minWidth: '70px' }}>{t("totalPurchased")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map(p => {
+                  const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
+                  const totalPurchased = rSched.reduce((a, b) => a + (b || 0), 0);
+                  return (
+                    <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
+                      <td className="p-2 font-mono sticky left-0 z-10" style={{ background: 'white' }}>{p.id}</td>
+                      <td className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line, background: 'rgba(164,25,61,0.04)' }}>
+                        <input type="number" value={rSched[0] || 0} min="0"
+                          onChange={(e) => updateRestock(p.id, 0, parseInt(e.target.value) || 0)}
+                          style={{ color: COLORS.oxblood, fontWeight: 600 }} />
+                      </td>
+                      {Array.from({ length: months }, (_, i) => {
+                        const v = rSched[i + 1] || 0;
+                        return (
+                          <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
+                            <input type="number" value={v || 0} min="0"
+                              onChange={(e) => updateRestock(p.id, i + 1, parseInt(e.target.value) || 0)}
+                              style={{ color: v > 0 ? COLORS.emerald : undefined, fontWeight: v > 0 ? 600 : undefined }} />
+                          </td>
+                        );
+                      })}
+                      <td className="p-2 text-right font-mono font-semibold" style={{ color: COLORS.ink }}>
+                        {totalPurchased}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot style={{ background: COLORS.paper }}>
+                <tr className="font-semibold">
+                  <td className="p-2 sticky left-0" style={{ background: COLORS.paper }}>{t("total")}</td>
+                  <td className="p-2 text-center font-mono" style={{ color: COLORS.oxblood }}>
+                    {products.reduce((acc, p) => acc + ((restockStore[p.id] || [p.qty || 0])[0] || 0), 0)}
+                  </td>
+                  {Array.from({ length: months }, (_, i) => {
+                    const sum = products.reduce((acc, p) => {
+                      const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
+                      return acc + (rSched[i + 1] || 0);
+                    }, 0);
+                    return <td key={i} className="p-2 text-center font-mono" style={{ color: sum > 0 ? COLORS.emerald : undefined }}>{sum}</td>;
+                  })}
+                  <td className="p-2 text-right font-mono">
+                    {products.reduce((acc, p) => {
+                      const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
+                      return acc + rSched.reduce((a, b) => a + (b || 0), 0);
+                    }, 0)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* ===== 售价排期表格（可折叠） ===== */}
       <div className="border" style={{ borderColor: COLORS.line, background: "white" }}>
         <button
@@ -2227,94 +2316,6 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
         )}
       </div>
 
-      {/* ===== 补货排期 ===== */}
-      <div className="border" style={{ borderColor: COLORS.line, background: 'white' }}>
-        <button
-          onClick={() => setShowRestockSchedule(v => !v)}
-          className="w-full flex items-center justify-between px-4 py-3 text-left"
-          style={{ background: COLORS.paper }}
-        >
-          <div className="flex items-center gap-2">
-            {showRestockSchedule ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            <div>
-              <span className="font-display font-semibold text-sm">{t("restockTitle")}</span>
-              <span className="text-[10px] ml-2" style={{ color: COLORS.inkSoft }}>{t("restockHint")}</span>
-            </div>
-          </div>
-          {showRestockSchedule && (
-            <button onClick={(e) => { e.stopPropagation(); setRestockStore({}); }}
-              className="px-2 py-1 text-[11px] border" style={{ borderColor: COLORS.crimson, color: COLORS.crimson }}>
-              {t("resetRestock")}
-            </button>
-          )}
-        </button>
-        {showRestockSchedule && (
-          <div className="border-t overflow-x-auto" style={{ borderColor: COLORS.line }}>
-            <table className="w-full text-xs">
-              <thead style={{ background: COLORS.paper }}>
-                <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
-                  <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: '120px' }}>{t("sku")}</th>
-                  <th className="text-center p-2" style={{ minWidth: '60px', color: COLORS.oxblood }}>{t("initialBatch")}</th>
-                  {Array.from({ length: months }, (_, i) => (
-                    <th key={i} className="text-center p-2 font-mono" style={{ minWidth: '60px' }}>{t("monthLabel")}{i + 1}</th>
-                  ))}
-                  <th className="text-right p-2" style={{ minWidth: '70px' }}>{t("totalPurchased")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map(p => {
-                  const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
-                  const totalPurchased = rSched.reduce((a, b) => a + (b || 0), 0);
-                  return (
-                    <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
-                      <td className="p-2 font-mono sticky left-0 z-10" style={{ background: 'white' }}>{p.id}</td>
-                      <td className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line, background: 'rgba(164,25,61,0.04)' }}>
-                        <input type="number" value={rSched[0] || 0} min="0"
-                          onChange={(e) => updateRestock(p.id, 0, parseInt(e.target.value) || 0)}
-                          style={{ color: COLORS.oxblood, fontWeight: 600 }} />
-                      </td>
-                      {Array.from({ length: months }, (_, i) => {
-                        const v = rSched[i + 1] || 0;
-                        return (
-                          <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
-                            <input type="number" value={v || 0} min="0"
-                              onChange={(e) => updateRestock(p.id, i + 1, parseInt(e.target.value) || 0)}
-                              style={{ color: v > 0 ? COLORS.emerald : undefined, fontWeight: v > 0 ? 600 : undefined }} />
-                          </td>
-                        );
-                      })}
-                      <td className="p-2 text-right font-mono font-semibold" style={{ color: COLORS.ink }}>
-                        {totalPurchased}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot style={{ background: COLORS.paper }}>
-                <tr className="font-semibold">
-                  <td className="p-2 sticky left-0" style={{ background: COLORS.paper }}>{t("total")}</td>
-                  <td className="p-2 text-center font-mono" style={{ color: COLORS.oxblood }}>
-                    {products.reduce((acc, p) => acc + ((restockStore[p.id] || [p.qty || 0])[0] || 0), 0)}
-                  </td>
-                  {Array.from({ length: months }, (_, i) => {
-                    const sum = products.reduce((acc, p) => {
-                      const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
-                      return acc + (rSched[i + 1] || 0);
-                    }, 0);
-                    return <td key={i} className="p-2 text-center font-mono" style={{ color: sum > 0 ? COLORS.emerald : undefined }}>{sum}</td>;
-                  })}
-                  <td className="p-2 text-right font-mono">
-                    {products.reduce((acc, p) => {
-                      const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
-                      return acc + rSched.reduce((a, b) => a + (b || 0), 0);
-                    }, 0)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        )}
-      </div>
 
     </div>
   );
