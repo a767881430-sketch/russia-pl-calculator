@@ -1531,8 +1531,8 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang, fmt }) =>
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm border" style={{ borderColor: COLORS.gold }}>
           <Metric label={t("russiaCollections")}
-            value={fmtRubShort(totals.totalRevenue)}
-            sub={`GMV ${fmtRubShort(totals.totalGMV)}`}
+            value={F(totals.totalRevenue)}
+            sub={fmtRubShort(totals.totalRevenue)}
             color={COLORS.gold} big />
         </div>
         <div className="p-4 sm:p-5 card-hover rounded-sm border-2" style={{ borderColor: proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson, background: "rgba(255,255,255,0.7)" }}>
