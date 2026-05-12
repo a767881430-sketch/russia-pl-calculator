@@ -235,14 +235,20 @@ const distributeEvenly = (total, n) => {
 
 const getSchedule = (id, qty, n, store) => {
   const s = store[id];
-  return Array.isArray(s) && s.length === n ? s : distributeEvenly(qty, n);
+  if (!Array.isArray(s)) return distributeEvenly(qty, n);
+  if (s.length === n) return s;
+  if (s.length > n) return s.slice(0, n); // 截断多余月份
+  return [...s, ...Array(n - s.length).fill(0)]; // 补零
 };
 
 // 获取补货排期：长度 = n+1 (M0..Mn)，M0=首批采购，M1+=补货数
 const getRestockSchedule = (id, qty, n, restockStore) => {
   const s = restockStore[id];
-  if (Array.isArray(s) && s.length === n + 1) return s;
-  return [qty, ...Array(n).fill(0)]; // 默认：M0=全量，后续无补货
+  if (!Array.isArray(s)) return [qty, ...Array(n).fill(0)]; // 默认：M0=全量，后续无补货
+  // 长度匹配直接返回；否则截断或补零
+  if (s.length === n + 1) return s;
+  if (s.length > n + 1) return s.slice(0, n + 1); // 从12月切回8月：截断多余月份
+  return [...s, ...Array(n + 1 - s.length).fill(0)]; // 从8月切到12月：补零
 };
 
 // 阶梯VAT阈值（2026 联邦法 №425-FZ）
@@ -827,7 +833,7 @@ function AppContent({ lang, setLang }) {
     if (curveType === "reset") { setScheduleStore({}); return; }
     const next = {};
     for (const p of products) {
-      const rSched = restockStore[p.id] || [p.qty || 0];
+      const rSched = getRestockSchedule(p.id, p.qty || 0, projection.monthsHorizon, restockStore);
       const total = rSched.reduce((a, b) => a + (b || 0), 0) || (p.qty || 0);
       const n = projection.monthsHorizon;
       let arr;
