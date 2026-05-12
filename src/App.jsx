@@ -238,6 +238,13 @@ const getSchedule = (id, qty, n, store) => {
   return Array.isArray(s) && s.length === n ? s : distributeEvenly(qty, n);
 };
 
+// 获取补货排期：长度 = n+1 (M0..Mn)，M0=首批采购，M1+=补货数
+const getRestockSchedule = (id, qty, n, restockStore) => {
+  const s = restockStore[id];
+  if (Array.isArray(s) && s.length === n + 1) return s;
+  return [qty, ...Array(n).fill(0)]; // 默认：M0=全量，后续无补货
+};
+
 // 阶梯VAT阈值（2026 联邦法 №425-FZ）
 // 累计年营收 ≤ 20M ₽: USN无VAT
 // 20M-250M ₽: 触发VAT，可选5%(无进项抵扣)
@@ -264,25 +271,44 @@ const getFeeForMonth = (productId, monthIdx, defaultVal, priceStore) => {
   return (v && v > 0) ? v : defaultVal;
 };
 
-const calcProjection = (products, params, projection, store, priceStore = {}) => {
+const calcProjection = (products, params, projection, store, priceStore = {}, restockStore = {}) => {
   const { monthsHorizon, partnerSharePct, monthlyFixedCost, autoVATEscalation, priorYearRevenue } = projection;
   const months = [];
 
+  // 计算每个产品的单位成本（供补货成本计算用）
+  const productUnitCosts = {};
+  for (const p of products) {
+    const shipPerUnit = calcShipping(p, params);
+    productUnitCosts[p.id] = (p.priceCNY || 0) * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
+  }
+
+  // M0 首批采购：用 restockStore 的 M0 数量
   let totalActual = 0, totalDeclared = 0, totalImportVAT = 0;
   for (const p of products) {
     const declaredCNY = (p.declaredCNY ?? p.priceCNY) || 0;
     const shipPerUnit = calcShipping(p, params);
-    const actualUnit = (p.priceCNY || 0) * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
+    const actualUnit = productUnitCosts[p.id];
     const declaredUnit = declaredCNY * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
-    totalActual += actualUnit * (p.qty || 0);
-    totalDeclared += declaredUnit * (p.qty || 0);
+    const rSched = getRestockSchedule(p.id, p.qty || 0, monthsHorizon, restockStore);
+    const m0Qty = rSched[0]; // 首批采购数量
+    totalActual += actualUnit * m0Qty;
+    totalDeclared += declaredUnit * m0Qty;
     if (params.taxScheme === "osn" && hasImportVATInvoice(p)) {
-      totalImportVAT += declaredCNY * params.exchangeRate * (p.qty || 0) * params.vatRate;
+      totalImportVAT += declaredCNY * params.exchangeRate * m0Qty * params.vatRate;
     }
   }
   const initialOutflow = totalActual + (params.oneTimeCosts || 0) + totalImportVAT;
   let cumCash = -initialOutflow;
   let inputVATCredit = totalImportVAT;
+
+  // 初始化库存 = M0 采购数量
+  const stockByProduct = {};
+  let totalStockEnd = 0;
+  for (const p of products) {
+    const rSched = getRestockSchedule(p.id, p.qty || 0, monthsHorizon, restockStore);
+    stockByProduct[p.id] = rSched[0];
+    totalStockEnd += rSched[0];
+  }
 
   months.push({
     monthIdx: 0, label: "M0", revenue: 0, cogs: 0, expenses: 0, fixedCost: 0,
@@ -290,6 +316,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
     partnerPayout: 0, cashFlow: -initialOutflow, cumCash,
     soldQty: 0, isInitial: true, importVAT: totalImportVAT,
     effectiveScheme: params.taxScheme, vatTierKey: null, cumRevenue: priorYearRevenue || 0,
+    restockQty: totalStockEnd, restockCost: totalActual, stockEnd: totalStockEnd, stockWarning: false,
   });
 
   // 跨月累计营收（动态 VAT 触发用）
@@ -301,14 +328,15 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
   for (let m = 1; m <= monthsHorizon; m++) {
     let revenue = 0, cogs = 0, declaredCogs = 0, expenses = 0;
     let soldQty = 0, listSum = 0;
+    let monthRestockQty = 0, monthRestockCost = 0;
 
     for (const p of products) {
       const declaredCNY = (p.declaredCNY ?? p.priceCNY) || 0;
       const sched = getSchedule(p.id, p.qty || 0, monthsHorizon, store);
       const q = sched[m - 1] || 0;
       soldQty += q;
+      const unitCost = productUnitCosts[p.id];
       const shipPerUnit = calcShipping(p, params);
-      const unitCost = (p.priceCNY || 0) * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
       const declaredUnit = declaredCNY * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
       // 按月取售价/平台费
       const monthList = getPriceForMonth(p.id, m - 1, p.list || 0, priceStore);
@@ -318,6 +346,20 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
       declaredCogs += q * declaredUnit;
       expenses += q * ((p.warehouse || 0) + (p.mgmt || 0));
       listSum += q * monthList;
+
+      // 补货：读取该月补货数量，更新库存
+      const rSched = getRestockSchedule(p.id, p.qty || 0, monthsHorizon, restockStore);
+      const rQty = rSched[m] || 0; // rSched[0]=M0首批, rSched[m]=Mm补货
+      monthRestockQty += rQty;
+      monthRestockCost += rQty * unitCost;
+      stockByProduct[p.id] = (stockByProduct[p.id] || 0) + rQty - q;
+    }
+
+    // 汇总期末库存
+    let stockEnd = 0, stockWarning = false;
+    for (const p of products) {
+      stockEnd += stockByProduct[p.id] || 0;
+      if ((stockByProduct[p.id] || 0) < 0) stockWarning = true;
     }
 
     cumRevenue += revenue;
@@ -395,13 +437,15 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
 
     const netProfit = grossProfit - tax;
     const partnerPayout = Math.max(0, netProfit) * (partnerSharePct / 100);
-    const cashFlow = revenue - expenses - fixedCost - tax - partnerPayout;
+    // 现金流 = 营收 - 费用 - 税 - 合伙人 - 补货支出
+    const cashFlow = revenue - expenses - fixedCost - tax - partnerPayout - monthRestockCost;
     cumCash += cashFlow;
 
     months.push({
       monthIdx: m, label: `M${m}`, revenue, cogs, expenses, fixedCost, grossProfit,
       tax, vatRemit, netProfit, partnerPayout, cashFlow, cumCash, soldQty, isInitial: false,
       effectiveScheme, vatTierKey, cumRevenue, vatRate: params.vatRate,
+      restockQty: monthRestockQty, restockCost: monthRestockCost, stockEnd, stockWarning,
     });
   }
 
@@ -565,6 +609,7 @@ function AppContent({ lang, setLang }) {
   const [products, setProducts] = useState(SAMPLE_PRODUCTS);
   const [scheduleStore, setScheduleStore] = useState({});
   const [priceScheduleStore, setPriceScheduleStore] = useState({});
+  const [restockStore, setRestockStore] = useState({});
   const [projection, setProjection] = useState(DEFAULT_PROJECTION);
   const [tab, setTab] = useState("dashboard");
   const [expandedRow, setExpandedRow] = useState(null);
@@ -600,6 +645,7 @@ function AppContent({ lang, setLang }) {
         if (Array.isArray(parsed.products)) setProducts(parsed.products);
         if (parsed.scheduleStore) setScheduleStore(parsed.scheduleStore);
         if (parsed.priceScheduleStore) setPriceScheduleStore(parsed.priceScheduleStore);
+        if (parsed.restockStore) setRestockStore(parsed.restockStore);
         if (parsed.projection) setProjection({ ...DEFAULT_PROJECTION, ...parsed.projection });
         setStorageStatus(t("loadedLocal"));
         setTimeout(() => setStorageStatus(""), 2200);
@@ -612,14 +658,14 @@ function AppContent({ lang, setLang }) {
   useEffect(() => {
     if (!loaded) return;
     try {
-      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, projection }));
+      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, restockStore, projection }));
     } catch (e) {}
-  }, [params, products, scheduleStore, priceScheduleStore, projection, loaded]);
+  }, [params, products, scheduleStore, priceScheduleStore, restockStore, projection, loaded]);
 
   const saveToCloud = () => {
     setStorageBusy(true);
     try {
-      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, projection }));
+      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, restockStore, projection }));
       setStorageStatus(t("saved"));
     } catch (e) { setStorageStatus(t("saveFail")); }
     finally { setStorageBusy(false); setTimeout(() => setStorageStatus(""), 2200); }
@@ -652,14 +698,15 @@ function AppContent({ lang, setLang }) {
     return a;
   }, [calcs, params.oneTimeCosts, params.exchangeRate]);
 
-  const proj = useMemo(() => calcProjection(products, params, projection, scheduleStore, priceScheduleStore),
-    [products, params, projection, scheduleStore, priceScheduleStore]);
+  const proj = useMemo(() => calcProjection(products, params, projection, scheduleStore, priceScheduleStore, restockStore),
+    [products, params, projection, scheduleStore, priceScheduleStore, restockStore]);
 
   const updateProduct = (idx, field, val) => {
     const oldId = products[idx]?.id;
     setProducts(ps => ps.map((p, i) => i === idx ? { ...p, [field]: val } : p));
-    if (field === "id" && oldId && oldId !== val && scheduleStore[oldId]) {
-      setScheduleStore(s => { const n = { ...s }; n[val] = n[oldId]; delete n[oldId]; return n; });
+    if (field === "id" && oldId && oldId !== val) {
+      if (scheduleStore[oldId]) setScheduleStore(s => { const n = { ...s }; n[val] = n[oldId]; delete n[oldId]; return n; });
+      if (restockStore[oldId]) setRestockStore(s => { const n = { ...s }; n[val] = n[oldId]; delete n[oldId]; return n; });
     }
   };
   const addProduct = () => {
@@ -671,16 +718,19 @@ function AppContent({ lang, setLang }) {
   const deleteProduct = (idx) => {
     const id = products[idx]?.id;
     setProducts(ps => ps.filter((_, i) => i !== idx));
-    if (id) setScheduleStore(s => { const n = { ...s }; delete n[id]; return n; });
+    if (id) {
+      setScheduleStore(s => { const n = { ...s }; delete n[id]; return n; });
+      setRestockStore(s => { const n = { ...s }; delete n[id]; return n; });
+    }
     if (expandedRow === idx) setExpandedRow(null);
   };
   const clearAllProducts = () => {
-    if (confirm(t("confirmClear"))) { setProducts([]); setScheduleStore({}); setExpandedRow(null); }
+    if (confirm(t("confirmClear"))) { setProducts([]); setScheduleStore({}); setRestockStore({}); setExpandedRow(null); }
   };
   const resetSample = () => {
     if (confirm(t("confirmReset"))) {
       setProducts(SAMPLE_PRODUCTS); setParams(DEFAULT_PARAMS);
-      setProjection(DEFAULT_PROJECTION); setScheduleStore({});
+      setProjection(DEFAULT_PROJECTION); setScheduleStore({}); setRestockStore({});
     }
   };
 
@@ -688,6 +738,17 @@ function AppContent({ lang, setLang }) {
     setScheduleStore(s => {
       const arr = [...(s[productId] || distributeEvenly(products.find(p => p.id === productId)?.qty || 0, projection.monthsHorizon))];
       while (arr.length < projection.monthsHorizon) arr.push(0);
+      arr[monthIdx] = Math.max(0, val);
+      return { ...s, [productId]: arr };
+    });
+  };
+
+  const updateRestock = (productId, monthIdx, val) => {
+    setRestockStore(s => {
+      const n = projection.monthsHorizon;
+      const defaultQty = products.find(p => p.id === productId)?.qty || 0;
+      const arr = [...(s[productId] || [defaultQty, ...Array(n).fill(0)])];
+      while (arr.length < n + 1) arr.push(0);
       arr[monthIdx] = Math.max(0, val);
       return { ...s, [productId]: arr };
     });
@@ -1344,6 +1405,7 @@ function AppContent({ lang, setLang }) {
         {tab === "schedule" && <ScheduleTab products={products} projection={projection} setProjection={setProjection}
           scheduleStore={scheduleStore} updateSchedule={updateSchedule} applyCurve={applyScheduleCurve}
           priceScheduleStore={priceScheduleStore} setPriceScheduleStore={setPriceScheduleStore}
+          restockStore={restockStore} updateRestock={updateRestock} setRestockStore={setRestockStore}
           t={t} lang={lang} />}
         {tab === "projection" && <ProjectionTab proj={proj} projection={projection} setProjection={setProjection}
           params={params} totals={totals} t={t} lang={lang} fmt={fmt} />}
@@ -1865,7 +1927,7 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
 // 销售排期 Tab（含售价/平台费排期）
 // ============================================================
 const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updateSchedule, applyCurve,
-  priceScheduleStore, setPriceScheduleStore, t, lang }) => {
+  priceScheduleStore, setPriceScheduleStore, restockStore, updateRestock, setRestockStore, t, lang }) => {
   const months = projection.monthsHorizon;
   const totalAllProducts = products.reduce((a, b) => a + (b.qty || 0), 0);
 
@@ -1918,6 +1980,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
   // 折叠状态
   const [showPriceSchedule, setShowPriceSchedule] = useState(false);
   const [showFeeSchedule, setShowFeeSchedule] = useState(false);
+  const [showRestockSchedule, setShowRestockSchedule] = useState(false);
 
   return (
     <div className="space-y-6 anim-in">
@@ -2123,6 +2186,86 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
           </div>
         )}
       </div>
+
+      {/* ===== 补货排期 ===== */}
+      <div className="border" style={{ borderColor: COLORS.line, background: 'white' }}>
+        <button className="w-full text-left p-3 flex items-center justify-between text-sm font-semibold"
+          onClick={() => setShowRestockSchedule(v => !v)} style={{ color: COLORS.ink }}>
+          <span>{t("restockTitle")}</span>
+          <span className="text-[10px] font-mono" style={{ color: COLORS.inkSoft }}>{showRestockSchedule ? '▲' : '▼'}</span>
+        </button>
+        {showRestockSchedule && (
+          <div className="border-t overflow-x-auto" style={{ borderColor: COLORS.line }}>
+            <div className="px-3 py-2 text-xs" style={{ color: COLORS.inkSoft, background: COLORS.paper }}>
+              {t("restockHint")}
+              <button onClick={() => setRestockStore({})} className="ml-3 px-2 py-0.5 border text-[10px]"
+                style={{ borderColor: COLORS.line, color: COLORS.crimson }}>{t("resetRestock")}</button>
+            </div>
+            <table className="w-full text-xs">
+              <thead style={{ background: COLORS.paper }}>
+                <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
+                  <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: '120px' }}>{t("sku")}</th>
+                  <th className="text-center p-2" style={{ minWidth: '60px', color: COLORS.oxblood }}>{t("initialBatch")}</th>
+                  {Array.from({ length: months }, (_, i) => (
+                    <th key={i} className="text-center p-2 font-mono" style={{ minWidth: '60px' }}>{t("monthLabel")}{i + 1}</th>
+                  ))}
+                  <th className="text-right p-2" style={{ minWidth: '70px' }}>{t("totalPurchased")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map(p => {
+                  const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
+                  const totalPurchased = rSched.reduce((a, b) => a + (b || 0), 0);
+                  return (
+                    <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
+                      <td className="p-2 font-mono sticky left-0 z-10" style={{ background: 'white' }}>{p.id}</td>
+                      <td className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line, background: 'rgba(164,25,61,0.04)' }}>
+                        <input type="number" value={rSched[0] || 0} min="0"
+                          onChange={(e) => updateRestock(p.id, 0, parseInt(e.target.value) || 0)}
+                          style={{ color: COLORS.oxblood, fontWeight: 600 }} />
+                      </td>
+                      {Array.from({ length: months }, (_, i) => {
+                        const v = rSched[i + 1] || 0;
+                        return (
+                          <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
+                            <input type="number" value={v || 0} min="0"
+                              onChange={(e) => updateRestock(p.id, i + 1, parseInt(e.target.value) || 0)}
+                              style={{ color: v > 0 ? COLORS.emerald : undefined, fontWeight: v > 0 ? 600 : undefined }} />
+                          </td>
+                        );
+                      })}
+                      <td className="p-2 text-right font-mono font-semibold" style={{ color: COLORS.ink }}>
+                        {totalPurchased}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot style={{ background: COLORS.paper }}>
+                <tr className="font-semibold">
+                  <td className="p-2 sticky left-0" style={{ background: COLORS.paper }}>{t("total")}</td>
+                  <td className="p-2 text-center font-mono" style={{ color: COLORS.oxblood }}>
+                    {products.reduce((acc, p) => acc + ((restockStore[p.id] || [p.qty || 0])[0] || 0), 0)}
+                  </td>
+                  {Array.from({ length: months }, (_, i) => {
+                    const sum = products.reduce((acc, p) => {
+                      const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
+                      return acc + (rSched[i + 1] || 0);
+                    }, 0);
+                    return <td key={i} className="p-2 text-center font-mono" style={{ color: sum > 0 ? COLORS.emerald : undefined }}>{sum}</td>;
+                  })}
+                  <td className="p-2 text-right font-mono">
+                    {products.reduce((acc, p) => {
+                      const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
+                      return acc + rSched.reduce((a, b) => a + (b || 0), 0);
+                    }, 0)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -2315,11 +2458,13 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
           <br />· <strong>{t("projCashLabel")}</strong> {t("projCashDesc")}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs" style={{ minWidth: "1100px" }}>
+          <table className="w-full text-xs" style={{ minWidth: "1350px" }}>
             <thead style={{ background: COLORS.paper }}>
               <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
                 <th className="text-left p-2">{t("thMonth")}</th>
                 <th className="text-left p-2">{t("thTaxTier")}</th>
+                <th className="text-right p-2">{t("colRestock")}</th>
+                <th className="text-right p-2">{t("colStock")}</th>
                 <th className="text-right p-2">{t("thSoldQtyD")}</th>
                 <th className="text-right p-2">{t("thRevenueD")}</th>
                 <th className="text-right p-2">{t("thCogsD")}</th>
@@ -2340,6 +2485,13 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
                   </td>
                   <td className="p-2 text-[10px]" style={{ color: m.vatTierKey && (m.vatTierKey === "vatLabelVat5" || m.vatTierKey === "vatLabelVat7" || m.vatTierKey === "vatLabelOsn22") ? COLORS.crimson : COLORS.inkSoft }}>
                     {m.isInitial ? "—" : (m.vatTierKey ? t(m.vatTierKey, m.vatTierKey === "vatLabelFixedOsn" ? { rate: (m.vatRate*100).toFixed(0) } : {}) : "—")}
+                  </td>
+                  <td className="p-2 text-right font-mono text-[10px]" style={{ color: m.restockQty > 0 ? COLORS.crimson : COLORS.inkSoft }}>
+                    {m.restockQty > 0 ? `+${m.restockQty}` : "—"}
+                    {m.restockCost > 0 && !m.isInitial && <div className="text-[9px]" style={{ color: COLORS.crimson }}>-{F(m.restockCost)}</div>}
+                  </td>
+                  <td className="p-2 text-right font-mono" style={{ color: m.stockWarning ? COLORS.crimson : COLORS.inkSoft }}>
+                    {m.stockEnd}{m.stockWarning && <span className="ml-1 text-[9px]">⚠</span>}
                   </td>
                   <td className="p-2 text-right font-mono">{m.soldQty || "—"}</td>
                   <td className="p-2 text-right font-mono">{m.revenue ? F(m.revenue) : "—"}</td>
@@ -2362,6 +2514,12 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
               <tr className="font-semibold">
                 <td className="p-2">{t("totalRow")}</td>
                 <td className="p-2"></td>
+                <td className="p-2 text-right font-mono" style={{ color: COLORS.crimson }}>
+                  {proj.months.reduce((a, b) => a + (b.restockQty || 0), 0)}
+                </td>
+                <td className="p-2 text-right font-mono">
+                  {proj.months.length > 0 ? proj.months[proj.months.length - 1].stockEnd : 0}
+                </td>
                 <td className="p-2 text-right font-mono">{proj.months.reduce((a, b) => a + b.soldQty, 0)}</td>
                 <td className="p-2 text-right font-mono">{F(proj.totalRevenue)}</td>
                 <td colSpan={3}></td>

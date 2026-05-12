@@ -338,6 +338,18 @@ const DICT = {
   priceLabel: { zh: "售价₽", en: "Price₽", ru: "Цена₽" },
   feeLabel: { zh: "平台费₽", en: "Fee₽", ru: "Комиссия₽" },
 
+  // === Restock Schedule ===
+  restockTitle: { zh: "补货排期 · 分批采购", en: "Restock Schedule · Batch Purchasing", ru: "График закупок · Партиями" },
+  restockHint: { zh: "M0为首批采购，后续月份填入补货数量。0 = 不补货。", en: "M0 = initial batch. Fill restock qty for later months. 0 = no restock.", ru: "M0 = первая партия. Заполните кол-во для закупок. 0 = без закупки." },
+  initialBatch: { zh: "首批(M0)", en: "Initial(M0)", ru: "Первая(M0)" },
+  totalPurchased: { zh: "总采购", en: "Total Purchased", ru: "Всего закуплено" },
+  resetRestock: { zh: "重置补货", en: "Reset Restock", ru: "Сброс закупок" },
+  colRestock: { zh: "补货", en: "Restock", ru: "Закупка" },
+  colStock: { zh: "库存", en: "Stock", ru: "Остаток" },
+  stockWarning: { zh: "缺货", en: "Out of stock", ru: "Нехватка" },
+  restockCostLabel: { zh: "补货支出", en: "Restock Cost", ru: "Расход на закупку" },
+  cumPurchase: { zh: "累计采购", en: "Cum. Purchase", ru: "Накоп. закупка" },
+
   // === Help Panel ===
   helpTitle: { zh: "2026年俄罗斯税制要点", en: "2026 Russian Tax Reform", ru: "Налоговая реформа РФ 2026" },
   helpPractical: { zh: "跨境电商实务", en: "Cross-border E-commerce Tips", ru: "Практика кросс-бордер" },
