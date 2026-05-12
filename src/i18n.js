@@ -161,6 +161,8 @@ const DICT = {
   thTax: { zh: "税", en: "Tax", ru: "Налог" },
   thNetProfit: { zh: "当月净利", en: "Net Profit", ru: "Чист. приб." },
   thPartner: { zh: "合伙人", en: "Partner", ru: "Партнёр" },
+  thDistributed: { zh: "提取分润", en: "Distributed", ru: "Распред." },
+  thOwner: { zh: "自己", en: "Owner", ru: "Владелец" },
   thCashFlow: { zh: "现金流", en: "Cash Flow", ru: "Кэш" },
   thCumCash: { zh: "累计现金", en: "Cum. Cash", ru: "Накоп. кэш" },
   initialRow: { zh: "初始（备货）", en: "Initial (Stock)", ru: "Начальные" },

@@ -438,15 +438,16 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
     const netProfit = grossProfit - tax;
     // 利润分配：按用户指定的每月提取金额，再按分润比例分给合伙人
     const withdrawalAmount = (withdrawalStore?.amounts?.[m - 1]) || 0;
-    const distributed = Math.min(withdrawalAmount, Math.max(0, netProfit)); // 不能超过当月净利
+    const distributed = Math.min(withdrawalAmount, Math.max(0, netProfit));
     const partnerPayout = distributed * (partnerSharePct / 100);
+    const ownerPayout = distributed - partnerPayout;
     // 现金流 = 营收 - 费用 - 税 - 合伙人 - 补货支出
     const cashFlow = revenue - expenses - fixedCost - tax - partnerPayout - monthRestockCost;
     cumCash += cashFlow;
 
     months.push({
       monthIdx: m, label: `M${m}`, revenue, cogs, expenses, fixedCost, grossProfit,
-      tax, vatRemit, netProfit, partnerPayout, cashFlow, cumCash, soldQty, isInitial: false,
+      tax, vatRemit, netProfit, distributed, partnerPayout, ownerPayout, cashFlow, cumCash, soldQty, isInitial: false,
       effectiveScheme, vatTierKey, cumRevenue, vatRate: params.vatRate,
       restockQty: monthRestockQty, restockCost: monthRestockCost, stockEnd, stockWarning,
     });
@@ -858,6 +859,9 @@ function AppContent({ lang, setLang }) {
         <td class="r mono">${m.isInitial ? '—' : fR(m.expenses + (m.fixedCost || 0))}</td>
         <td class="r mono">${m.isInitial ? '—' : fR(m.tax)}</td>
         <td class="r mono ${m.netProfit >= 0 ? 'pos' : 'neg'}">${fR(m.netProfit)}</td>
+        <td class="r mono" style="color:#B8860B">${m.distributed ? fR(m.distributed) : '—'}</td>
+        <td class="r mono">${m.partnerPayout ? fR(m.partnerPayout) : '—'}</td>
+        <td class="r mono">${m.ownerPayout ? fR(m.ownerPayout) : '—'}</td>
         <td class="r mono ${m.cumCash >= 0 ? 'pos' : 'neg'}">${fR(m.cumCash)}</td>
         <td class="mono">${m.isInitial ? '—' : (m.vatTierKey ? t(m.vatTierKey, m.vatTierKey === "vatLabelFixedOsn" ? { rate: (m.vatRate*100).toFixed(0) } : {}) : '—')}</td>
       </tr>`;
@@ -1277,6 +1281,9 @@ function AppContent({ lang, setLang }) {
         <th class="r">${t("thExpenses")}</th>
         <th class="r">${t("thTax")}</th>
         <th class="r">${t("thNetProfit")}</th>
+        <th class="r">${t("thDistributed")}</th>
+        <th class="r">${t("thPartner")}</th>
+        <th class="r">${t("thOwner")}</th>
         <th class="r">${t("thCumCash")}</th>
         <th>${t("thTaxTier")}</th>
       </tr></thead>
@@ -2532,7 +2539,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
           <br />· <strong>{t("projCashLabel")}</strong> {t("projCashDesc")}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs" style={{ minWidth: "1350px" }}>
+          <table className="w-full text-xs" style={{ minWidth: "1550px" }}>
             <thead style={{ background: COLORS.paper }}>
               <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
                 <th className="text-left p-2">{t("thMonth")}</th>
@@ -2546,7 +2553,9 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
                 <th className="text-right p-2">{t("thFixedCost")}</th>
                 <th className="text-right p-2">{t("thTax")}</th>
                 <th className="text-right p-2 border-l" style={{ borderColor: COLORS.line }}>{t("thMonthlyNet")}</th>
+                <th className="text-right p-2" style={{ color: COLORS.gold }}>{t("thDistributed")}</th>
                 <th className="text-right p-2">{t("thPartner")}</th>
+                <th className="text-right p-2">{t("thOwner")}</th>
                 <th className="text-right p-2">{t("thCashFlowD")}</th>
                 <th className="text-right p-2 border-l" style={{ borderColor: COLORS.line }}>{t("thCumCashD")}</th>
               </tr>
@@ -2576,7 +2585,9 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
                   <td className="p-2 text-right font-mono font-semibold border-l" style={{ borderColor: COLORS.line, color: m.netProfit >= 0 ? COLORS.emerald : COLORS.crimson }}>
                     {F(m.netProfit)}
                   </td>
+                  <td className="p-2 text-right font-mono" style={{ color: COLORS.gold }}>{m.distributed ? F(m.distributed) : "—"}</td>
                   <td className="p-2 text-right font-mono">{m.partnerPayout ? F(m.partnerPayout) : "—"}</td>
+                  <td className="p-2 text-right font-mono">{m.ownerPayout ? F(m.ownerPayout) : "—"}</td>
                   <td className="p-2 text-right font-mono" style={{ color: m.cashFlow >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(m.cashFlow)}</td>
                   <td className="p-2 text-right font-mono font-semibold border-l" style={{ borderColor: COLORS.line, color: m.cumCash >= 0 ? COLORS.emerald : COLORS.crimson }}>
                     {F(m.cumCash)}
@@ -2601,7 +2612,13 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
                 <td className="p-2 text-right font-mono border-l" style={{ borderColor: COLORS.line, color: proj.totalNetProfit >= 0 ? COLORS.emerald : COLORS.crimson }}>
                   {F(proj.totalNetProfit)}
                 </td>
+                <td className="p-2 text-right font-mono" style={{ color: COLORS.gold }}>
+                  {F(proj.months.reduce((a, b) => a + (b.distributed || 0), 0))}
+                </td>
                 <td className="p-2 text-right font-mono">{F(proj.totalPartnerPayout)}</td>
+                <td className="p-2 text-right font-mono">
+                  {F(proj.months.reduce((a, b) => a + (b.ownerPayout || 0), 0))}
+                </td>
                 <td colSpan={2}></td>
               </tr>
             </tfoot>
