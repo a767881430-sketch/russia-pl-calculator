@@ -30,7 +30,7 @@ const DICT = {
   shareLink: { zh: "分享链接", en: "Share Link", ru: "Поделиться" },
   shareCopied: { zh: "✓ 分享链接已复制到剪贴板", en: "✓ Share link copied to clipboard", ru: "✓ Ссылка скопирована" },
   shareFail: { zh: "生成分享链接失败", en: "Share link failed", ru: "Ошибка создания ссылки" },
-  shareTooLarge: { zh: "数据太大，无法生成链接，请使用导出功能", en: "Data too large for URL, use export instead", ru: "Данные слишком большие для URL" },
+  shareUploading: { zh: "⏳ 正在上传...", en: "⏳ Uploading...", ru: "⏳ Загрузка..." },
   loadedShare: { zh: "✓ 已从分享链接加载数据", en: "✓ Loaded from shared link", ru: "✓ Загружено из ссылки" },
   shareLoadFail: { zh: "分享链接数据加载失败", en: "Failed to load shared data", ru: "Ошибка загрузки из ссылки" },
 
