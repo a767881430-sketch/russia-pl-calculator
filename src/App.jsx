@@ -1428,7 +1428,7 @@ function AppContent({ lang, setLang }) {
           withdrawalStore={withdrawalStore} setWithdrawalStore={setWithdrawalStore}
           t={t} lang={lang} />}
         {tab === "projection" && <ProjectionTab proj={proj} projection={projection} setProjection={setProjection}
-          params={params} totals={totals} t={t} lang={lang} fmt={fmt} />}
+          params={params} totals={totals} withdrawalStore={withdrawalStore} setWithdrawalStore={setWithdrawalStore} t={t} lang={lang} fmt={fmt} />}
         {tab === "settings" && <SettingsTab params={params} setParams={setParams} t={t} lang={lang}
           rateSource={rateSource} setRateSource={setRateSource} liveRate={liveRate} effectiveRate={effectiveRate} fetchRate={fetchRate} />}
         {tab === "help" && <HelpPanel t={t} lang={lang} />}
@@ -2056,13 +2056,15 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
           <tbody>
             {products.map(p => {
               const stored = scheduleStore[p.id];
-              const sched = (Array.isArray(stored) && stored.length === months) ? stored : distributeEvenly(p.qty || 0, months);
+              const rSched = restockStore[p.id] || [p.qty || 0];
+              const totalPurchased = rSched.reduce((a, b) => a + (b || 0), 0) || (p.qty || 0);
+              const sched = (Array.isArray(stored) && stored.length === months) ? stored : distributeEvenly(totalPurchased, months);
               const allocated = sched.reduce((a, b) => a + (b || 0), 0);
-              const matches = allocated === (p.qty || 0);
+              const matches = allocated === totalPurchased;
               return (
                 <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
                   <td className="p-2 font-mono sticky left-0 z-10" style={{ background: "white" }}>{p.id}</td>
-                  <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{p.qty}</td>
+                  <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{totalPurchased}</td>
                   {sched.map((q, i) => (
                     <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
                       <input type="number" value={q || 0} min="0"
@@ -2070,7 +2072,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                     </td>
                   ))}
                   <td className="p-2 text-right font-mono font-semibold" style={{ color: matches ? COLORS.emerald : COLORS.crimson }}>
-                    {allocated}/{p.qty}
+                    {allocated}/{totalPurchased}
                   </td>
                 </tr>
               );
@@ -2079,7 +2081,12 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
           <tfoot style={{ background: COLORS.paper }}>
             <tr className="font-semibold">
               <td className="p-2 sticky left-0" style={{ background: COLORS.paper }}>{t("total")}</td>
-              <td className="p-2 text-right font-mono">{totalAllProducts}</td>
+              <td className="p-2 text-right font-mono">
+                {products.reduce((acc, p) => {
+                  const rSched = restockStore[p.id] || [p.qty || 0];
+                  return acc + (rSched.reduce((a, b) => a + (b || 0), 0) || (p.qty || 0));
+                }, 0)}
+              </td>
               {Array.from({ length: months }, (_, i) => {
                 const sum = products.reduce((acc, p) => {
                   const stored = scheduleStore[p.id];
@@ -2220,18 +2227,27 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
 
       {/* ===== 补货排期 ===== */}
       <div className="border" style={{ borderColor: COLORS.line, background: 'white' }}>
-        <button className="w-full text-left p-3 flex items-center justify-between text-sm font-semibold"
-          onClick={() => setShowRestockSchedule(v => !v)} style={{ color: COLORS.ink }}>
-          <span>{t("restockTitle")}</span>
-          <span className="text-[10px] font-mono" style={{ color: COLORS.inkSoft }}>{showRestockSchedule ? '▲' : '▼'}</span>
+        <button
+          onClick={() => setShowRestockSchedule(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left"
+          style={{ background: COLORS.paper }}
+        >
+          <div className="flex items-center gap-2">
+            {showRestockSchedule ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            <div>
+              <span className="font-display font-semibold text-sm">{t("restockTitle")}</span>
+              <span className="text-[10px] ml-2" style={{ color: COLORS.inkSoft }}>{t("restockHint")}</span>
+            </div>
+          </div>
+          {showRestockSchedule && (
+            <button onClick={(e) => { e.stopPropagation(); setRestockStore({}); }}
+              className="px-2 py-1 text-[11px] border" style={{ borderColor: COLORS.crimson, color: COLORS.crimson }}>
+              {t("resetRestock")}
+            </button>
+          )}
         </button>
         {showRestockSchedule && (
           <div className="border-t overflow-x-auto" style={{ borderColor: COLORS.line }}>
-            <div className="px-3 py-2 text-xs" style={{ color: COLORS.inkSoft, background: COLORS.paper }}>
-              {t("restockHint")}
-              <button onClick={() => setRestockStore({})} className="ml-3 px-2 py-0.5 border text-[10px]"
-                style={{ borderColor: COLORS.line, color: COLORS.crimson }}>{t("resetRestock")}</button>
-            </div>
             <table className="w-full text-xs">
               <thead style={{ background: COLORS.paper }}>
                 <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
@@ -2298,55 +2314,6 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
         )}
       </div>
 
-      {/* ===== 分润排期 ===== */}
-      <div className="border" style={{ borderColor: COLORS.line, background: 'white' }}>
-        <button className="w-full text-left p-3 flex items-center justify-between text-sm font-semibold"
-          onClick={() => setShowWithdrawalSchedule(v => !v)} style={{ color: COLORS.ink }}>
-          <span>{t("withdrawalTitle")}</span>
-          <span className="text-[10px] font-mono" style={{ color: COLORS.inkSoft }}>{showWithdrawalSchedule ? '▲' : '▼'}</span>
-        </button>
-        {showWithdrawalSchedule && (
-          <div className="border-t overflow-x-auto" style={{ borderColor: COLORS.line }}>
-            <div className="px-3 py-2 text-xs" style={{ color: COLORS.inkSoft, background: COLORS.paper }}>
-              {t("withdrawalHint")}
-              <button onClick={() => setWithdrawalStore({ amounts: [] })} className="ml-3 px-2 py-0.5 border text-[10px]"
-                style={{ borderColor: COLORS.line, color: COLORS.crimson }}>{t("resetWithdrawal")}</button>
-            </div>
-            <table className="w-full text-xs">
-              <thead style={{ background: COLORS.paper }}>
-                <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
-                  <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: '120px' }}>{t("withdrawalLabel")}</th>
-                  {Array.from({ length: months }, (_, i) => (
-                    <th key={i} className="text-center p-2 font-mono" style={{ minWidth: '80px' }}>{t("monthLabel")}{i + 1}</th>
-                  ))}
-                  <th className="text-right p-2" style={{ minWidth: '80px' }}>{t("total")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
-                  <td className="p-2 font-mono sticky left-0 z-10" style={{ background: 'white' }}>{t("withdrawalAmount")}</td>
-                  {Array.from({ length: months }, (_, i) => {
-                    const v = (withdrawalStore?.amounts?.[i]) || 0;
-                    return (
-                      <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
-                        <input type="number" value={v || 0} min="0" step="1000"
-                          onChange={(e) => updateWithdrawal(i, parseInt(e.target.value) || 0)}
-                          style={{ color: v > 0 ? COLORS.emerald : undefined, fontWeight: v > 0 ? 600 : undefined }} />
-                      </td>
-                    );
-                  })}
-                  <td className="p-2 text-right font-mono font-semibold" style={{ color: COLORS.emerald }}>
-                    {((withdrawalStore?.amounts || []).reduce((a, b) => a + (b || 0), 0)).toLocaleString('ru-RU')}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <div className="px-3 py-2 text-[10px]" style={{ color: COLORS.inkSoft, background: COLORS.paper }}>
-              {t("withdrawalSplitNote", { pct: projection.partnerSharePct || 0 })}
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 };
@@ -2460,8 +2427,18 @@ const VATThresholdMonitor = ({ proj, projection, updateProj, params, t }) => {
 // ============================================================
 // 现金流 Tab
 // ============================================================
-const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }) => {
+const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStore, setWithdrawalStore, t, lang, fmt }) => {
   const updateProj = (k, v) => setProjection(p => ({ ...p, [k]: v }));
+  const months = projection.monthsHorizon;
+  const [showWithdrawalSchedule, setShowWithdrawalSchedule] = useState(false);
+  const updateWithdrawal = (monthIdx, val) => {
+    setWithdrawalStore(s => {
+      const arr = [...(s.amounts || Array(months).fill(0))];
+      while (arr.length < months) arr.push(0);
+      arr[monthIdx] = Math.max(0, val);
+      return { ...s, amounts: arr };
+    });
+  };
   const F = fmt.fmtPrimary, Fs = fmt.fmtSecondary;
   return (
     <div className="space-y-6 anim-in">
@@ -2528,6 +2505,51 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
               {proj.leftoverInputVAT > 0 ? t("projInputVATLeft", { amount: F(proj.leftoverInputVAT) }) : t("projInputVATUsed")}.
             </span>
           )}
+        </div>
+      </Card>
+
+      {/* ===== 分润排期 ===== */}
+      <Card kicker="Distribution" title={t("withdrawalTitle")}>
+        <div className="text-xs mb-3" style={{ color: COLORS.inkSoft }}>
+          {t("withdrawalHint")}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead style={{ background: COLORS.paper }}>
+              <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
+                <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: '120px' }}>{t("withdrawalLabel")}</th>
+                {Array.from({ length: months }, (_, i) => (
+                  <th key={i} className="text-center p-2 font-mono" style={{ minWidth: '80px' }}>{t("monthLabel")}{i + 1}</th>
+                ))}
+                <th className="text-right p-2" style={{ minWidth: '80px' }}>{t("total")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
+                <td className="p-2 font-mono sticky left-0 z-10" style={{ background: 'white' }}>{t("withdrawalAmount")}</td>
+                {Array.from({ length: months }, (_, i) => {
+                  const v = (withdrawalStore?.amounts?.[i]) || 0;
+                  return (
+                    <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
+                      <input type="number" value={v || 0} min="0" step="1000"
+                        onChange={(e) => updateWithdrawal(i, parseInt(e.target.value) || 0)}
+                        style={{ color: v > 0 ? COLORS.emerald : undefined, fontWeight: v > 0 ? 600 : undefined }} />
+                    </td>
+                  );
+                })}
+                <td className="p-2 text-right font-mono font-semibold" style={{ color: COLORS.emerald }}>
+                  {((withdrawalStore?.amounts || []).reduce((a, b) => a + (b || 0), 0)).toLocaleString('ru-RU')}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-2 flex items-center gap-3">
+          <span className="text-[10px]" style={{ color: COLORS.inkSoft }}>
+            {t("withdrawalSplitNote", { pct: projection.partnerSharePct || 0 })}
+          </span>
+          <button onClick={() => setWithdrawalStore({ amounts: [] })} className="px-2 py-0.5 border text-[10px]"
+            style={{ borderColor: COLORS.crimson, color: COLORS.crimson }}>{t("resetWithdrawal")}</button>
         </div>
       </Card>
 
