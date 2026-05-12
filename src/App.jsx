@@ -38,8 +38,10 @@ const COLORS = {
 const TAX_SCHEMES = {
   usn_6:        { labelKey: "taxUsn6Label", short: "USN 6%",     descKey: "taxUsn6Desc" },
   usn_15:       { labelKey: "taxUsn15Label", short: "USN 15%",    descKey: "taxUsn15Desc" },
-  usn_15_vat5:  { labelKey: "taxUsn15v5Label", short: "USN+VAT 5%", descKey: "taxUsn15v5Desc" },
-  usn_15_vat7:  { labelKey: "taxUsn15v7Label", short: "USN+VAT 7%", descKey: "taxUsn15v7Desc" },
+  usn_6_vat5:   { labelKey: "taxUsn6v5Label", short: "USN 6%+VAT 5%", descKey: "taxUsn6v5Desc" },
+  usn_6_vat7:   { labelKey: "taxUsn6v7Label", short: "USN 6%+VAT 7%", descKey: "taxUsn6v7Desc" },
+  usn_15_vat5:  { labelKey: "taxUsn15v5Label", short: "USN 15%+VAT 5%", descKey: "taxUsn15v5Desc" },
+  usn_15_vat7:  { labelKey: "taxUsn15v7Label", short: "USN 15%+VAT 7%", descKey: "taxUsn15v7Desc" },
   osn:          { labelKey: "taxOsnLabel", short: "OSN",        descKey: "taxOsnDesc" },
   custom:       { labelKey: "taxCustomLabel", short: "Custom",   descKey: "taxCustomDesc" },
 };
@@ -162,8 +164,8 @@ const calcProduct = (p, params) => {
 
   let outputVATRate = 0;
   if (params.taxScheme === "osn") outputVATRate = params.vatRate;
-  else if (params.taxScheme === "usn_15_vat5") outputVATRate = 0.05;
-  else if (params.taxScheme === "usn_15_vat7") outputVATRate = 0.07;
+  else if (params.taxScheme === "usn_6_vat5" || params.taxScheme === "usn_15_vat5") outputVATRate = 0.05;
+  else if (params.taxScheme === "usn_6_vat7" || params.taxScheme === "usn_15_vat7") outputVATRate = 0.07;
   const totalOutputVAT = (p.list || 0) * outputVATRate / (1 + outputVATRate) * effectiveQty;
 
   const incomeBase = params.incomeBasis === "list" ? (p.list || 0) * effectiveQty : totalRevenue;
@@ -177,6 +179,13 @@ const calcProduct = (p, params) => {
     case "usn_15": {
       const tProfit = Math.max(0, incomeBase - expenses);
       tax = Math.max(tProfit * 0.15, incomeBase * 0.01); usnPart = tax; break;
+    }
+    case "usn_6_vat5":
+    case "usn_6_vat7": {
+      vatPart = totalOutputVAT;
+      const inv = incomeBase - vatPart;
+      usnPart = inv * 0.06;
+      tax = vatPart + usnPart; break;
     }
     case "usn_15_vat5":
     case "usn_15_vat7": {
@@ -332,15 +341,15 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
           // 当年度内继续上跨 (e.g. 5% → 7%)
           triggeredRate = tier.rate;
         }
-        // 选哪一档：5% 或 7%
-        if (triggeredRate === 0.05) effectiveScheme = "usn_15_vat5";
-        else if (triggeredRate === 0.07) effectiveScheme = "usn_15_vat7";
+        // 选哪一档：根据原始USN类型匹配对应方案
+        if (triggeredRate === 0.05) effectiveScheme = params.taxScheme === "usn_6" ? "usn_6_vat5" : "usn_15_vat5";
+        else if (triggeredRate === 0.07) effectiveScheme = params.taxScheme === "usn_6" ? "usn_6_vat7" : "usn_15_vat7";
         else if (triggeredRate >= 0.22) effectiveScheme = "osn";
       }
     } else {
       // 用户手动选了带VAT的方案：显示该方案档位
-      if (params.taxScheme === "usn_15_vat5") vatTierKey = "vatLabelFixed5";
-      else if (params.taxScheme === "usn_15_vat7") vatTierKey = "vatLabelFixed7";
+      if (params.taxScheme === "usn_6_vat5" || params.taxScheme === "usn_15_vat5") vatTierKey = "vatLabelFixed5";
+      else if (params.taxScheme === "usn_6_vat7" || params.taxScheme === "usn_15_vat7") vatTierKey = "vatLabelFixed7";
       else if (params.taxScheme === "osn") vatTierKey = "vatLabelFixedOsn";
       else vatTierKey = "vatLabelNoVat";
     }
@@ -348,8 +357,8 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
     // 计算本月销项VAT率
     let outputVATRate = 0;
     if (effectiveScheme === "osn") outputVATRate = params.vatRate;
-    else if (effectiveScheme === "usn_15_vat5") outputVATRate = 0.05;
-    else if (effectiveScheme === "usn_15_vat7") outputVATRate = 0.07;
+    else if (effectiveScheme === "usn_6_vat5" || effectiveScheme === "usn_15_vat5") outputVATRate = 0.05;
+    else if (effectiveScheme === "usn_6_vat7" || effectiveScheme === "usn_15_vat7") outputVATRate = 0.07;
     const monthlyOutputVAT = listSum * outputVATRate / (1 + outputVATRate);
 
     let tax = 0, vatRemit = 0;
@@ -358,6 +367,12 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
       case "usn_15": {
         const t = Math.max(0, incomeBase - cogs - expenses - fixedCost);
         tax = Math.max(t * 0.15, incomeBase * 0.01); break;
+      }
+      case "usn_6_vat5":
+      case "usn_6_vat7": {
+        vatRemit = monthlyOutputVAT;
+        const inv = incomeBase - vatRemit;
+        tax = vatRemit + inv * 0.06; break;
       }
       case "usn_15_vat5":
       case "usn_15_vat7": {
