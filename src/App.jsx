@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from "recharts";
-import { Plus, Trash2, Save, Info, ChevronDown, ChevronRight, RotateCcw, FileDown, AlertCircle, Sparkles, Globe } from "lucide-react";
+import { Plus, Trash2, Save, Info, ChevronDown, ChevronRight, RotateCcw, FileDown, AlertCircle, Sparkles, Globe, Share2 } from "lucide-react";
 import { createT, createCurrencyFormatter, useLiveRate, LANG_OPTIONS } from "./i18n.js";
 
 // ============================================================
@@ -640,8 +640,42 @@ function AppContent({ lang, setLang }) {
     }
   }, [liveRate, liveUsdRate, rateSource]);
 
-  // --- 启动时从 localStorage 加载 ---
+  // --- 启动时加载数据：优先从分享链接 hash，其次 localStorage ---
   useEffect(() => {
+    const loadShared = async (b64) => {
+      try {
+        const bin = atob(decodeURIComponent(b64));
+        const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+        const ds = new DecompressionStream('gzip');
+        const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
+        const json = await decompressed.text();
+        const parsed = JSON.parse(json);
+        if (parsed.params) setParams({ ...DEFAULT_PARAMS, ...parsed.params });
+        if (Array.isArray(parsed.products)) setProducts(parsed.products);
+        if (parsed.scheduleStore) setScheduleStore(parsed.scheduleStore);
+        if (parsed.priceScheduleStore) setPriceScheduleStore(parsed.priceScheduleStore);
+        if (parsed.restockStore) setRestockStore(parsed.restockStore);
+        if (parsed.withdrawalStore) setWithdrawalStore(parsed.withdrawalStore);
+        if (parsed.projection) setProjection({ ...DEFAULT_PROJECTION, ...parsed.projection });
+        setStorageStatus(t("loadedShare"));
+        setTimeout(() => setStorageStatus(""), 3000);
+        // Clear hash so it doesn't reload on refresh
+        window.history.replaceState(null, '', window.location.pathname);
+      } catch (e) {
+        console.error('Failed to load shared data:', e);
+        setStorageStatus(t("shareLoadFail"));
+        setTimeout(() => setStorageStatus(""), 3000);
+      }
+      setLoaded(true);
+    };
+
+    const hash = window.location.hash;
+    if (hash.startsWith('#share=')) {
+      loadShared(hash.slice(7));
+      return;
+    }
+
+    // Fallback: localStorage
     try {
       const saved = localStorage.getItem("ru_calc_v2");
       if (saved) {
@@ -675,6 +709,33 @@ function AppContent({ lang, setLang }) {
       setStorageStatus(t("saved"));
     } catch (e) { setStorageStatus(t("saveFail")); }
     finally { setStorageBusy(false); setTimeout(() => setStorageStatus(""), 2200); }
+  };
+
+  // === 分享链接：压缩状态到 URL hash ===
+  const shareLink = async () => {
+    try {
+      const data = JSON.stringify({ params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection });
+      // Compress using CompressionStream (gzip)
+      const blob = new Blob([data]);
+      const cs = new CompressionStream('gzip');
+      const compressedStream = blob.stream().pipeThrough(cs);
+      const compressedBlob = await new Response(compressedStream).blob();
+      const buf = await compressedBlob.arrayBuffer();
+      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+      const url = `${window.location.origin}${window.location.pathname}#share=${encodeURIComponent(b64)}`;
+      if (url.length > 32000) {
+        setStorageStatus(t("shareTooLarge"));
+        setTimeout(() => setStorageStatus(""), 3000);
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setStorageStatus(t("shareCopied"));
+      setTimeout(() => setStorageStatus(""), 3000);
+    } catch (e) {
+      console.error('Share failed:', e);
+      setStorageStatus(t("shareFail"));
+      setTimeout(() => setStorageStatus(""), 3000);
+    }
   };
 
   const calcs = useMemo(() => products.map(p => ({ ...p, c: calcProduct(p, params) })), [products, params]);
@@ -1396,6 +1457,11 @@ function AppContent({ lang, setLang }) {
                 className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-sm"
                 style={{ background: COLORS.emerald, color: COLORS.cream }}>
                 <FileDown size={14} /> <span className="hidden sm:inline">{t("exportHTML")}</span>
+              </button>
+              <button onClick={shareLink}
+                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                style={{ borderColor: COLORS.gold, color: COLORS.gold }}>
+                <Share2 size={14} /> <span className="hidden sm:inline">{t("shareLink")}</span>
               </button>
               <button onClick={resetSample}
                 className="btn-interact flex items-center gap-1.5 px-2 py-2 text-xs rounded-sm"
