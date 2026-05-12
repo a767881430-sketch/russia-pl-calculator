@@ -650,9 +650,9 @@ function AppContent({ lang, setLang }) {
 
   // --- 启动时加载数据：优先从分享链接，其次 localStorage ---
   useEffect(() => {
-    const loadFromNpoint = async (id) => {
+    const loadFromCloud = async (id) => {
       try {
-        const res = await fetch(`https://api.npoint.io/${id}`);
+        const res = await fetch(`https://jsonblob.com/api/jsonBlob/${id}`);
         if (!res.ok) throw new Error('fetch failed');
         const parsed = await res.json();
         if (parsed.params) setParams({ ...DEFAULT_PARAMS, ...parsed.params });
@@ -675,7 +675,7 @@ function AppContent({ lang, setLang }) {
 
     const hash = window.location.hash;
     if (hash.startsWith('#s=')) {
-      loadFromNpoint(hash.slice(3));
+      loadFromCloud(hash.slice(3));
       return;
     }
 
@@ -715,20 +715,20 @@ function AppContent({ lang, setLang }) {
     finally { setStorageBusy(false); setTimeout(() => setStorageStatus(""), 2200); }
   };
 
-  // === 分享链接：上传状态到 npoint.io，生成短链接 ===
+  // === 分享链接：上传状态到 jsonblob.com，生成短链接 ===
   const shareLink = async () => {
     try {
       setStorageStatus(t("shareUploading"));
       const data = { params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection };
-      const res = await fetch('https://api.npoint.io/', {
+      const res = await fetch('https://jsonblob.com/api/jsonBlob', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error('upload failed');
-      const result = await res.json();
-      // npoint returns the full URL, extract the ID
-      const id = result.id || (typeof result === 'string' ? result : '');
+      // jsonblob returns the URL in the Location header
+      const loc = res.headers.get('Location') || '';
+      const id = loc.split('/').pop();
       if (!id) throw new Error('no id returned');
       const url = `${window.location.origin}${window.location.pathname}#s=${id}`;
       await navigator.clipboard.writeText(url);
@@ -1663,8 +1663,10 @@ const MonthlyPnLChart = ({ proj, t, fmt }) => {
 // ============================================================
 const CostBar = ({ totals, params, t, fmt }) => {
   const F = fmt.fmtPrimary, Ff = fmt.fmtPrimaryFull;
+  const platformFeeTotal = totals.totalGMV - totals.totalRevenue;
   const items = [
     { label: t("costProcure"), value: totals.totalInvestment, color: COLORS.oxblood },
+    { label: t("costPlatformFee"), value: platformFeeTotal, color: "#8B5E3C" },
     { label: t("costWarehouse"), value: totals.totalWarehouse, color: COLORS.gold },
     { label: t("costMgmt"), value: totals.totalMgmt, color: COLORS.goldSoft },
     { label: t("costTax"), value: totals.tax, color: COLORS.crimson },

@@ -83,6 +83,7 @@ const DICT = {
   costStructure: { zh: "成本结构", en: "Cost Structure", ru: "Структура затрат" },
   costKicker: { zh: "Cost Structure", en: "Cost Structure", ru: "Затраты" },
   costProcure: { zh: "采购+到俄运输", en: "Procurement + Shipping", ru: "Закупка + Доставка" },
+  costPlatformFee: { zh: "平台费用", en: "Platform Fees", ru: "Комиссия площадки" },
   costWarehouse: { zh: "海外仓", en: "Warehouse", ru: "Склад" },
   costMgmt: { zh: "管理费", en: "Management", ru: "Управление" },
   costTax: { zh: "税", en: "Tax", ru: "Налоги" },
