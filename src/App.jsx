@@ -234,10 +234,10 @@ const getSchedule = (id, qty, n, store) => {
 // 250M-450M ₽: 7%(无进项抵扣)
 // 450M+ : 强制 OSN
 const VAT_TIER = (cumRevenue) => {
-  if (cumRevenue <= 20_000_000) return { rate: 0, label: "免VAT", tier: 0 };
-  if (cumRevenue <= 250_000_000) return { rate: 0.05, label: "VAT 5%", tier: 1 };
-  if (cumRevenue <= 450_000_000) return { rate: 0.07, label: "VAT 7%", tier: 2 };
-  return { rate: 0.22, label: "VAT 22% (OSN)", tier: 3 };
+  if (cumRevenue <= 20_000_000) return { rate: 0, labelKey: "vatLabelNoVat", tier: 0 };
+  if (cumRevenue <= 250_000_000) return { rate: 0.05, labelKey: "vatLabelVat5", tier: 1 };
+  if (cumRevenue <= 450_000_000) return { rate: 0.07, labelKey: "vatLabelVat7", tier: 2 };
+  return { rate: 0.22, labelKey: "vatLabelOsn22", tier: 3 };
 };
 
 // 获取某月的售价/平台费，未设置则用默认值
@@ -279,7 +279,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
     grossProfit: 0, tax: 0, vatRemit: 0, netProfit: -initialOutflow,
     partnerPayout: 0, cashFlow: -initialOutflow, cumCash,
     soldQty: 0, isInitial: true, importVAT: totalImportVAT,
-    effectiveScheme: params.taxScheme, vatTierLabel: "—", cumRevenue: priorYearRevenue || 0,
+    effectiveScheme: params.taxScheme, vatTierKey: null, cumRevenue: priorYearRevenue || 0,
   });
 
   // 跨月累计营收（动态 VAT 触发用）
@@ -317,12 +317,12 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
 
     // 决定本月用什么税制
     let effectiveScheme = params.taxScheme;
-    let vatTierLabel = "—";
+    let vatTierKey = null;
 
     // 仅当用户选了USN且开启了"自动跨档"，才动态升级
     if (autoVATEscalation && (params.taxScheme === "usn_6" || params.taxScheme === "usn_15")) {
       const tier = VAT_TIER(cumRevenue);
-      vatTierLabel = tier.label;
+      vatTierKey = tier.labelKey;
       if (tier.tier > 0) {
         if (!vatTriggered) {
           vatTriggered = true;
@@ -339,10 +339,10 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
       }
     } else {
       // 用户手动选了带VAT的方案：显示该方案档位
-      if (params.taxScheme === "usn_15_vat5") vatTierLabel = "VAT 5% (固定)";
-      else if (params.taxScheme === "usn_15_vat7") vatTierLabel = "VAT 7% (固定)";
-      else if (params.taxScheme === "osn") vatTierLabel = `VAT ${(params.vatRate*100).toFixed(0)}% (固定)`;
-      else vatTierLabel = "免VAT";
+      if (params.taxScheme === "usn_15_vat5") vatTierKey = "vatLabelFixed5";
+      else if (params.taxScheme === "usn_15_vat7") vatTierKey = "vatLabelFixed7";
+      else if (params.taxScheme === "osn") vatTierKey = "vatLabelFixedOsn";
+      else vatTierKey = "vatLabelNoVat";
     }
 
     // 计算本月销项VAT率
@@ -385,7 +385,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
     months.push({
       monthIdx: m, label: `M${m}`, revenue, cogs, expenses, fixedCost, grossProfit,
       tax, vatRemit, netProfit, partnerPayout, cashFlow, cumCash, soldQty, isInitial: false,
-      effectiveScheme, vatTierLabel, cumRevenue,
+      effectiveScheme, vatTierKey, cumRevenue, vatRate: params.vatRate,
     });
   }
 
@@ -771,7 +771,7 @@ function AppContent({ lang, setLang }) {
         <td class="r mono">${m.isInitial ? '—' : fR(m.tax)}</td>
         <td class="r mono ${m.netProfit >= 0 ? 'pos' : 'neg'}">${fR(m.netProfit)}</td>
         <td class="r mono ${m.cumCash >= 0 ? 'pos' : 'neg'}">${fR(m.cumCash)}</td>
-        <td class="mono">${m.isInitial ? '—' : (m.vatTierLabel || '—')}</td>
+        <td class="mono">${m.isInitial ? '—' : (m.vatTierKey ? t(m.vatTierKey, m.vatTierKey === "vatLabelFixedOsn" ? { rate: (m.vatRate*100).toFixed(0) } : {}) : '—')}</td>
       </tr>`;
     }).join("\n");
 
@@ -2321,8 +2321,8 @@ const ProjectionTab = ({ proj, projection, setProjection, params, t, lang, fmt }
                   <td className="p-2 font-mono font-semibold">
                     {m.label}{m.isInitial && <span className="ml-1 text-[10px]" style={{ color: COLORS.crimson }}>{t("investLabel")}</span>}
                   </td>
-                  <td className="p-2 text-[10px]" style={{ color: m.vatTierLabel && m.vatTierLabel.startsWith("VAT") && !m.vatTierLabel.includes("固定") ? COLORS.crimson : COLORS.inkSoft }}>
-                    {m.isInitial ? "—" : (m.vatTierLabel || "—")}
+                  <td className="p-2 text-[10px]" style={{ color: m.vatTierKey && (m.vatTierKey === "vatLabelVat5" || m.vatTierKey === "vatLabelVat7" || m.vatTierKey === "vatLabelOsn22") ? COLORS.crimson : COLORS.inkSoft }}>
+                    {m.isInitial ? "—" : (m.vatTierKey ? t(m.vatTierKey, m.vatTierKey === "vatLabelFixedOsn" ? { rate: (m.vatRate*100).toFixed(0) } : {}) : "—")}
                   </td>
                   <td className="p-2 text-right font-mono">{m.soldQty || "—"}</td>
                   <td className="p-2 text-right font-mono">{m.revenue ? F(m.revenue) : "—"}</td>

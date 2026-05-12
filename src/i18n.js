@@ -288,6 +288,14 @@ const DICT = {
   thCumCashD: { zh: "累计现金", en: "Cum. Cash", ru: "Накоп. кэш" },
   investLabel: { zh: "(投资)", en: "(invest)", ru: "(инвест.)" },
   vatFixedSuffix: { zh: "(固定)", en: "(fixed)", ru: "(фикс.)" },
+  // === VAT Tier Labels (cash flow table "税档" column) ===
+  vatLabelNoVat: { zh: "免VAT", en: "No VAT", ru: "Без НДС" },
+  vatLabelVat5: { zh: "VAT 5%", en: "VAT 5%", ru: "НДС 5%" },
+  vatLabelVat7: { zh: "VAT 7%", en: "VAT 7%", ru: "НДС 7%" },
+  vatLabelOsn22: { zh: "VAT 22% (OSN)", en: "VAT 22% (GTS)", ru: "НДС 22% (ОСН)" },
+  vatLabelFixed5: { zh: "VAT 5% (固定)", en: "VAT 5% (fixed)", ru: "НДС 5% (фикс.)" },
+  vatLabelFixed7: { zh: "VAT 7% (固定)", en: "VAT 7% (fixed)", ru: "НДС 7% (фикс.)" },
+  vatLabelFixedOsn: { zh: "VAT {rate}% (固定)", en: "VAT {rate}% (fixed)", ru: "НДС {rate}% (фикс.)" },
 
   // === Tax Scheme Picker ===
   taxUsn6Label: { zh: "УСН 6%（按收入）", en: "STS 6% (on revenue)", ru: "УСН 6% (по доходам)" },
