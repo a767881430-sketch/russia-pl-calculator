@@ -46,8 +46,26 @@ const TAX_SCHEMES = {
 
 const DEFAULT_PARAMS = {
   exchangeRate: 12.0, usdRate: 95, damageRate: 0.03, shippingPerUnit: 100, labelingPerUnit: 0,
+  grayShipPrice: 0, whiteShipPrice: 0,  // ¥/kg 和 ¥/m³，用户自行输入
   taxScheme: "usn_15", vatRate: 0.22, profitTaxRate: 0.25, customTaxRate: 0.15,
   incomeBasis: "payout", oneTimeCosts: 0,
+};
+
+// 计算单件运费（₽），支持三种模式
+const calcShipping = (product, params) => {
+  const mode = product.shippingMode || "manual";
+  if (mode === "gray" && (product.weightKg || 0) > 0 && params.grayShipPrice > 0) {
+    return (product.weightKg || 0) * params.grayShipPrice * params.exchangeRate;
+  } else if (mode === "white" && (product.volL || 0) > 0 && (product.volW || 0) > 0 && (product.volH || 0) > 0 && params.whiteShipPrice > 0) {
+    const volM3 = (product.volL * product.volW * product.volH) / 1e6;
+    return volM3 * params.whiteShipPrice * params.exchangeRate;
+  }
+  return params.shippingPerUnit; // 手动模式：用全局固定运费
+};
+
+// 灰关模式下商品是否有进项VAT发票
+const hasImportVATInvoice = (product) => {
+  return (product.shippingMode || "manual") !== "gray";
 };
 
 const DEFAULT_PROJECTION = {
@@ -125,8 +143,9 @@ const calcProduct = (p, params) => {
   const declaredCNY = (p.declaredCNY ?? p.priceCNY) || 0;
   const priceRUB = (p.priceCNY || 0) * params.exchangeRate;
   const declaredRUB = declaredCNY * params.exchangeRate;
-  const unitCost = priceRUB + params.shippingPerUnit + params.labelingPerUnit;
-  const declaredUnitCost = declaredRUB + params.shippingPerUnit + params.labelingPerUnit;
+  const shipPerUnit = calcShipping(p, params);
+  const unitCost = priceRUB + shipPerUnit + params.labelingPerUnit;
+  const declaredUnitCost = declaredRUB + shipPerUnit + params.labelingPerUnit;
   const totalInvestment = unitCost * (p.qty || 0);
   const totalDeclaredCost = declaredUnitCost * (p.qty || 0);
 
@@ -136,7 +155,9 @@ const calcProduct = (p, params) => {
   const totalWarehouse = (p.warehouse || 0) * (p.qty || 0);
   const totalMgmt = (p.mgmt || 0) * (p.qty || 0);
 
-  const inputVATPerUnit = params.taxScheme === "osn" ? declaredRUB * params.vatRate : 0;
+  // 灰关无进项VAT发票，OSN下不可抵扣
+  const canDeductVAT = params.taxScheme === "osn" && hasImportVATInvoice(p);
+  const inputVATPerUnit = canDeductVAT ? declaredRUB * params.vatRate : 0;
   const totalInputVAT = inputVATPerUnit * (p.qty || 0);
 
   let outputVATRate = 0;
@@ -240,11 +261,12 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
   let totalActual = 0, totalDeclared = 0, totalImportVAT = 0;
   for (const p of products) {
     const declaredCNY = (p.declaredCNY ?? p.priceCNY) || 0;
-    const actualUnit = (p.priceCNY || 0) * params.exchangeRate + params.shippingPerUnit + params.labelingPerUnit;
-    const declaredUnit = declaredCNY * params.exchangeRate + params.shippingPerUnit + params.labelingPerUnit;
+    const shipPerUnit = calcShipping(p, params);
+    const actualUnit = (p.priceCNY || 0) * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
+    const declaredUnit = declaredCNY * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
     totalActual += actualUnit * (p.qty || 0);
     totalDeclared += declaredUnit * (p.qty || 0);
-    if (params.taxScheme === "osn") {
+    if (params.taxScheme === "osn" && hasImportVATInvoice(p)) {
       totalImportVAT += declaredCNY * params.exchangeRate * (p.qty || 0) * params.vatRate;
     }
   }
@@ -275,8 +297,9 @@ const calcProjection = (products, params, projection, store, priceStore = {}) =>
       const sched = getSchedule(p.id, p.qty || 0, monthsHorizon, store);
       const q = sched[m - 1] || 0;
       soldQty += q;
-      const unitCost = (p.priceCNY || 0) * params.exchangeRate + params.shippingPerUnit + params.labelingPerUnit;
-      const declaredUnit = declaredCNY * params.exchangeRate + params.shippingPerUnit + params.labelingPerUnit;
+      const shipPerUnit = calcShipping(p, params);
+      const unitCost = (p.priceCNY || 0) * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
+      const declaredUnit = declaredCNY * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
       // 按月取售价/平台费
       const monthList = getPriceForMonth(p.id, m - 1, p.list || 0, priceStore);
       const monthFee = getFeeForMonth(p.id, m - 1, p.platformFee || 0, priceStore);
@@ -1739,6 +1762,48 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
             </div>
           ))}
         </div>
+        {/* Shipping mode per product */}
+        <div className="mt-2 p-2.5 border" style={{ borderColor: COLORS.line, background: COLORS.paper }}>
+          <div className="text-[10px] tracking-widest uppercase mb-2" style={{ color: COLORS.gold }}>{t("shippingMode")}</div>
+          <div className="flex gap-1 mb-2">
+            {["manual", "gray", "white"].map(m => (
+              <button key={m} onClick={() => onUpdate(idx, "shippingMode", m)}
+                className="px-2.5 py-1.5 text-[11px] font-medium rounded-sm border"
+                style={{
+                  borderColor: (product.shippingMode || "manual") === m ? COLORS.oxblood : COLORS.line,
+                  background: (product.shippingMode || "manual") === m ? COLORS.oxblood : "white",
+                  color: (product.shippingMode || "manual") === m ? COLORS.cream : COLORS.inkSoft,
+                }}>
+                {m === "manual" ? t("shippingManual") : m === "gray" ? t("shippingGray") : t("shippingWhite")}
+              </button>
+            ))}
+          </div>
+          {(product.shippingMode || "manual") === "gray" && (
+            <div className="flex items-center gap-2">
+              <label className="text-[11px] whitespace-nowrap" style={{ color: COLORS.inkSoft }}>{t("weightKg")}:</label>
+              <NumInput value={product.weightKg || 0} onChange={(v) => onUpdate(idx, "weightKg", v)} suffix="kg" step={0.01} className="flex-1" />
+              <span className="text-[10px] font-mono" style={{ color: COLORS.gold }}>→ {fmtRub(calcShipping(product, params))}/件</span>
+            </div>
+          )}
+          {(product.shippingMode || "manual") === "white" && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <label className="text-[11px] whitespace-nowrap" style={{ color: COLORS.inkSoft }}>{t("volumeLWH")}:</label>
+              </div>
+              <div className="flex gap-1.5 items-center">
+                <NumInput value={product.volL || 0} onChange={(v) => onUpdate(idx, "volL", v)} suffix="cm" step={0.1} className="flex-1" />
+                <span className="text-xs">×</span>
+                <NumInput value={product.volW || 0} onChange={(v) => onUpdate(idx, "volW", v)} suffix="cm" step={0.1} className="flex-1" />
+                <span className="text-xs">×</span>
+                <NumInput value={product.volH || 0} onChange={(v) => onUpdate(idx, "volH", v)} suffix="cm" step={0.1} className="flex-1" />
+              </div>
+              <span className="text-[10px] font-mono" style={{ color: COLORS.gold }}>→ {((product.volL || 0) * (product.volW || 0) * (product.volH || 0) / 1e6).toFixed(4)} m³ · {fmtRub(calcShipping(product, params))}/件</span>
+            </div>
+          )}
+          {(product.shippingMode || "manual") === "gray" && params.taxScheme === "osn" && (
+            <div className="mt-1 text-[10px]" style={{ color: COLORS.crimson }}>{t("grayNoVatNote")}</div>
+          )}
+        </div>
       </div>
       <div className="lg:col-span-2 space-y-3">
         <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.gold }}>{t("editorCalcDetail")}</div>
@@ -1750,7 +1815,7 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
               <div className="text-right" style={{ color: COLORS.oxblood }}>{Ff(calc.declaredRUB, 2)}</div>
             </>
           )}
-          <div style={{ color: COLORS.inkSoft }}>{t("calcShipping")}</div><div className="text-right">{Ff(params.shippingPerUnit)}</div>
+          <div style={{ color: COLORS.inkSoft }}>{t("calcShipping")}</div><div className="text-right">{Ff(calcShipping(product, params))}</div>
           <div style={{ color: COLORS.inkSoft }}>{t("calcLabeling")}</div><div className="text-right">{Ff(params.labelingPerUnit)}</div>
           <div className="border-t pt-1" style={{ borderColor: COLORS.line }}>{t("calcUnitCost")}</div>
           <div className="text-right border-t pt-1" style={{ borderColor: COLORS.line }}>{Ff(calc.unitCost, 2)}</div>
@@ -2380,7 +2445,6 @@ const ParamsPanel = ({ params, setParams, t }) => {
     { label: t("paramExchangeRate"), k: "exchangeRate", suffix: "₽/¥", step: 0.1 },
     { label: t("paramUsdRate"), k: "usdRate", suffix: "₽/$", step: 0.5 },
     { label: t("paramDamageRate"), k: "damageRate", suffix: "%", step: 0.5, multiplier: 100 },
-    { label: t("paramShipping"), k: "shippingPerUnit", suffix: "₽" },
     { label: t("paramLabeling"), k: "labelingPerUnit", suffix: "₽" },
     { label: t("paramOneTime"), k: "oneTimeCosts", suffix: "₽", step: 100 },
   ];
@@ -2394,6 +2458,24 @@ const ParamsPanel = ({ params, setParams, t }) => {
             suffix={it.suffix} step={it.step || 1} className="mt-1" />
         </div>
       ))}
+      {/* Shipping section */}
+      <div className="pt-3 mt-2 border-t" style={{ borderColor: COLORS.line }}>
+        <div className="text-[10px] tracking-widest uppercase mb-2" style={{ color: COLORS.gold }}>{t("shippingMode")}</div>
+        <div className="space-y-2">
+          <div>
+            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("paramShipping")} ({t("shippingManual")})</label>
+            <NumInput value={params.shippingPerUnit} onChange={(v) => setParams(p => ({ ...p, shippingPerUnit: v }))} suffix="₽/件" step={1} className="mt-1" />
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("grayShipPrice")}</label>
+            <NumInput value={params.grayShipPrice} onChange={(v) => setParams(p => ({ ...p, grayShipPrice: v }))} suffix="¥/kg" step={0.5} className="mt-1" />
+          </div>
+          <div>
+            <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("whiteShipPrice")}</label>
+            <NumInput value={params.whiteShipPrice} onChange={(v) => setParams(p => ({ ...p, whiteShipPrice: v }))} suffix="¥/m³" step={10} className="mt-1" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
