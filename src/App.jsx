@@ -1522,23 +1522,17 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang, fmt }) =>
   const F = fmt.fmtPrimary, Fs = fmt.fmtSecondary;
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
           <Metric label={t("totalInvestment")} value={F(totals.totalCostBasis)} sub={Fs(totals.totalCostBasis)} big />
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
           <Metric label={t("totalRevenue")} value={F(totals.totalRevenue)} sub={Fs(totals.totalRevenue)} big />
         </div>
-        <div className="p-4 sm:p-5 card-hover rounded-sm border-2" style={{ borderColor: proj.totalNetProfit >= 0 ? COLORS.emerald : COLORS.crimson, background: "rgba(255,255,255,0.7)" }}>
-          <Metric label={t("projNetProfit")}
-            value={F(proj.totalNetProfit)}
-            sub={`${t("projMonthsRange", { n: projection.monthsHorizon })}`}
-            color={proj.totalNetProfit >= 0 ? COLORS.emerald : COLORS.crimson} big />
-        </div>
         <div className="p-4 sm:p-5 card-hover rounded-sm border-2" style={{ borderColor: proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson, background: "rgba(255,255,255,0.7)" }}>
           <Metric label={t("endingCash")}
             value={F(proj.finalCash)}
-            sub={Fs(proj.finalCash)}
+            sub={t("projMonthsRange", { n: projection.monthsHorizon })}
             color={proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson} big />
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
