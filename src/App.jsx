@@ -840,8 +840,13 @@ function AppContent({ lang, setLang }) {
     // Cash flow rows
     const cfRows = proj.months.map(m => {
       const cls = m.isInitial ? 'init-row' : '';
+      const restockLabel = m.restockQty > 0 ? `+${m.restockQty}` : '—';
+      const restockCostLabel = m.restockCost > 0 && !m.isInitial ? `<br><small style="color:#A4193D">-${fR(m.restockCost)}</small>` : '';
+      const stockCls = m.stockWarning ? 'neg' : '';
       return `<tr class="${cls}">
         <td class="mono">${m.isInitial ? t("initialRow") : m.label}</td>
+        <td class="r mono" style="color:${m.restockQty > 0 ? '#A4193D' : ''}">${restockLabel}${restockCostLabel}</td>
+        <td class="r mono ${stockCls}">${m.stockEnd}${m.stockWarning ? ' ⚠' : ''}</td>
         <td class="r mono">${m.soldQty}</td>
         <td class="r mono">${m.isInitial ? '—' : fR(m.revenue)}</td>
         <td class="r mono">${m.isInitial ? fR(-proj.initialOutflow) : fR(m.cogs)}</td>
@@ -1259,6 +1264,8 @@ function AppContent({ lang, setLang }) {
     <table>
       <thead><tr>
         <th>${t("thMonth")}</th>
+        <th class="r">${t("colRestock")}</th>
+        <th class="r">${t("colStock")}</th>
         <th class="r">${t("thSoldQty")}</th>
         <th class="r">${t("thRevenue")}</th>
         <th class="r">${t("thCogs")}</th>
