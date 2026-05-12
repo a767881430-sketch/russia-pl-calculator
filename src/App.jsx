@@ -1744,7 +1744,7 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
 };
 
 const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
-  const Ff = fmt ? fmt.fmtPrimaryFull : fmtRub;
+  const Ff = (v, d = 0) => fmtRub(v, d);  // 计算明细面板统一用₽显示（这些值都是卢布单位）
   const fields = [
     { label: t("fieldProductId"), k: "id", type: "text" },
     { label: t("fieldActualCost"), k: "priceCNY", suffix: "¥", step: 0.01 },
@@ -1840,7 +1840,7 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
           <div style={{ color: COLORS.inkSoft }}>{t("calcUnitGross")}</div><div className="text-right">{Ff(calc.unitPayout - calc.unitCost)}</div>
           <div className="border-t pt-1" style={{ borderColor: COLORS.line }}>{t("calcUnitNet")}</div>
           <div className="text-right border-t pt-1" style={{ borderColor: COLORS.line, color: calc.unitNetProfit > 0 ? COLORS.emerald : COLORS.crimson }}>
-            {Ff(calc.unitNetProfit, 2)} ({fmt.fmtSecondary(calc.unitNetProfit)})
+            {Ff(calc.unitNetProfit, 2)} ({fmt.fmtPrimaryFull(calc.unitNetProfit)})
           </div>
           {params.taxScheme === "osn" && (
             <>
