@@ -764,7 +764,9 @@ function AppContent({ lang, setLang }) {
     if (curveType === "reset") { setScheduleStore({}); return; }
     const next = {};
     for (const p of products) {
-      const total = p.qty || 0; const n = projection.monthsHorizon;
+      const rSched = restockStore[p.id] || [p.qty || 0];
+      const total = rSched.reduce((a, b) => a + (b || 0), 0) || (p.qty || 0);
+      const n = projection.monthsHorizon;
       let arr;
       if (curveType === "linear") arr = distributeEvenly(total, n);
       else if (curveType === "frontload") {
