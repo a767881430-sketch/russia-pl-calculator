@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from "recharts";
-import { Plus, Trash2, Save, Info, ChevronDown, ChevronRight, RotateCcw, FileDown, AlertCircle, Sparkles, Globe, Share2 } from "lucide-react";
+import { Plus, Trash2, Save, Info, ChevronDown, ChevronRight, RotateCcw, FileDown, AlertCircle, Sparkles, Globe, Share2, FolderOpen, FilePlus, Upload, Copy, X, Edit3 } from "lucide-react";
 import { createT, createCurrencyFormatter, useLiveRate, LANG_OPTIONS } from "./i18n.js";
 
 // ============================================================
@@ -630,6 +630,10 @@ function AppContent({ lang, setLang }) {
   const [storageBusy, setStorageBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
+  // --- 多项目管理状态 ---
+  const [projectName, setProjectName] = useState("");  // 启动时从 localStorage 读取
+  const [showProjectPanel, setShowProjectPanel] = useState(false);
+
   // --- i18n ---
   const t = useMemo(() => createT(lang), [lang]);
   const { liveRate, liveUsdRate, effectiveRate, effectiveUsdRate, rateSource, rateLoading, fetchRate, setRateSource } = useLiveRate(params.exchangeRate, params.usdRate);
@@ -647,6 +651,29 @@ function AppContent({ lang, setLang }) {
       });
     }
   }, [liveRate, liveUsdRate, rateSource]);
+
+  // ============================================================
+  // 多项目存储辅助函数
+  // ============================================================
+  const PROJECTS_KEY = "ru_calc_projects";  // { [name]: { data, savedAt, skuCount } }
+
+  const getProjectIndex = () => {
+    try { return JSON.parse(localStorage.getItem(PROJECTS_KEY) || "{}"); } catch { return {}; }
+  };
+
+  const getCurrentData = () => ({
+    params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection,
+  });
+
+  const applyData = (data) => {
+    if (data.params) setParams({ ...DEFAULT_PARAMS, ...data.params });
+    if (Array.isArray(data.products)) setProducts(data.products);
+    if (data.scheduleStore) setScheduleStore(data.scheduleStore); else setScheduleStore({});
+    if (data.priceScheduleStore) setPriceScheduleStore(data.priceScheduleStore); else setPriceScheduleStore({});
+    if (data.restockStore) setRestockStore(data.restockStore); else setRestockStore({});
+    if (data.withdrawalStore) setWithdrawalStore(data.withdrawalStore); else setWithdrawalStore({ amounts: [] });
+    if (data.projection) setProjection({ ...DEFAULT_PROJECTION, ...data.projection });
+  };
 
   // --- 启动时加载数据：优先从分享链接 hash，其次 localStorage ---
   useEffect(() => {
@@ -669,6 +696,7 @@ function AppContent({ lang, setLang }) {
         if (parsed.ws || parsed.withdrawalStore) setWithdrawalStore(parsed.ws || parsed.withdrawalStore);
         const pj = parsed.pj || parsed.projection;
         if (pj) setProjection({ ...DEFAULT_PROJECTION, ...pj });
+        setProjectName(parsed.projectName || t("projectUntitled"));
         setStorageStatus(t("loadedShare"));
         setTimeout(() => setStorageStatus(""), 3000);
         window.history.replaceState(null, '', window.location.pathname);
@@ -683,40 +711,245 @@ function AppContent({ lang, setLang }) {
     const hash = window.location.hash;
     if (hash.startsWith('#share=')) { loadShared(hash.slice(7)); return; }
 
-    // Fallback: localStorage
+    // 尝试从多项目索引加载上次打开的项目
     try {
-      const saved = localStorage.getItem("ru_calc_v2");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.params) setParams({ ...DEFAULT_PARAMS, ...parsed.params });
-        if (Array.isArray(parsed.products)) setProducts(parsed.products);
-        if (parsed.scheduleStore) setScheduleStore(parsed.scheduleStore);
-        if (parsed.priceScheduleStore) setPriceScheduleStore(parsed.priceScheduleStore);
-        if (parsed.restockStore) setRestockStore(parsed.restockStore);
-        if (parsed.withdrawalStore) setWithdrawalStore(parsed.withdrawalStore);
-        if (parsed.projection) setProjection({ ...DEFAULT_PROJECTION, ...parsed.projection });
-        setStorageStatus(t("loadedLocal"));
+      const index = getProjectIndex();
+      const lastProject = localStorage.getItem("ru_calc_last_project");
+
+      if (lastProject && index[lastProject]) {
+        // 加载上次打开的项目
+        applyData(index[lastProject].data);
+        setProjectName(lastProject);
+        setStorageStatus(t("projectLoaded", { name: lastProject }));
         setTimeout(() => setStorageStatus(""), 2200);
+      } else if (Object.keys(index).length > 0) {
+        // 有项目但没有 last_project，加载第一个
+        const firstName = Object.keys(index)[0];
+        applyData(index[firstName].data);
+        setProjectName(firstName);
+        setStorageStatus(t("projectLoaded", { name: firstName }));
+        setTimeout(() => setStorageStatus(""), 2200);
+      } else {
+        // 兼容旧版：迁移 ru_calc_v2 数据
+        const oldSaved = localStorage.getItem("ru_calc_v2");
+        if (oldSaved) {
+          const parsed = JSON.parse(oldSaved);
+          applyData(parsed);
+          const migrateName = t("projectUntitled");
+          setProjectName(migrateName);
+          // 自动保存到新格式
+          const newIndex = {};
+          newIndex[migrateName] = {
+            data: parsed,
+            savedAt: new Date().toISOString(),
+            skuCount: Array.isArray(parsed.products) ? parsed.products.length : 0,
+          };
+          localStorage.setItem(PROJECTS_KEY, JSON.stringify(newIndex));
+          localStorage.setItem("ru_calc_last_project", migrateName);
+          setStorageStatus(t("loadedLocal"));
+          setTimeout(() => setStorageStatus(""), 2200);
+        } else {
+          setProjectName(t("projectUntitled"));
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error("Failed to load projects:", e);
+      setProjectName(t("projectUntitled"));
+    }
     setLoaded(true);
   }, []);
 
-  // --- 数据变化时自动保存到 localStorage ---
+  // --- 数据变化时自动保存到 localStorage（保持自动保存到当前项目）---
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || !projectName) return;
     try {
-      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection }));
+      const index = getProjectIndex();
+      index[projectName] = {
+        data: getCurrentData(),
+        savedAt: new Date().toISOString(),
+        skuCount: products.length,
+      };
+      localStorage.setItem(PROJECTS_KEY, JSON.stringify(index));
+      localStorage.setItem("ru_calc_last_project", projectName);
+      // 同时保留旧 key 兼容
+      localStorage.setItem("ru_calc_v2", JSON.stringify(getCurrentData()));
     } catch (e) {}
-  }, [params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection, loaded]);
+  }, [params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection, loaded, projectName]);
 
-  const saveToCloud = () => {
+  // ============================================================
+  // 项目管理函数
+  // ============================================================
+  const saveProject = (name) => {
+    if (!name) return;
     setStorageBusy(true);
     try {
-      localStorage.setItem("ru_calc_v2", JSON.stringify({ params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection }));
-      setStorageStatus(t("saved"));
+      const index = getProjectIndex();
+      index[name] = {
+        data: getCurrentData(),
+        savedAt: new Date().toISOString(),
+        skuCount: products.length,
+      };
+      localStorage.setItem(PROJECTS_KEY, JSON.stringify(index));
+      localStorage.setItem("ru_calc_last_project", name);
+      setProjectName(name);
+      setStorageStatus(t("projectSaved", { name }));
     } catch (e) { setStorageStatus(t("saveFail")); }
     finally { setStorageBusy(false); setTimeout(() => setStorageStatus(""), 2200); }
+  };
+
+  const saveToCloud = () => saveProject(projectName);
+
+  const saveAsProject = () => {
+    const newName = prompt(t("projectSaveAsPrompt"), projectName + " " + t("projectDuplicate"));
+    if (!newName || !newName.trim()) return;
+    const trimmed = newName.trim();
+    const index = getProjectIndex();
+    if (index[trimmed] && !confirm(t("projectNameExists"))) return;
+    saveProject(trimmed);
+  };
+
+  const loadProject = (name) => {
+    const index = getProjectIndex();
+    if (!index[name]) return;
+    if (!confirm(t("projectOpenConfirm", { name }))) return;
+    applyData(index[name].data);
+    setProjectName(name);
+    localStorage.setItem("ru_calc_last_project", name);
+    setStorageStatus(t("projectLoaded", { name }));
+    setTimeout(() => setStorageStatus(""), 2200);
+    setShowProjectPanel(false);
+    setExpandedRow(null);
+  };
+
+  const deleteProject = (name) => {
+    if (!confirm(t("projectDeleteConfirm", { name }))) return;
+    const index = getProjectIndex();
+    delete index[name];
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(index));
+    // 如果删的是当前项目，不改变界面数据，只更新标题
+    if (name === projectName) {
+      const remaining = Object.keys(index);
+      if (remaining.length > 0) {
+        loadProject(remaining[0]); // 这里不弹 confirm
+      }
+    }
+    setStorageStatus(t("projectSaved", { name: "✓" }));
+    setTimeout(() => setStorageStatus(""), 2200);
+  };
+
+  const renameProject = (oldName, newName) => {
+    if (!newName || !newName.trim() || newName.trim() === oldName) return;
+    const trimmed = newName.trim();
+    const index = getProjectIndex();
+    if (index[trimmed] && !confirm(t("projectNameExists"))) return;
+    index[trimmed] = index[oldName];
+    delete index[oldName];
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(index));
+    if (oldName === projectName) {
+      setProjectName(trimmed);
+      localStorage.setItem("ru_calc_last_project", trimmed);
+    }
+  };
+
+  const newProject = () => {
+    const name = prompt(t("projectNewNamePrompt"));
+    if (!name || !name.trim()) return;
+    const trimmed = name.trim();
+    // 先保存当前项目
+    saveProject(projectName);
+    // 清空所有数据
+    setParams(DEFAULT_PARAMS);
+    setProducts([]);
+    setScheduleStore({});
+    setPriceScheduleStore({});
+    setRestockStore({});
+    setWithdrawalStore({ amounts: [] });
+    setProjection(DEFAULT_PROJECTION);
+    setExpandedRow(null);
+    setProjectName(trimmed);
+    // 立即保存空项目
+    const index = getProjectIndex();
+    index[trimmed] = {
+      data: { params: DEFAULT_PARAMS, products: [], scheduleStore: {}, priceScheduleStore: {}, restockStore: {}, withdrawalStore: { amounts: [] }, projection: DEFAULT_PROJECTION },
+      savedAt: new Date().toISOString(),
+      skuCount: 0,
+    };
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(index));
+    localStorage.setItem("ru_calc_last_project", trimmed);
+    setShowProjectPanel(false);
+    setStorageStatus(t("projectSaved", { name: trimmed }));
+    setTimeout(() => setStorageStatus(""), 2200);
+  };
+
+  const exportProjectJSON = () => {
+    const data = { projectName, ...getCurrentData() };
+    const json = JSON.stringify(data, null, 2);
+    // 使用 data URI 方式确保文件名正确（避免 blob URL 产生 UUID 文件名）
+    const safeName = (projectName || "project").replace(/[<>:"/\\|?*]/g, "_");
+    const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(json);
+    const a = document.createElement("a");
+    a.href = dataUri;
+    a.download = `${safeName}.json`;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setStorageStatus("✓ JSON " + t("projectExportJson"));
+    setTimeout(() => setStorageStatus(""), 2200);
+  };
+
+  const importProjectJSON = () => {
+    const input = document.createElement("input");
+    input.type = "file"; input.accept = ".json";
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const parsed = JSON.parse(ev.target.result);
+          // 验证基本结构
+          if (!parsed.params && !parsed.products && !parsed.p && !parsed.pr) {
+            setStorageStatus(t("projectImportFail"));
+            setTimeout(() => setStorageStatus(""), 3000);
+            return;
+          }
+          // 支持两种格式：完整格式和分享精简格式
+          const data = {};
+          data.params = parsed.p || parsed.params || DEFAULT_PARAMS;
+          data.products = parsed.pr || parsed.products || [];
+          data.scheduleStore = parsed.ss || parsed.scheduleStore || {};
+          data.priceScheduleStore = parsed.ps || parsed.priceScheduleStore || {};
+          data.restockStore = parsed.rs || parsed.restockStore || {};
+          data.withdrawalStore = parsed.ws || parsed.withdrawalStore || { amounts: [] };
+          data.projection = parsed.pj || parsed.projection || DEFAULT_PROJECTION;
+
+          applyData(data);
+          const importName = parsed.projectName || file.name.replace(/\.json$/i, "");
+          setProjectName(importName);
+
+          // 保存到项目索引
+          const index = getProjectIndex();
+          index[importName] = {
+            data,
+            savedAt: new Date().toISOString(),
+            skuCount: Array.isArray(data.products) ? data.products.length : 0,
+          };
+          localStorage.setItem(PROJECTS_KEY, JSON.stringify(index));
+          localStorage.setItem("ru_calc_last_project", importName);
+          setStorageStatus(t("projectImportSuccess", { name: importName }));
+          setTimeout(() => setStorageStatus(""), 3000);
+          setShowProjectPanel(false);
+          setExpandedRow(null);
+        } catch (err) {
+          console.error("Import failed:", err);
+          setStorageStatus(t("projectImportFail"));
+          setTimeout(() => setStorageStatus(""), 3000);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
   };
 
   // === 分享链接：压缩精简后的状态到 URL hash ===
@@ -1447,7 +1680,21 @@ function AppContent({ lang, setLang }) {
               </div>
               <div>
                 <div className="text-[9px] sm:text-[10px] tracking-[0.25em] uppercase hidden sm:block" style={{ color: COLORS.gold }}>{t("brandSub")}</div>
-                <h1 className="font-display text-lg sm:text-2xl font-bold">{t("brandTitle")}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-display text-lg sm:text-2xl font-bold">{t("brandTitle")}</h1>
+                  <span className="text-[10px] sm:text-xs" style={{ color: COLORS.inkSoft }}>·</span>
+                  <DebouncedTextInput
+                    value={projectName}
+                    onCommit={(v) => {
+                      const trimmed = (v || "").trim();
+                      if (!trimmed || trimmed === projectName) return;
+                      renameProject(projectName, trimmed);
+                    }}
+                    className="font-display text-sm sm:text-base font-semibold bg-transparent border-b border-dashed px-1 py-0.5 max-w-[200px] sm:max-w-[300px]"
+                    style={{ color: COLORS.oxblood, borderColor: COLORS.gold + "80" }}
+                    title={t("projectCurrentLabel")}
+                  />
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
@@ -1466,26 +1713,55 @@ function AppContent({ lang, setLang }) {
                 ))}
               </div>
               {storageStatus && <span className="text-xs font-mono" style={{ color: COLORS.gold }}>{storageStatus}</span>}
+              {/* 项目列表 */}
+              <button onClick={() => setShowProjectPanel(true)}
+                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                style={{ borderColor: COLORS.gold, color: COLORS.gold }} title={t("projectList")}>
+                <FolderOpen size={14} /> <span className="hidden sm:inline">{t("projectList")}</span>
+              </button>
+              {/* 保存 */}
               <button onClick={saveToCloud} disabled={storageBusy}
                 className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border disabled:opacity-50 rounded-sm"
                 style={{ borderColor: COLORS.oxblood, color: COLORS.oxblood }}>
-                <Save size={14} /> <span className="hidden sm:inline">{storageBusy ? t("saving") : t("saveCloud")}</span>
+                <Save size={14} /> <span className="hidden sm:inline">{storageBusy ? t("saving") : t("projectSave")}</span>
               </button>
+              {/* 另存为 */}
+              <button onClick={saveAsProject}
+                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                style={{ borderColor: COLORS.inkSoft, color: COLORS.inkSoft }} title={t("projectSaveAs")}>
+                <Copy size={14} /> <span className="hidden lg:inline">{t("projectSaveAs")}</span>
+              </button>
+              {/* 导入 JSON */}
+              <button onClick={importProjectJSON}
+                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                style={{ borderColor: COLORS.inkSoft, color: COLORS.inkSoft }} title={t("projectImportJson")}>
+                <Upload size={14} /> <span className="hidden lg:inline">{t("projectImportJson")}</span>
+              </button>
+              {/* 导出 JSON */}
+              <button onClick={exportProjectJSON}
+                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                style={{ borderColor: COLORS.inkSoft, color: COLORS.inkSoft }} title={t("projectExportJson")}>
+                <FileDown size={14} /> <span className="hidden lg:inline">JSON</span>
+              </button>
+              {/* 导出 CSV */}
               <button onClick={exportCSV}
                 className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-sm"
                 style={{ background: COLORS.oxblood, color: COLORS.cream }}>
                 <FileDown size={14} /> <span className="hidden sm:inline">{t("exportCSV")}</span>
               </button>
+              {/* 导出 HTML */}
               <button onClick={exportHTML}
                 className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-sm"
                 style={{ background: COLORS.emerald, color: COLORS.cream }}>
                 <FileDown size={14} /> <span className="hidden sm:inline">{t("exportHTML")}</span>
               </button>
+              {/* 分享链接 */}
               <button onClick={shareLink}
                 className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
                 style={{ borderColor: COLORS.gold, color: COLORS.gold }}>
                 <Share2 size={14} /> <span className="hidden sm:inline">{t("shareLink")}</span>
               </button>
+              {/* 重置 */}
               <button onClick={resetSample}
                 className="btn-interact flex items-center gap-1.5 px-2 py-2 text-xs rounded-sm"
                 style={{ color: COLORS.inkSoft }} title={t("resetSample")}>
@@ -1533,6 +1809,121 @@ function AppContent({ lang, setLang }) {
           <span className="mx-2">·</span>{t("footerDisclaimer")}
         </div>
       </footer>
+
+      {/* ============ 项目管理面板（Modal） ============ */}
+      {showProjectPanel && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(31,27,22,0.5)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowProjectPanel(false); }}>
+          <div className="glass-card anim-in" style={{ width: "90%", maxWidth: 640, maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column", borderRadius: 4 }}>
+            {/* Panel Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: COLORS.line }}>
+              <div className="flex items-center gap-2">
+                <FolderOpen size={20} style={{ color: COLORS.oxblood }} />
+                <span className="font-display text-lg font-bold" style={{ color: COLORS.ink }}>{t("projectList")}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={newProject}
+                  className="btn-interact flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-sm"
+                  style={{ background: COLORS.oxblood, color: COLORS.cream }}>
+                  <FilePlus size={14} /> {t("projectNew")}
+                </button>
+                <button onClick={importProjectJSON}
+                  className="btn-interact flex items-center gap-1.5 px-3 py-2 text-xs font-medium border rounded-sm"
+                  style={{ borderColor: COLORS.gold, color: COLORS.gold }}>
+                  <Upload size={14} /> {t("projectImportJson")}
+                </button>
+                <button onClick={() => setShowProjectPanel(false)}
+                  className="btn-interact p-2 rounded-sm" style={{ color: COLORS.inkSoft }}>
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+            {/* Panel Body — scrollable project list */}
+            <div style={{ overflowY: "auto", flex: 1, padding: "16px 20px" }}>
+              {(() => {
+                const index = getProjectIndex();
+                const names = Object.keys(index);
+                if (names.length === 0) {
+                  return (
+                    <div className="text-center py-12" style={{ color: COLORS.inkSoft }}>
+                      <FolderOpen size={40} style={{ opacity: 0.3, margin: "0 auto 12px" }} />
+                      <div className="text-sm">{t("noProducts")}</div>
+                    </div>
+                  );
+                }
+                // 按保存时间倒序排列
+                names.sort((a, b) => (index[b].savedAt || "").localeCompare(index[a].savedAt || ""));
+                return names.map((name) => {
+                  const proj = index[name];
+                  const isCurrent = name === projectName;
+                  const savedDate = proj.savedAt ? new Date(proj.savedAt) : null;
+                  const timeStr = savedDate ? savedDate.toLocaleString() : "—";
+                  return (
+                    <div key={name} className="flex items-center justify-between gap-3 py-3 px-3 rounded-sm mb-2 ledger-row"
+                      style={{
+                        background: isCurrent ? "rgba(92,26,27,0.06)" : "rgba(255,255,255,0.6)",
+                        border: `1px solid ${isCurrent ? COLORS.oxblood + "40" : COLORS.line}`,
+                      }}>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-display font-semibold text-sm truncate" style={{ color: isCurrent ? COLORS.oxblood : COLORS.ink }}>
+                            {name}
+                          </span>
+                          {isCurrent && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-sm font-medium"
+                              style={{ background: COLORS.oxblood, color: COLORS.cream }}>
+                              {t("projectCurrent")}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] mt-1 font-mono" style={{ color: COLORS.inkSoft }}>
+                          {t("projectSkuCount", { n: proj.skuCount || 0 })} · {t("projectLastSaved", { time: timeStr })}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {!isCurrent && (
+                          <button onClick={() => loadProject(name)}
+                            className="btn-interact px-2.5 py-1.5 text-[11px] font-medium rounded-sm"
+                            style={{ background: COLORS.emerald, color: COLORS.cream }}>
+                            {t("projectOpen")}
+                          </button>
+                        )}
+                        <button onClick={() => {
+                            const newName = prompt(t("projectRenamePrompt"), name);
+                            if (newName) renameProject(name, newName);
+                          }}
+                          className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
+                          style={{ color: COLORS.inkSoft }} title={t("projectRename")}>
+                          <Edit3 size={13} />
+                        </button>
+                        <button onClick={() => {
+                            // 导出特定项目
+                            const data = { projectName: name, ...proj.data };
+                            const json = JSON.stringify(data, null, 2);
+                            const safeName = (name || "project").replace(/[<>:"/\\|?*]/g, "_");
+                            const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(json);
+                            const a = document.createElement("a");
+                            a.href = dataUri; a.download = `${safeName}.json`; a.style.display = "none";
+                            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                          }}
+                          className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
+                          style={{ color: COLORS.gold }} title={t("projectExportJson")}>
+                          <FileDown size={13} />
+                        </button>
+                        <button onClick={() => deleteProject(name)}
+                          className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
+                          style={{ color: COLORS.crimson }} title={t("projectDelete")}>
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
