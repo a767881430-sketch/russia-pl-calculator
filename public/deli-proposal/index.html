@@ -784,6 +784,12 @@ h2 {
   font-size: 10px;
   margin-bottom: 16px;
 }
+.unit-basis {
+  margin: -6px 0 14px;
+  color: var(--paper-3);
+  font-size: 11px;
+  line-height: 1.5;
+}
 .profit-price {
   display: flex;
   justify-content: space-between;
@@ -2505,17 +2511,17 @@ footer {
         <div class="section-num">SECTION 07 / 单品利润模型</div>
         <h2>可以反算。不只是算成本，而是算<em>可承受供货价</em>。</h2>
       </div>
-      <p class="lede">用现有三平台定价表，可以把售价、佣金、广告、物流、仓储、税费、破损、回款损耗和管理费先固定，再反推在 8% / 12% 净利率目标下，供货成本最多能到多少。当前卡片里的货值成本是测算假设，不是德力正式报价。</p>
+      <p class="lede">用现有三平台定价表，可以把售价、佣金、物流、仓储、税费、破损和管理费先固定，再反推在 8% / 12% 净利率目标下，供货成本最多能到多少。A/B/C 损益模型的差异主要是备货量、补货节奏和一次性启动费；单 SKU 的采购价、售价、平台费口径一致。当前卡片展示 B 标准模型的基准卖家售价，月度低价启动和后期涨价在计算器的价格排期里体现。</p>
     </div>
     <div class="method" style="margin-bottom:28px;">
       <div>
         <h3 style="font-size:30px;margin-bottom:14px;">反算方法</h3>
-        <p style="margin:0;color:var(--paper-2);font-size:14px;">先把非货成本全部算清楚，再把目标利润率从售价中扣掉，剩下的就是可承受供货成本上限。正式报价低于这个上限，SKU 才有进入测试的意义。</p>
+        <p style="margin:0;color:var(--paper-2);font-size:14px;">这里按“上架销售单位”计算：6 只装就是一套 6 只，L12 就是一套 12 件，TR502/L7 就是一套 1 壶 6 杯。采购价、售价、平台费、仓费、管理费全部按同一个销售单位入模，不是单只杯子的成本。</p>
       </div>
       <div class="formula">
-        <div>非货成本 = 包装 + 头程清关 + 操作费 + 平台扣除 + 税费 + 破损售后 + 回款损耗 + 管理费</div>
-        <div>利润 = 售价 - 预估货值成本 - 非货成本</div>
-        <div>可承受供货成本 RMB = [售价 × (1 - 目标净利率) - 非货成本] / 汇率</div>
+        <div>B 模型单销售单位成本 = 预估采购价 × 汇率 + 到俄运费 + 贴标</div>
+        <div>单销售单位利润 = 售价 - 货值成本 - 平台费 - 到俄运费 - 贴标 - 仓费 - 管理费 - 税费 - 破损</div>
+        <div>可承受采购价 RMB = [售价 × (1 - 目标净利率) - 非货成本] / 汇率</div>
       </div>
     </div>
     <div class="profit-grid">
@@ -2527,20 +2533,22 @@ footer {
       </div>
       <h3>TY1628</h3>
       <div class="role">基础水杯 6 只装 · Ozon FBO · 成交评价款</div>
-      <div class="profit-price"><span>平台售价</span><strong>1 290 ₽</strong></div>
-      <div class="profit-line"><span>预估货值成本</span><b>18.0 RMB / 230 ₽</b></div>
-      <div class="profit-line"><span>平台扣除</span><b>900 ₽ · 69.8%</b></div>
-      <div class="profit-line"><span>广告费</span><b>155 ₽ · 12.0%</b></div>
-      <div class="profit-line"><span>税费</span><b>61 ₽</b></div>
-      <div class="profit-line"><span>破损售后</span><b>65 ₽ · 5.0%</b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>1 256 ₽</b></div>
-      <div class="profit-result warn">
-        <strong>-197 ₽ / -15.4 RMB</strong>
-        <span>场景利润 · 净利率 -15.3% · ROI -85.4%</span>
+      <div class="unit-basis">计价单位：1 套 = 6 只。18 RMB 是整套预估采购价，不是单只杯价。</div>
+      <div class="profit-price"><span>基准卖家售价</span><strong>1 490 ₽</strong></div>
+      <div class="profit-line"><span>预估采购价</span><b>18.0 RMB / 230 ₽</b></div>
+      <div class="profit-line"><span>到俄运费 + 贴标</span><b>142 ₽</b></div>
+      <div class="profit-line"><span>平台费</span><b>596 ₽ · 40.0%</b></div>
+      <div class="profit-line"><span>仓费 + 管理</span><b>144 ₽</b></div>
+      <div class="profit-line"><span>税费</span><b>107 ₽</b></div>
+      <div class="profit-line"><span>破损售后</span><b>45 ₽ · 5.0%</b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>1 034 ₽</b></div>
+      <div class="profit-result">
+        <strong>226 ₽ / 17.6 RMB</strong>
+        <span>B 标准模型 · 净利率 15.9% · ROI 60.6%</span>
       </div>
       <div class="cost-ceiling">
-        <div class="ceiling-row"><span>保 8% 净利率，供货成本上限</span><b>-5.4 RMB</b></div>
-        <div class="ceiling-row"><span>保 12% 净利率，供货成本上限</span><b>-9.5 RMB</b></div>
+        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>26.3 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>21.7 RMB / 套</b></div>
       </div>
       <div class="profit-note">基础透明杯不打极限低价，花色版才是利润延展。</div>
     </article>
@@ -2551,20 +2559,22 @@ footer {
       </div>
       <h3>TY1640</h3>
       <div class="role">大容量水杯 4 只装 · Ozon FBO · 容量升级款</div>
-      <div class="profit-price"><span>平台售价</span><strong>1 590 ₽</strong></div>
-      <div class="profit-line"><span>预估货值成本</span><b>22.0 RMB / 282 ₽</b></div>
-      <div class="profit-line"><span>平台扣除</span><b>1 111 ₽ · 69.9%</b></div>
-      <div class="profit-line"><span>广告费</span><b>191 ₽ · 12.0%</b></div>
-      <div class="profit-line"><span>税费</span><b>76 ₽</b></div>
-      <div class="profit-line"><span>破损售后</span><b>80 ₽ · 5.0%</b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>1 537 ₽</b></div>
-      <div class="profit-result warn">
-        <strong>-228 ₽ / -17.8 RMB</strong>
-        <span>场景利润 · 净利率 -14.4% · ROI -81.1%</span>
+      <div class="unit-basis">计价单位：1 套 = 4 只。22 RMB 是整套预估采购价。</div>
+      <div class="profit-price"><span>基准卖家售价</span><strong>1 790 ₽</strong></div>
+      <div class="profit-line"><span>预估采购价</span><b>22.0 RMB / 282 ₽</b></div>
+      <div class="profit-line"><span>到俄运费 + 贴标</span><b>142 ₽</b></div>
+      <div class="profit-line"><span>平台费</span><b>716 ₽ · 40.0%</b></div>
+      <div class="profit-line"><span>仓费 + 管理</span><b>168 ₽</b></div>
+      <div class="profit-line"><span>税费</span><b>133 ₽</b></div>
+      <div class="profit-line"><span>破损售后</span><b>54 ₽ · 5.0%</b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>1 213 ₽</b></div>
+      <div class="profit-result">
+        <strong>296 ₽ / 23.1 RMB</strong>
+        <span>B 标准模型 · 净利率 17.4% · ROI 69.8%</span>
       </div>
       <div class="cost-ceiling">
-        <div class="ceiling-row"><span>保 8% 净利率，供货成本上限</span><b>-5.8 RMB</b></div>
-        <div class="ceiling-row"><span>保 12% 净利率，供货成本上限</span><b>-10.7 RMB</b></div>
+        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>33.9 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>28.3 RMB / 套</b></div>
       </div>
       <div class="profit-note">400ml 以上更看重重量和仓配费，报价后需重算。</div>
     </article>
@@ -2575,20 +2585,22 @@ footer {
       </div>
       <h3>TZ2829</h3>
       <div class="role">玻璃把杯 2 只装 · WB FBW · WB 放量款</div>
-      <div class="profit-price"><span>平台售价</span><strong>1 190 ₽</strong></div>
-      <div class="profit-line"><span>预估货值成本</span><b>16.0 RMB / 205 ₽</b></div>
-      <div class="profit-line"><span>平台扣除</span><b>707 ₽ · 59.4%</b></div>
-      <div class="profit-line"><span>广告费</span><b>143 ₽ · 12.0%</b></div>
-      <div class="profit-line"><span>税费</span><b>68 ₽</b></div>
-      <div class="profit-line"><span>破损售后</span><b>60 ₽ · 5.0%</b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>1 048 ₽</b></div>
-      <div class="profit-result warn">
-        <strong>-63 ₽ / -4.9 RMB</strong>
-        <span>场景利润 · 净利率 -5.3% · ROI -30.9%</span>
+      <div class="unit-basis">计价单位：1 套 = 2 只。16 RMB 是整套预估采购价。</div>
+      <div class="profit-price"><span>基准卖家售价</span><strong>1 490 ₽</strong></div>
+      <div class="profit-line"><span>预估采购价</span><b>16.0 RMB / 205 ₽</b></div>
+      <div class="profit-line"><span>到俄运费 + 贴标</span><b>142 ₽</b></div>
+      <div class="profit-line"><span>平台费</span><b>566 ₽ · 38.0%</b></div>
+      <div class="profit-line"><span>仓费 + 管理</span><b>141 ₽</b></div>
+      <div class="profit-line"><span>税费</span><b>116 ₽</b></div>
+      <div class="profit-line"><span>破损售后</span><b>46 ₽ · 5.0%</b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>1 011 ₽</b></div>
+      <div class="profit-result">
+        <strong>274 ₽ / 21.4 RMB</strong>
+        <span>B 标准模型 · 净利率 19.4% · ROI 79.1%</span>
       </div>
       <div class="cost-ceiling">
-        <div class="ceiling-row"><span>保 8% 净利率，供货成本上限</span><b>3.6 RMB</b></div>
-        <div class="ceiling-row"><span>保 12% 净利率，供货成本上限</span><b>-0.1 RMB</b></div>
+        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>28.1 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>23.5 RMB / 套</b></div>
       </div>
       <div class="profit-note">适合复制 Ozon 验证款，不建议 WB 盲铺新款。</div>
     </article>
@@ -2599,20 +2611,22 @@ footer {
       </div>
       <h3>TCF053/L12</h3>
       <div class="role">咖啡杯碟 12 件套 · Ozon FBO · 礼品高客单</div>
-      <div class="profit-price"><span>平台售价</span><strong>3 990 ₽</strong></div>
-      <div class="profit-line"><span>预估货值成本</span><b>95.0 RMB / 1 216 ₽</b></div>
-      <div class="profit-line"><span>平台扣除</span><b>2 575 ₽ · 64.5%</b></div>
-      <div class="profit-line"><span>广告费</span><b>479 ₽ · 12.0%</b></div>
-      <div class="profit-line"><span>税费</span><b>190 ₽</b></div>
-      <div class="profit-line"><span>破损售后</span><b>319 ₽ · 8.0%</b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>3 698 ₽</b></div>
-      <div class="profit-result warn">
-        <strong>-924 ₽ / -72.2 RMB</strong>
-        <span>场景利润 · 净利率 -23.2% · ROI -76.0%</span>
+      <div class="unit-basis">计价单位：1 套 = 12 件。95 RMB 是整套预估采购价。</div>
+      <div class="profit-price"><span>基准卖家售价</span><strong>5 590 ₽</strong></div>
+      <div class="profit-line"><span>预估采购价</span><b>95.0 RMB / 1 216 ₽</b></div>
+      <div class="profit-line"><span>到俄运费 + 贴标</span><b>142 ₽</b></div>
+      <div class="profit-line"><span>平台费</span><b>2 236 ₽ · 40.0%</b></div>
+      <div class="profit-line"><span>仓费 + 管理</span><b>400 ₽</b></div>
+      <div class="profit-line"><span>税费</span><b>429 ₽</b></div>
+      <div class="profit-line"><span>破损售后</span><b>168 ₽ · 5.0%</b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>3 375 ₽</b></div>
+      <div class="profit-result">
+        <strong>999 ₽ / 78.1 RMB</strong>
+        <span>B 标准模型 · 净利率 18.8% · ROI 73.6%</span>
       </div>
       <div class="cost-ceiling">
-        <div class="ceiling-row"><span>保 8% 净利率，供货成本上限</span><b>-2.1 RMB</b></div>
-        <div class="ceiling-row"><span>保 12% 净利率，供货成本上限</span><b>-14.6 RMB</b></div>
+        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>138.1 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>120.6 RMB / 套</b></div>
       </div>
       <div class="profit-note">高客单能摊薄履约成本，但内托和跌落测试必须先过。</div>
     </article>
@@ -2622,27 +2636,29 @@ footer {
         <span>德力目录相近款 · 壶杯套装 · 待工厂提供精确型号图确认</span>
       </div>
       <h3>TR502/L7</h3>
-      <div class="role">壶杯套装 · Yandex FBY · 品牌辅助款</div>
-      <div class="profit-price"><span>平台售价</span><strong>3 590 ₽</strong></div>
-      <div class="profit-line"><span>预估货值成本</span><b>82.0 RMB / 1 050 ₽</b></div>
-      <div class="profit-line"><span>平台扣除</span><b>2 456 ₽ · 68.4%</b></div>
-      <div class="profit-line"><span>广告费</span><b>359 ₽ · 10.0%</b></div>
-      <div class="profit-line"><span>税费</span><b>647 ₽</b></div>
-      <div class="profit-line"><span>破损售后</span><b>287 ₽ · 8.0%</b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>3 948 ₽</b></div>
-      <div class="profit-result warn">
-        <strong>-1 408 ₽ / -110.0 RMB</strong>
-        <span>场景利润 · 净利率 -39.2% · ROI -134.1%</span>
+      <div class="role">壶杯套装 · Ozon/WB 测款口径 · 礼品高客单</div>
+      <div class="unit-basis">计价单位：1 套 = 1 壶 6 杯。82 RMB 是整套预估采购价。</div>
+      <div class="profit-price"><span>基准卖家售价</span><strong>4 690 ₽</strong></div>
+      <div class="profit-line"><span>预估采购价</span><b>82.0 RMB / 1 050 ₽</b></div>
+      <div class="profit-line"><span>到俄运费 + 贴标</span><b>142 ₽</b></div>
+      <div class="profit-line"><span>平台费</span><b>1 876 ₽ · 40.0%</b></div>
+      <div class="profit-line"><span>仓费 + 管理</span><b>398 ₽</b></div>
+      <div class="profit-line"><span>税费</span><b>343 ₽</b></div>
+      <div class="profit-line"><span>破损售后</span><b>141 ₽ · 5.0%</b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>2 900 ₽</b></div>
+      <div class="profit-result">
+        <strong>741 ₽ / 57.9 RMB</strong>
+        <span>B 标准模型 · 净利率 16.6% · ROI 62.2%</span>
       </div>
       <div class="cost-ceiling">
-        <div class="ceiling-row"><span>保 8% 净利率，供货成本上限</span><b>-50.4 RMB</b></div>
-        <div class="ceiling-row"><span>保 12% 净利率，供货成本上限</span><b>-61.6 RMB</b></div>
+        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>110.6 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>95.9 RMB / 套</b></div>
       </div>
       <div class="profit-note">Yandex 费率压力高，只适合成熟礼品款补充曝光。</div>
     </article>
     </div>
     <div class="evidence-note" style="margin-top:26px;">
-      这些数来自现有 Excel 模板的示例假设，用于判断模型结构和谈判边界。正式版本要替换真实工厂报价、外箱尺寸、毛重、平台仓费、破损率和税务主体方案。
+      这些数与 A/B/C 损益模型保持同口径：每个 SKU 的采购价、售价、平台费、仓费和管理费都按“上架销售单位”计算。也就是说，6 只装按整套算，L12 按整套 12 件算，壶杯套装按整套算。正式版本要替换真实工厂报价、外箱尺寸、毛重、平台仓费、破损率和税务主体方案。
     </div>
   </div>
 </section>
