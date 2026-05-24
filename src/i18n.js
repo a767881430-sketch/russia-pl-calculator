@@ -103,7 +103,7 @@ const DICT = {
   // === Products Tab ===
   productsTitle: { zh: "商品明细", en: "Product Details", ru: "Детали товаров" },
   productCount: { zh: "{n} 个SKU", en: "{n} SKUs", ru: "{n} SKU" },
-  productsHint: { zh: "点击行展开编辑（含申报价字段）。", en: "Click row to expand and edit.", ru: "Нажмите на строку для редактирования." },
+  productsHint: { zh: "点击行展开编辑（含预估采购价与申报价字段；正式报价后需替换）。", en: "Click row to expand and edit.", ru: "Нажмите на строку для редактирования." },
   clearAll: { zh: "清空", en: "Clear", ru: "Очистить" },
   addProduct: { zh: "添加商品", en: "Add Product", ru: "Добавить" },
   productId: { zh: "产品ID", en: "Product ID", ru: "ID товара" },
@@ -223,7 +223,7 @@ const DICT = {
   // === Misc ===
   confirmClear: { zh: "确定清空所有商品？此操作不可撤销。", en: "Clear all products? This cannot be undone.", ru: "Очистить все товары? Это необратимо." },
   confirmReset: { zh: "重置为样例数据？当前编辑会丢失。", en: "Reset to sample data? Current edits will be lost.", ru: "Сбросить до примера? Текущие данные будут потеряны." },
-  dualTrackNote: { zh: "在 USN 15% 或 OSN 下，税务局只认可有白关票据的\"报关申报\"成本。如果\"实际采购\"高于\"报关申报\"，差额部分将无法抵扣，会产生额外的税务损耗。", en: "Under USN 15% or OSN, only declared customs costs are deductible. If actual cost exceeds declared, the difference is non-deductible.", ru: "При УСН 15% или ОСН признаются только задекларированные таможенные расходы." },
+  dualTrackNote: { zh: "在 USN 15% 或 OSN 下，税务局只认可有白关票据的\"报关申报\"成本。若当前项目尚未导入工厂正式报价，采购价与申报价均为测算假设；正式报价后需替换并复核税务损耗。", en: "Under USN 15% or OSN, only declared customs costs are deductible. If actual cost exceeds declared, the difference is non-deductible.", ru: "При УСН 15% или ОСН признаются только задекларированные таможенные расходы." },
 
   // === Charts ===
   chartBreakEven: { zh: "回本", en: "Break-even", ru: "Окупаемость" },
@@ -272,8 +272,8 @@ const DICT = {
   editorFields: { zh: "编辑字段", en: "Edit Fields", ru: "Редактирование" },
   editorCalcDetail: { zh: "计算明细 / 单位", en: "Calc Details / Unit", ru: "Расчёт / Единица" },
   fieldProductId: { zh: "产品 ID", en: "Product ID", ru: "ID товара" },
-  fieldActualCost: { zh: "实际采购价 (元)", en: "Actual Cost (CNY)", ru: "Факт. цена (CNY)" },
-  fieldDeclaredCost: { zh: "申报/账面价 (元)", en: "Declared Cost (CNY)", ru: "Деклар. цена (CNY)" },
+  fieldActualCost: { zh: "预估采购价 (元)", en: "Estimated Cost (CNY)", ru: "Факт. цена (CNY)" },
+  fieldDeclaredCost: { zh: "预估申报/账面价 (元)", en: "Estimated Declared Cost (CNY)", ru: "Деклар. цена (CNY)" },
   fieldQty: { zh: "数量 (件)", en: "Quantity (pcs)", ru: "Кол-во (шт)" },
   fieldWeight: { zh: "重量 (kg)", en: "Weight (kg)", ru: "Вес (кг)" },
   fieldListPrice: { zh: "上架售价 (₽)", en: "List Price (₽)", ru: "Цена (₽)" },
@@ -411,8 +411,8 @@ const DICT = {
   helpProfitDesc: { zh: "2025起从20%上调。IT企业有5%优惠（至2030）。", en: "Raised from 20% since 2025. IT companies 5% (until 2030).", ru: "Повышен с 20% с 2025. IT — 5% (до 2030)." },
   helpVat22Title: { zh: "22% 是什么税？", en: "What is the 22% tax?", ru: "Что за налог 22%?" },
   helpVat22Desc: { zh: "2026年最常对应：① 新VAT基础税率；② NDFL（个税）最高累进档（年收入>50M ₽）。计算器把22%按VAT处理。", en: "In 2026: ① New VAT base rate; ② NDFL top bracket (>50M ₽/yr). Calculator treats 22% as VAT.", ru: "В 2026: ① Новая ставка НДС; ② НДФЛ макс. (>50М ₽/год). Калькулятор — 22% как НДС." },
-  helpDeclaredTitle: { zh: "📦 申报价 vs 实际价", en: "📦 Declared vs Actual Cost", ru: "📦 Деклар. vs Факт. цена" },
-  helpDeclaredDesc: { zh: "报关申报价决定进项VAT和关税基础。OSN下用申报价计算可抵扣的进项VAT。\"现金净利\"用实际成本，\"账面净利\"用申报成本，OSN下两者会有差异。", en: "Customs declared value determines input VAT and duty base. \"Cash Profit\" uses actual cost, \"Book Profit\" uses declared — differs under GTS.", ru: "Деклар. цена определяет вх. НДС. \"Кэш прибыль\" по факт., \"Бух. прибыль\" по деклар. — при ОСН различаются." },
+  helpDeclaredTitle: { zh: "📦 申报价 vs 采购价", en: "📦 Declared vs Actual Cost", ru: "📦 Деклар. vs Факт. цена" },
+  helpDeclaredDesc: { zh: "报关申报价决定进项VAT和关税基础。OSN下用申报价计算可抵扣的进项VAT。本项目在取得工厂正式报价前，采购价/申报价为测算假设；正式报价后需替换并重新核算。", en: "Customs declared value determines input VAT and duty base. \"Cash Profit\" uses actual cost, \"Book Profit\" uses declared — differs under GTS.", ru: "Деклар. цена определяет вх. НДС. \"Кэш прибыль\" по факт., \"Бух. прибыль\" по деклар. — при ОСН различаются." },
   helpThresholdTitle: { zh: "⚠️ 营收逼近20M的策略", en: "⚠️ Near 20M Threshold Strategy", ru: "⚠️ Стратегия при 20М" },
   helpThresholdDesc: { zh: "① 拆分两个法人保持小规模；② 主动过线选5%/7%。5%无进项抵扣，但若你本来进项VAT就少，5%可能比15%标准USN更划算。", en: "① Split into two entities; ② Cross threshold, choose 5%/7%. If input VAT is small, 5% may beat standard 15%.", ru: "① Разделить на два юрлица; ② Перейти порог, выбрать 5%/7%. Если вх. НДС мал, 5% может быть выгоднее." },
   helpUsn6v15Title: { zh: "💰 USN 6% vs 15% 经验法则", en: "💰 STS 6% vs 15% Rule of Thumb", ru: "💰 УСН 6% vs 15% правило" },
@@ -496,7 +496,7 @@ export const useLiveRate = (manualRate, manualUsdRate = 95) => {
   const [rateSource, setRateSource] = useState("manual"); // "manual" | "live"
   const [rateLoading, setRateLoading] = useState(false);
 
-  const fetchRate = useCallback(async () => {
+  const fetchRate = useCallback(async ({ activate = true } = {}) => {
     setRateLoading(true);
     try {
       const res = await fetch("https://open.er-api.com/v6/latest/CNY");
@@ -509,16 +509,16 @@ export const useLiveRate = (manualRate, manualUsdRate = 95) => {
           const usdRub = data.rates.RUB / data.rates.USD;
           setLiveUsdRate(parseFloat(usdRub.toFixed(2)));
         }
-        setRateSource("live");
+        if (activate) setRateSource("live");
       }
     } catch (e) {
-      setRateSource("manual");
+      if (activate) setRateSource("manual");
     } finally {
       setRateLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchRate(); }, [fetchRate]);
+  useEffect(() => { fetchRate({ activate: false }); }, [fetchRate]);
 
   const effectiveRate = rateSource === "live" && liveRate ? liveRate : manualRate;
   const effectiveUsdRate = rateSource === "live" && liveUsdRate ? liveUsdRate : manualUsdRate;

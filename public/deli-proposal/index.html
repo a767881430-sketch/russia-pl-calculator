@@ -1,0 +1,2808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>德力玻璃 × 俄罗斯电商 · 战略合作提案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=JetBrains+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0d0b09;
+  --ink-1: #15120f;
+  --ink-2: #211b15;
+  --paper: #f1eadc;
+  --paper-2: #cfc2aa;
+  --paper-3: #918573;
+  --line: #3c3228;
+  --line-soft: #2a231c;
+  --copper: #c98342;
+  --copper-2: #e3a76f;
+  --jade: #6f8c78;
+  --blue: #7893a4;
+  --warn: #c95c3c;
+  --font-serif: "Fraunces", "Noto Serif SC", serif;
+  --font-sans: "Manrope", "Noto Sans SC", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  line-height: 1.65;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: .26;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.06 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+::selection { background: var(--copper); color: var(--ink); }
+a { color: inherit; }
+.wrap {
+  width: min(1320px, calc(100% - 48px));
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+section {
+  position: relative;
+  padding: 104px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.serif { font-family: var(--font-serif); }
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px;
+  background: rgba(13, 11, 9, .82);
+  border-bottom: 1px solid rgba(60, 50, 40, .72);
+  backdrop-filter: blur(14px);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-serif);
+  font-size: 16px;
+}
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--copper);
+  display: grid;
+  place-items: center;
+  color: var(--copper-2);
+}
+.nav-links {
+  display: flex;
+  gap: 22px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--paper-3);
+}
+.nav-links a {
+  text-decoration: none;
+}
+.nav-links a:hover { color: var(--copper-2); }
+.hero {
+  min-height: 100vh;
+  display: grid;
+  align-items: end;
+  padding: 120px 0 52px;
+  border-top: 0;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: .5;
+  filter: saturate(.9) contrast(1.05);
+  cursor: zoom-in;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(13, 11, 9, .96), rgba(13, 11, 9, .78) 46%, rgba(13, 11, 9, .2)),
+    linear-gradient(0deg, rgba(13, 11, 9, .98), transparent 45%);
+}
+.hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr);
+  gap: 70px;
+  align-items: end;
+}
+.eyebrow,
+.section-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--copper-2);
+  text-transform: uppercase;
+}
+.eyebrow {
+  margin-bottom: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.eyebrow::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: var(--copper);
+}
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  margin: 0;
+  line-height: 1.08;
+}
+h1 {
+  max-width: 900px;
+  font-size: 78px;
+}
+h1 em, h2 em, .accent {
+  color: var(--copper-2);
+  font-style: italic;
+}
+.hero-copy {
+  max-width: 650px;
+  margin-top: 28px;
+  color: var(--paper-2);
+  font-family: var(--font-serif);
+  font-size: 21px;
+}
+.hero-metrics {
+  border-top: 1px solid rgba(241, 234, 220, .28);
+}
+.hero-metric {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(241, 234, 220, .18);
+}
+.hero-metric small {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.hero-metric span {
+  color: var(--paper-2);
+  font-size: 13px;
+}
+.hero-metric strong {
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 300;
+  white-space: nowrap;
+}
+.hero-foot {
+  margin-top: 56px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(241, 234, 220, .16);
+  border: 1px solid rgba(241, 234, 220, .16);
+}
+.hero-foot div {
+  min-height: 106px;
+  padding: 22px;
+  background: rgba(13, 11, 9, .72);
+}
+.hero-foot b {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--paper);
+  font-weight: 500;
+}
+.hero-foot span {
+  color: var(--paper-3);
+  font-size: 13px;
+}
+.section-head {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 76px;
+  align-items: end;
+  margin-bottom: 58px;
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--paper-3);
+  margin-bottom: 22px;
+}
+h2 {
+  font-size: 52px;
+}
+.lede {
+  margin: 0;
+  color: var(--paper-2);
+  font-family: var(--font-serif);
+  font-size: 20px;
+}
+.evidence-note {
+  border-left: 2px solid var(--copper);
+  padding: 20px 24px;
+  background: rgba(201, 131, 66, .08);
+  color: var(--paper-2);
+  font-size: 14px;
+}
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.proof-card {
+  background: var(--ink-1);
+  padding: 28px;
+  min-height: 176px;
+}
+.proof-card .label {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin-bottom: 12px;
+}
+.proof-card .value {
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+.proof-card p {
+  margin: 0;
+  color: var(--paper-2);
+  font-size: 13px;
+}
+.factory-band {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.factory-panel,
+.factory-copy {
+  background: var(--ink-1);
+  padding: 34px;
+}
+.factory-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 18px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.factory-row:last-child { border-bottom: 0; }
+.factory-row .k {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.factory-row .v {
+  color: var(--paper);
+  font-size: 14px;
+}
+.factory-copy h3 {
+  font-size: 31px;
+  margin-bottom: 20px;
+}
+.factory-copy p {
+  margin: 0 0 15px;
+  color: var(--paper-2);
+  font-size: 14px;
+}
+.factory-copy strong { color: var(--paper); }
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.platform-card {
+  background: var(--ink-1);
+  padding: 30px;
+}
+.platform-card.highlight {
+  background: linear-gradient(145deg, rgba(201, 131, 66, .12), var(--ink-1) 58%);
+}
+.platform-phase {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin-bottom: 12px;
+}
+.platform-card h3 {
+  font-size: 38px;
+}
+.platform-role {
+  color: var(--copper-2);
+  font-family: var(--font-serif);
+  font-style: italic;
+  margin: 4px 0 20px;
+}
+.platform-metric {
+  display: grid;
+  grid-template-columns: 95px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 13px;
+}
+.platform-metric span:first-child {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.platform-metric b {
+  color: var(--paper);
+  font-weight: 500;
+}
+.platform-card p {
+  margin: 20px 0 0;
+  color: var(--paper-2);
+  font-size: 13px;
+}
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.cat-card {
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+  padding: 26px;
+  min-height: 430px;
+  display: flex;
+  flex-direction: column;
+}
+.cat-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 22px;
+}
+.cat-title h3 {
+  font-size: 29px;
+}
+.cat-title span {
+  display: block;
+  margin-top: 4px;
+  color: var(--copper-2);
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+.cat-annual {
+  text-align: right;
+  white-space: nowrap;
+}
+.cat-annual strong {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 300;
+}
+.cat-annual span {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.cat-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin: 18px 0;
+  background: var(--line-soft);
+}
+.cat-stat {
+  background: var(--ink);
+  padding: 12px;
+}
+.cat-stat b {
+  display: block;
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 300;
+}
+.cat-stat span {
+  display: block;
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  margin-top: 5px;
+}
+.spark {
+  display: flex;
+  align-items: end;
+  gap: 4px;
+  height: 58px;
+  margin: 20px 0 12px;
+  padding-bottom: 1px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.spark i {
+  flex: 1;
+  min-width: 8px;
+  background: linear-gradient(180deg, var(--copper-2), var(--copper));
+  opacity: .88;
+}
+.spark-empty {
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin: 20px 0 12px;
+}
+.cat-lists {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: auto;
+}
+.mini-list h4 {
+  margin: 0 0 10px;
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+}
+.line-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--paper-2);
+  font-size: 12px;
+}
+.line-item:last-child { border-bottom: 0; }
+.line-item b {
+  color: var(--paper);
+  font-weight: 500;
+}
+.strategy-text {
+  margin-top: 18px;
+  color: var(--paper-2);
+  font-size: 13px;
+}
+.region-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.region-table th,
+.region-table td {
+  text-align: left;
+  padding: 16px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 13px;
+}
+.region-table th {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 10px;
+}
+.region-table td strong {
+  display: block;
+  color: var(--paper);
+}
+.region-table td span {
+  display: block;
+  color: var(--paper-3);
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+.region-table small {
+  color: var(--jade);
+  margin-left: 8px;
+}
+.competitor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+.competitor-card {
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+}
+.competitor-img {
+  aspect-ratio: 1 / 1;
+  background: #f8f4ec;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.competitor-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 18px;
+  cursor: zoom-in;
+}
+.competitor-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.competitor-tag {
+  color: var(--copper-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin-bottom: 10px;
+}
+.competitor-title {
+  color: var(--paper);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  min-height: 62px;
+}
+.competitor-meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin: 18px 0;
+  background: var(--line-soft);
+}
+.competitor-meta div {
+  background: var(--ink);
+  padding: 10px;
+}
+.competitor-meta b {
+  display: block;
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 300;
+}
+.competitor-meta span {
+  display: block;
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
+.competitor-note {
+  margin-top: auto;
+  color: var(--paper-3);
+  font-size: 12px;
+}
+.ozon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border: 1px solid rgba(227, 167, 111, 0.36);
+  color: var(--copper-2);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.ozon-link:hover {
+  background: rgba(227, 167, 111, 0.08);
+  color: var(--paper);
+}
+.price-note {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid rgba(227, 167, 111, 0.25);
+  background: rgba(227, 167, 111, 0.06);
+  color: var(--paper-2);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.watch-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 28px;
+}
+.watch-card {
+  border: 1px solid var(--line);
+  background: linear-gradient(160deg, rgba(227, 167, 111, 0.07), rgba(21, 18, 15, 0.92));
+  padding: 22px;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+}
+.watch-level {
+  color: var(--copper-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.watch-card h3 {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+.watch-card .ru {
+  color: var(--paper-3);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.watch-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--line-soft);
+  margin-bottom: 18px;
+}
+.watch-metrics div {
+  background: var(--ink);
+  padding: 11px;
+}
+.watch-metrics b {
+  display: block;
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 300;
+}
+.watch-metrics span {
+  display: block;
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
+.watch-card p {
+  color: var(--paper-2);
+  font-size: 13px;
+}
+.watch-card .strategy-text {
+  margin-top: auto;
+}
+.gap-card .competitor-img {
+  background:
+    linear-gradient(135deg, rgba(13, 11, 9, 0.03), rgba(201, 131, 66, 0.08)),
+    #f8f4ec;
+  color: #6b5f4f;
+  padding: 24px;
+}
+.gap-image-note {
+  border: 1px dashed rgba(60, 50, 40, 0.35);
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 24px;
+}
+.gap-image-note b {
+  display: block;
+  color: #1c1813;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+.gap-image-note span {
+  color: #6b5f4f;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.profit-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+.profit-card {
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+  padding: 20px;
+  min-height: 660px;
+  display: flex;
+  flex-direction: column;
+}
+.profit-visual {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  margin: 0 0 16px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #f8f4ec;
+  border: 1px solid var(--line);
+}
+.profit-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 14px;
+  cursor: zoom-in;
+}
+.profit-visual span {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 8px;
+  padding: 6px 8px;
+  background: rgba(13, 11, 9, .72);
+  color: var(--paper-2);
+  font-size: 10px;
+  line-height: 1.35;
+}
+.profit-card h3 {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+.profit-card .role {
+  color: var(--copper-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin-bottom: 16px;
+}
+.profit-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  padding: 14px 0;
+  margin-bottom: 14px;
+}
+.profit-price strong {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 300;
+}
+.profit-price span {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.profit-line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--paper-2);
+  font-size: 12px;
+}
+.profit-line b {
+  color: var(--paper);
+  font-weight: 500;
+}
+.profit-result {
+  margin-top: 16px;
+  padding: 14px;
+  background: rgba(111, 140, 120, .1);
+  border-left: 2px solid var(--jade);
+}
+.profit-result.warn {
+  background: rgba(201, 92, 60, .1);
+  border-left-color: var(--warn);
+}
+.profit-result strong {
+  display: block;
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 300;
+}
+.profit-result span {
+  color: var(--paper-2);
+  font-size: 12px;
+}
+.cost-ceiling {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+}
+.ceiling-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 10px;
+  background: var(--ink);
+  color: var(--paper-2);
+  font-size: 12px;
+}
+.ceiling-row b {
+  color: var(--copper-2);
+}
+.profit-note {
+  margin-top: auto;
+  padding-top: 14px;
+  color: var(--paper-3);
+  font-size: 12px;
+}
+.sku-table {
+  border: 1px solid var(--line);
+  background: var(--line);
+  display: grid;
+  gap: 1px;
+}
+.sku-row,
+.sku-head {
+  display: grid;
+  grid-template-columns: 52px 82px 1.15fr 1.2fr .9fr .8fr .75fr;
+  gap: 1px;
+  background: var(--line-soft);
+}
+.sku-head div,
+.sku-row div {
+  background: var(--ink-1);
+  padding: 13px 14px;
+  font-size: 13px;
+}
+.sku-head div {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.sku-row strong {
+  color: var(--paper);
+  font-weight: 500;
+}
+.sku-row .model {
+  color: var(--copper-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.sku-thumb {
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  background: #f8f4ec !important;
+  padding: 5px !important;
+}
+.sku-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  cursor: zoom-in;
+}
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.role-成交 { color: var(--jade); }
+.role-利润 { color: var(--copper-2); }
+.role-礼品 { color: var(--blue); }
+.role-差异化 { color: #d6b36f; }
+.role-测试 { color: var(--paper-3); }
+.role-验证 { color: var(--paper-3); }
+.investment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.investment-card {
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+  padding: 26px;
+}
+.investment-card.featured {
+  border-color: var(--copper);
+  background: linear-gradient(145deg, rgba(201, 131, 66, .13), var(--ink-1) 62%);
+}
+.investment-tag {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin-bottom: 10px;
+}
+.investment-name {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+.investment-amount {
+  font-family: var(--font-serif);
+  font-size: 34px;
+  color: var(--paper);
+  margin-bottom: 20px;
+}
+.investment-line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--paper-2);
+  font-size: 12px;
+}
+.investment-line b { color: var(--paper); font-weight: 500; }
+.investment-foot {
+  margin-top: 20px;
+  padding: 14px;
+  background: var(--ink);
+}
+.investment-foot b {
+  display: block;
+  color: var(--copper-2);
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 300;
+}
+.investment-foot span {
+  color: var(--paper-2);
+  font-size: 12px;
+}
+.model-entry {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(201, 131, 66, .58);
+  padding: 10px 12px;
+  color: var(--copper-2);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.model-entry:hover {
+  background: rgba(201, 131, 66, .12);
+  color: var(--paper);
+}
+.model-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 1px;
+  margin-top: 26px;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+.model-panel {
+  background: var(--ink-1);
+  padding: 26px;
+}
+.model-panel h3 {
+  font-size: 28px;
+  margin-bottom: 14px;
+}
+.model-panel p {
+  margin: 0;
+  color: var(--paper-2);
+  font-size: 13px;
+}
+.model-list {
+  background: var(--ink-1);
+  padding: 14px 24px;
+}
+.model-list a {
+  display: grid;
+  grid-template-columns: 150px 1fr auto;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-soft);
+  text-decoration: none;
+  color: var(--paper-2);
+  align-items: center;
+}
+.model-list a:last-child { border-bottom: 0; }
+.model-list strong {
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-weight: 400;
+}
+.model-list span {
+  font-size: 12px;
+}
+.model-list b {
+  color: var(--copper-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.terms-grid,
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.term-block,
+.roadmap-card {
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+  padding: 28px;
+}
+.term-block h3,
+.roadmap-card h3 {
+  font-size: 27px;
+  margin-bottom: 18px;
+}
+.term-item,
+.roadmap-card li {
+  color: var(--paper-2);
+  font-size: 13px;
+}
+.term-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.term-item:last-child { border-bottom: 0; }
+.term-item strong {
+  display: block;
+  color: var(--paper);
+  margin-bottom: 4px;
+}
+.term-item p { margin: 0; }
+.roadmap-card .tag {
+  color: var(--copper-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+.roadmap-card ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.roadmap-card li { margin-bottom: 8px; }
+.method {
+  display: grid;
+  grid-template-columns: .9fr 1.1fr;
+  gap: 44px;
+  align-items: start;
+  padding: 34px;
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+}
+.formula {
+  display: grid;
+  gap: 8px;
+  color: var(--paper-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.formula div {
+  padding: 10px 12px;
+  background: var(--ink);
+}
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+  background: rgba(8, 7, 6, .9);
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: min(96vw, 1280px);
+  max-height: 86vh;
+  object-fit: contain;
+  background: #f8f4ec;
+  box-shadow: 0 24px 80px rgba(0,0,0,.45);
+}
+.lightbox-caption {
+  position: fixed;
+  left: 36px;
+  right: 86px;
+  bottom: 24px;
+  color: var(--paper-2);
+  font-size: 13px;
+}
+.lightbox-close {
+  position: fixed;
+  top: 22px;
+  right: 28px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(241,234,220,.38);
+  background: rgba(13,11,9,.5);
+  color: var(--paper);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+.cta {
+  background: var(--paper);
+  color: var(--ink);
+}
+.cta .section-num,
+.cta .section-kicker,
+.cta .lede {
+  color: #6b5f4f;
+}
+.cta h2 {
+  color: var(--ink);
+}
+.cta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: #c8bba5;
+  border: 1px solid #c8bba5;
+  margin-top: 44px;
+}
+.cta-item {
+  background: #f8f2e7;
+  padding: 24px;
+  min-height: 150px;
+}
+.cta-item b {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 400;
+}
+.cta-item span {
+  color: #6b5f4f;
+  font-size: 13px;
+}
+footer {
+  padding: 36px 0;
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+@media (max-width: 1120px) {
+  h1 { font-size: 58px; }
+  h2 { font-size: 42px; }
+  .hero-layout,
+  .section-head,
+  .method,
+  .factory-band { grid-template-columns: 1fr; }
+  .proof-grid,
+  .competitor-grid,
+  .watch-grid,
+  .platform-grid,
+  .cta-grid { grid-template-columns: repeat(2, 1fr); }
+  .profit-grid,
+  .investment-grid,
+  .model-grid,
+  .terms-grid,
+  .roadmap-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 760px) {
+  .wrap { width: min(100% - 32px, 1320px); }
+  .nav { padding: 14px 16px; }
+  .nav-links { display: none; }
+  section { padding: 74px 0; }
+  .hero { padding-top: 104px; }
+  h1 { font-size: 42px; }
+  h2 { font-size: 34px; }
+  .hero-copy, .lede { font-size: 17px; }
+  .hero-layout,
+  .hero-foot,
+  .proof-grid,
+  .category-grid,
+  .cat-lists,
+  .competitor-grid,
+  .watch-grid,
+  .profit-grid,
+  .platform-grid,
+  .investment-grid,
+  .model-grid,
+  .terms-grid,
+  .roadmap-grid,
+  .cta-grid { grid-template-columns: 1fr; }
+  .model-list a { grid-template-columns: 1fr; }
+  .hero-metric { grid-template-columns: 42px 1fr; }
+  .hero-metric strong { grid-column: 2; font-size: 25px; }
+  .cat-stats { grid-template-columns: repeat(2, 1fr); }
+  .region-table { display: block; overflow-x: auto; }
+  .region-table th, .region-table td { min-width: 145px; }
+  .sku-table { overflow-x: auto; }
+  .sku-row, .sku-head { min-width: 930px; }
+  .lightbox { padding: 18px; }
+  .lightbox-caption { left: 18px; right: 18px; bottom: 18px; }
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="brand"><span class="brand-mark">D</span><span>德力玻璃 × 俄罗斯电商</span></div>
+  <div class="nav-links">
+    <a href="#factory">工厂</a>
+    <a href="#market">市场</a>
+    <a href="#category">类目</a>
+    <a href="#platforms">平台</a>
+    <a href="#competitor">竞品</a>
+    <a href="#sku">SKU</a>
+    <a href="#profit">利润</a>
+    <a href="#terms">条款</a>
+  </div>
+</nav>
+
+<header class="hero">
+    <img class="hero-bg" src="assets/deli_pdf_images/p15_05_2250x1500.webp" alt="德力玻璃产品图" data-lightbox-caption="德力目录场景图">
+  <div class="wrap">
+    <div class="hero-layout">
+      <div>
+        <div class="eyebrow">Strategic Partnership · 2026.05</div>
+        <h1>和德力玻璃共建一条<em>俄罗斯本土</em>餐厨玻璃产品线。</h1>
+        <p class="hero-copy">不做单纯采购，不做低价铺货。项目组以德力制造能力为底座，用平台仓、俄文内容、套装化、花色差异化和单品利润模型切入俄罗斯电商中端价格带。</p>
+      </div>
+      <aside class="hero-metrics" aria-label="关键指标">
+        <div class="hero-metric"><small>01</small><span>Ozon 10 个重点相关类目年订购池</span><strong>208.1 亿 ₽</strong></div>
+        <div class="hero-metric"><small>02</small><span>最大单类目，把杯 / 马克杯</span><strong>72.7 亿 ₽</strong></div>
+        <div class="hero-metric"><small>03</small><span>建议首批建档验证 SKU 数量</span><strong>22 款</strong></div>
+        <div class="hero-metric"><small>04</small><span>标准启动资金区间</span><strong>171-312 万</strong></div>
+      </aside>
+    </div>
+    <div class="hero-foot">
+      <div><b>A 股上市制造背书</b><span>德力 002571，日用玻璃主业、产品线和重庆基地为俄罗斯渠道提供稳定供应底座。</span></div>
+      <div><b>数据先行的选品路径</b><span>按类目年盘、月度趋势、价格带、销售区域和竞品主图确定首批 SKU。</span></div>
+      <div><b>先测款再放量</b><span>Ozon 首发验证 8-12 个稳定款，再复制到 WB，Yandex 作为品牌补充。</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="factory">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 01 / 工厂之力</div>
+        <h2>不是普通供应商。是<em>A 股上市</em>的日用玻璃龙头。</h2>
+      </div>
+      <p class="lede">俄罗斯玻璃餐厨品类不是只拼价格。消费者关注安全、质感、包装和评价，平台关注稳定供货与破损控制。德力的价值，是让项目从第一天就不是白牌小作坊逻辑。</p>
+    </div>
+    <div class="factory-band">
+      <div class="factory-panel">
+        <div class="factory-row"><div class="k">Entity</div><div class="v">安徽德力日用玻璃股份有限公司</div></div>
+        <div class="factory-row"><div class="k">Stock</div><div class="v">深交所主板 · 股票代码 002571</div></div>
+        <div class="factory-row"><div class="k">Founded</div><div class="v">1996 · 总部安徽凤阳</div></div>
+        <div class="factory-row"><div class="k">Brands</div><div class="v">青苹果 · 艾格莱雅 · 意德丽塔 · 德力玻璃 · DELISOGA</div></div>
+        <div class="factory-row"><div class="k">Base</div><div class="v">德力（重庆）玻璃有限公司 · 荣昌国家高新区 · 占地 8 万㎡ · 首期投资 2 亿元</div></div>
+        <div class="factory-row"><div class="k">2025</div><div class="v">日用玻璃毛利率 17.38% · 重庆公司收入约 17,965.38 万元</div></div>
+      </div>
+      <div class="factory-copy">
+        <h3>合作切入点不是压价，而是共同开发俄罗斯渠道。</h3>
+        <p><strong>第一，德力解决信任问题。</strong>玻璃餐厨品类容易被低价白牌拉低认知，但上市公司、工厂视频、检测资料、稳定产能可以直接转化为平台详情页和品牌内容资产。</p>
+        <p><strong>第二，重庆基地正适合做新市场样板。</strong>2025 年重庆公司仍处盈利爬坡期，俄罗斯项目可以把订单稳定性、包装升级、独家 SKU 和长期复购一起谈，而不是只谈单次采购价。</p>
+        <p><strong>第三，德力产品线足够宽。</strong>水杯、把杯、咖啡杯碟、茶壶、壶杯套装、储物罐、糖罐、分酒器和花色加工款，能够搭建完整产品线，不需要靠单品赌爆款。</p>
+        <p><strong>第四，合作必须用合同兜住。</strong>核心 SKU 独家、价格保护、包装与破损责任、合规资料配合，都应在第一批货之前明确。</p>
+      </div>
+    </div>
+    <div class="evidence-note" style="margin-top:26px;">
+      背调口径：集团 2025 年整体受光伏玻璃业务拖累，重庆基地仍在爬坡；但日用玻璃主业、毛利率改善和产品线完整度仍是俄罗斯项目可谈判、可落地的基础。
+    </div>
+  </div>
+</section>
+
+<section id="market">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 02 / 市场窗口</div>
+        <h2>俄罗斯电商不是试试看。它已经是<em>成熟战场</em>。</h2>
+      </div>
+      <p class="lede">宜家等西方家居渠道退出后，中国供应链接受度提升，但玻璃不是低风险类目。机会属于能把破损、扣点、包装、内容和价格带一起算清楚的团队。</p>
+    </div>
+    <div class="proof-grid">
+      <div class="proof-card"><div class="label">ONLINE RETAIL</div><div class="value">11.5 万亿 ₽</div><p>2025 俄罗斯互联网贸易总额，同比增长约 28%，家居餐厨属于高频消费场景。</p></div>
+      <div class="proof-card"><div class="label">FOCUS POOL</div><div class="value">208.1 亿 ₽</div><p>10 个重点玻璃餐厨相关类目的 Ozon 年订购池，用于锁定首批切入范围。</p></div>
+      <div class="proof-card"><div class="label">PEAK WINDOW</div><div class="value">2025.12</div><p>多类目在 11-12 月形成峰值，首批 SKU 需要提前上架积累评价。</p></div>
+      <div class="proof-card"><div class="label">MODEL RULE</div><div class="value">8%-12%</div><p>标准情景按贡献利润率 8%-12% 作为目标区间，所有 SKU 先算再压货。</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="category">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 03 / 类目趋势 · 价格带 · 区域</div>
+        <h2>每个类目都要回答三个问题：<em>什么时候卖、什么价卖、在哪里卖</em>。</h2>
+      </div>
+      <p class="lede">只讲年销售额会误导决策。玻璃器皿真正要看月度峰值、价格带结构、卖家集中度和区域集中度，这些决定首批 SKU 的上架时间、包装规格、平台选择和广告预算。</p>
+    </div>
+    <div class="category-grid">
+      
+    <article class="cat-card">
+      <div class="cat-top">
+        <div class="cat-title">
+          <h3>把杯 / 马克杯</h3>
+          <span>Кружка · TZ2829 / TZ3052 / 花色把杯</span>
+        </div>
+        <div class="cat-annual">
+          <strong>72.7 亿 ₽</strong>
+          <span>年订购金额</span>
+        </div>
+      </div>
+      <div class="cat-stats">
+        <div class="cat-stat"><b>+173%</b><span>销售动态</span></div>
+        <div class="cat-stat"><b>807 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>31 081</b><span>卖家数</span></div>
+        <div class="cat-stat"><b>82.4%</b><span>买断率</span></div>
+      </div>
+      <div class="spark" aria-label="把杯 / 马克杯 月度销售趋势"><i title="2025.05 1.8 亿 ₽" style="height:10.0px"></i><i title="2025.06 1.9 亿 ₽" style="height:10.3px"></i><i title="2025.07 2.5 亿 ₽" style="height:11.9px"></i><i title="2025.08 2.9 亿 ₽" style="height:13.1px"></i><i title="2025.09 3.5 亿 ₽" style="height:14.8px"></i><i title="2025.10 5.5 亿 ₽" style="height:20.7px"></i><i title="2025.11 9.0 亿 ₽" style="height:31.2px"></i><i title="2025.12 18.2 亿 ₽" style="height:58.0px"></i><i title="2026.01 6.8 亿 ₽" style="height:24.6px"></i><i title="2026.02 9.3 亿 ₽" style="height:32.1px"></i><i title="2026.03 6.8 亿 ₽" style="height:24.7px"></i><i title="2026.04 4.5 亿 ₽" style="height:17.8px"></i></div>
+      <div class="cat-stats" style="margin-top:0;">
+        <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
+        <div class="cat-stat"><b>18.2 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>13.2%</b><span>Top5 卖家份额</span></div>
+        <div class="cat-stat"><b>2 923</b><span>品牌数</span></div>
+      </div>
+      <div class="cat-lists">
+        <div class="mini-list">
+          <h4>SELLER PRICE BANDS</h4>
+          
+    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>21.5%</b></div>
+  
+    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>20.7%</b></div>
+  
+    <div class="line-item"><span>1 000 ₽ – 1 249 ₽</span><b>12.8%</b></div>
+  
+        </div>
+        <div class="mini-list">
+          <h4>TOP SALES REGIONS</h4>
+          
+    <div class="line-item"><span>Москва / МО / дальние</span><b>26.5%</b></div>
+  
+    <div class="line-item"><span>Санкт-Петербург / СЗО</span><b>13.7%</b></div>
+  
+    <div class="line-item"><span>Ростов</span><b>6.2%</b></div>
+  
+        </div>
+      </div>
+      <div class="strategy-text">最大盘类目，基础款做评价，花色款做溢价。</div>
+    </article>
+    <article class="cat-card">
+      <div class="cat-top">
+        <div class="cat-title">
+          <h3>食品储物罐</h3>
+          <span>Банка для продуктов · TBT001 / TGD1911</span>
+        </div>
+        <div class="cat-annual">
+          <strong>33.3 亿 ₽</strong>
+          <span>年订购金额</span>
+        </div>
+      </div>
+      <div class="cat-stats">
+        <div class="cat-stat"><b>+88%</b><span>销售动态</span></div>
+        <div class="cat-stat"><b>1 189 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>13 015</b><span>卖家数</span></div>
+        <div class="cat-stat"><b>83.3%</b><span>买断率</span></div>
+      </div>
+      <div class="spark" aria-label="食品储物罐 月度销售趋势"><i title="2025.05 1.3 亿 ₽" style="height:10.0px"></i><i title="2025.06 1.4 亿 ₽" style="height:12.1px"></i><i title="2025.07 1.9 亿 ₽" style="height:20.3px"></i><i title="2025.08 2.5 亿 ₽" style="height:32.6px"></i><i title="2025.09 2.8 亿 ₽" style="height:37.8px"></i><i title="2025.10 3.5 亿 ₽" style="height:49.8px"></i><i title="2025.11 3.9 亿 ₽" style="height:56.7px"></i><i title="2025.12 3.9 亿 ₽" style="height:58.0px"></i><i title="2026.01 3.2 亿 ₽" style="height:44.8px"></i><i title="2026.02 3.0 亿 ₽" style="height:40.5px"></i><i title="2026.03 3.2 亿 ₽" style="height:44.9px"></i><i title="2026.04 2.8 亿 ₽" style="height:36.9px"></i></div>
+      <div class="cat-stats" style="margin-top:0;">
+        <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
+        <div class="cat-stat"><b>3.9 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>25.6%</b><span>Top5 卖家份额</span></div>
+        <div class="cat-stat"><b>1 244</b><span>品牌数</span></div>
+      </div>
+      <div class="cat-lists">
+        <div class="mini-list">
+          <h4>SELLER PRICE BANDS</h4>
+          
+    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>14.6%</b></div>
+  
+    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>12.5%</b></div>
+  
+    <div class="line-item"><span>2 000 ₽ – 2 499 ₽</span><b>12.4%</b></div>
+  
+        </div>
+        <div class="mini-list">
+          <h4>TOP SALES REGIONS</h4>
+          
+    <div class="line-item"><span>Москва / МО / дальние</span><b>29.8%</b></div>
+  
+    <div class="line-item"><span>Санкт-Петербург / СЗО</span><b>14.0%</b></div>
+  
+    <div class="line-item"><span>Казань</span><b>4.5%</b></div>
+  
+        </div>
+      </div>
+      <div class="strategy-text">厨房收纳稳定需求，适合做组合装和规格梯度。</div>
+    </article>
+    <article class="cat-card">
+      <div class="cat-top">
+        <div class="cat-title">
+          <h3>高脚杯 / 酒杯</h3>
+          <span>Бокал · TDZ / TL 系列</span>
+        </div>
+        <div class="cat-annual">
+          <strong>33.1 亿 ₽</strong>
+          <span>年订购金额</span>
+        </div>
+      </div>
+      <div class="cat-stats">
+        <div class="cat-stat"><b>+394%</b><span>销售动态</span></div>
+        <div class="cat-stat"><b>1 526 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>12 665</b><span>卖家数</span></div>
+        <div class="cat-stat"><b>79.5%</b><span>买断率</span></div>
+      </div>
+      <div class="spark" aria-label="高脚杯 / 酒杯 月度销售趋势"><i title="2025.05 0.3 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.4 亿 ₽" style="height:10.3px"></i><i title="2025.07 0.5 亿 ₽" style="height:10.9px"></i><i title="2025.08 0.5 亿 ₽" style="height:10.9px"></i><i title="2025.09 0.5 亿 ₽" style="height:10.9px"></i><i title="2025.10 2.1 亿 ₽" style="height:18.3px"></i><i title="2025.11 4.9 亿 ₽" style="height:31.9px"></i><i title="2025.12 10.3 亿 ₽" style="height:58.0px"></i><i title="2026.01 3.7 亿 ₽" style="height:26.0px"></i><i title="2026.02 4.0 亿 ₽" style="height:27.9px"></i><i title="2026.03 3.4 亿 ₽" style="height:24.7px"></i><i title="2026.04 2.6 亿 ₽" style="height:21.1px"></i></div>
+      <div class="cat-stats" style="margin-top:0;">
+        <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
+        <div class="cat-stat"><b>10.3 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>24.7%</b><span>Top5 卖家份额</span></div>
+        <div class="cat-stat"><b>1 289</b><span>品牌数</span></div>
+      </div>
+      <div class="cat-lists">
+        <div class="mini-list">
+          <h4>SELLER PRICE BANDS</h4>
+          
+    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>14.9%</b></div>
+  
+    <div class="line-item"><span>2 000 ₽ – 2 499 ₽</span><b>11.8%</b></div>
+  
+    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>9.5%</b></div>
+  
+        </div>
+        <div class="mini-list">
+          <h4>TOP SALES REGIONS</h4>
+          
+    <div class="line-item"><span>Москва / МО / дальние</span><b>30.8%</b></div>
+  
+    <div class="line-item"><span>Санкт-Петербург / СЗО</span><b>13.9%</b></div>
+  
+    <div class="line-item"><span>Ростов</span><b>6.2%</b></div>
+  
+        </div>
+      </div>
+      <div class="strategy-text">客单价高，但破损敏感，必须靠包装和跌落测试兜底。</div>
+    </article>
+    <article class="cat-card">
+      <div class="cat-top">
+        <div class="cat-title">
+          <h3>玻璃茶壶</h3>
+          <span>Чайник заварочный · TR / TKB 壶杯组</span>
+        </div>
+        <div class="cat-annual">
+          <strong>28.0 亿 ₽</strong>
+          <span>年订购金额</span>
+        </div>
+      </div>
+      <div class="cat-stats">
+        <div class="cat-stat"><b>+67%</b><span>销售动态</span></div>
+        <div class="cat-stat"><b>981 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>16 546</b><span>卖家数</span></div>
+        <div class="cat-stat"><b>81.2%</b><span>买断率</span></div>
+      </div>
+      <div class="spark" aria-label="玻璃茶壶 月度销售趋势"><i title="2025.05 1.2 亿 ₽" style="height:10.0px"></i><i title="2025.06 1.2 亿 ₽" style="height:10.1px"></i><i title="2025.07 1.3 亿 ₽" style="height:11.9px"></i><i title="2025.08 1.8 亿 ₽" style="height:19.4px"></i><i title="2025.09 1.7 亿 ₽" style="height:19.1px"></i><i title="2025.10 2.5 亿 ₽" style="height:31.1px"></i><i title="2025.11 2.9 亿 ₽" style="height:39.1px"></i><i title="2025.12 4.1 亿 ₽" style="height:58.0px"></i><i title="2026.01 3.1 亿 ₽" style="height:42.4px"></i><i title="2026.02 3.0 亿 ₽" style="height:41.0px"></i><i title="2026.03 2.9 亿 ₽" style="height:38.9px"></i><i title="2026.04 2.2 亿 ₽" style="height:27.3px"></i></div>
+      <div class="cat-stats" style="margin-top:0;">
+        <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
+        <div class="cat-stat"><b>4.1 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>23.7%</b><span>Top5 卖家份额</span></div>
+        <div class="cat-stat"><b>1 158</b><span>品牌数</span></div>
+      </div>
+      <div class="cat-lists">
+        <div class="mini-list">
+          <h4>SELLER PRICE BANDS</h4>
+          
+    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>19.5%</b></div>
+  
+    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>15.9%</b></div>
+  
+    <div class="line-item"><span>1 000 ₽ – 1 249 ₽</span><b>10.2%</b></div>
+  
+        </div>
+        <div class="mini-list">
+          <h4>TOP SALES REGIONS</h4>
+          
+    <div class="line-item"><span>Москва / МО / дальние</span><b>30.7%</b></div>
+  
+    <div class="line-item"><span>Санкт-Петербург / СЗО</span><b>14.1%</b></div>
+  
+    <div class="line-item"><span>Казань</span><b>5.3%</b></div>
+  
+        </div>
+      </div>
+      <div class="strategy-text">茶饮场景清晰，俄罗斯消费者接受度高，适合视频内容展示。</div>
+    </article>
+    <article class="cat-card">
+      <div class="cat-top">
+        <div class="cat-title">
+          <h3>水杯 / 机吹杯</h3>
+          <span>Стакан · TY1628 / TY1640 / TS5163</span>
+        </div>
+        <div class="cat-annual">
+          <strong>15.8 亿 ₽</strong>
+          <span>年订购金额</span>
+        </div>
+      </div>
+      <div class="cat-stats">
+        <div class="cat-stat"><b>+377%</b><span>销售动态</span></div>
+        <div class="cat-stat"><b>908 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>12 082</b><span>卖家数</span></div>
+        <div class="cat-stat"><b>81.4%</b><span>买断率</span></div>
+      </div>
+      <div class="spark" aria-label="水杯 / 机吹杯 月度销售趋势"><i title="2025.05 0.3 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.3 亿 ₽" style="height:10.2px"></i><i title="2025.07 0.4 亿 ₽" style="height:11.5px"></i><i title="2025.08 0.4 亿 ₽" style="height:11.5px"></i><i title="2025.09 0.4 亿 ₽" style="height:11.3px"></i><i title="2025.10 1.1 亿 ₽" style="height:20.9px"></i><i title="2025.11 2.2 亿 ₽" style="height:37.0px"></i><i title="2025.12 3.7 亿 ₽" style="height:58.0px"></i><i title="2026.01 1.9 亿 ₽" style="height:32.3px"></i><i title="2026.02 1.8 亿 ₽" style="height:31.2px"></i><i title="2026.03 1.8 亿 ₽" style="height:30.4px"></i><i title="2026.04 1.5 亿 ₽" style="height:26.8px"></i></div>
+      <div class="cat-stats" style="margin-top:0;">
+        <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
+        <div class="cat-stat"><b>3.7 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>19.5%</b><span>Top5 卖家份额</span></div>
+        <div class="cat-stat"><b>1 251</b><span>品牌数</span></div>
+      </div>
+      <div class="cat-lists">
+        <div class="mini-list">
+          <h4>SELLER PRICE BANDS</h4>
+          
+    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>12.9%</b></div>
+  
+    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>12.8%</b></div>
+  
+    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>12.7%</b></div>
+  
+        </div>
+        <div class="mini-list">
+          <h4>TOP SALES REGIONS</h4>
+          
+    <div class="line-item"><span>Москва / МО / дальние</span><b>31.4%</b></div>
+  
+    <div class="line-item"><span>Санкт-Петербург / СЗО</span><b>13.7%</b></div>
+  
+    <div class="line-item"><span>Ростов</span><b>5.8%</b></div>
+  
+        </div>
+      </div>
+      <div class="strategy-text">成交和评价底盘，不能低价硬卷，优先做 4/6 只装。</div>
+    </article>
+    <article class="cat-card">
+      <div class="cat-top">
+        <div class="cat-title">
+          <h3>水壶 / 壶杯套装</h3>
+          <span>Кувшин · TR502 / TR509</span>
+        </div>
+        <div class="cat-annual">
+          <strong>9.8 亿 ₽</strong>
+          <span>年订购金额</span>
+        </div>
+      </div>
+      <div class="cat-stats">
+        <div class="cat-stat"><b>+89%</b><span>销售动态</span></div>
+        <div class="cat-stat"><b>847 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>7 955</b><span>卖家数</span></div>
+        <div class="cat-stat"><b>79.6%</b><span>买断率</span></div>
+      </div>
+      <div class="spark" aria-label="水壶 / 壶杯套装 月度销售趋势"><i title="2025.05 0.5 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.6 亿 ₽" style="height:16.3px"></i><i title="2025.07 0.7 亿 ₽" style="height:24.4px"></i><i title="2025.08 0.7 亿 ₽" style="height:20.7px"></i><i title="2025.09 0.6 亿 ₽" style="height:19.7px"></i><i title="2025.10 0.8 亿 ₽" style="height:27.3px"></i><i title="2025.11 1.0 亿 ₽" style="height:41.3px"></i><i title="2025.12 1.2 亿 ₽" style="height:58.0px"></i><i title="2026.01 0.9 亿 ₽" style="height:39.0px"></i><i title="2026.02 0.9 亿 ₽" style="height:39.2px"></i><i title="2026.03 1.0 亿 ₽" style="height:45.8px"></i><i title="2026.04 0.9 亿 ₽" style="height:36.8px"></i></div>
+      <div class="cat-stats" style="margin-top:0;">
+        <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
+        <div class="cat-stat"><b>1.2 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>30.7%</b><span>Top5 卖家份额</span></div>
+        <div class="cat-stat"><b>705</b><span>品牌数</span></div>
+      </div>
+      <div class="cat-lists">
+        <div class="mini-list">
+          <h4>SELLER PRICE BANDS</h4>
+          
+    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>19.0%</b></div>
+  
+    <div class="line-item"><span>1 000 ₽ – 1 249 ₽</span><b>11.5%</b></div>
+  
+    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>10.4%</b></div>
+  
+        </div>
+        <div class="mini-list">
+          <h4>TOP SALES REGIONS</h4>
+          
+    <div class="line-item"><span>Москва / МО / дальние</span><b>30.1%</b></div>
+  
+    <div class="line-item"><span>Санкт-Петербург / СЗО</span><b>15.0%</b></div>
+  
+    <div class="line-item"><span>Казань</span><b>5.5%</b></div>
+  
+        </div>
+      </div>
+      <div class="strategy-text">大件高客单，核心变量是壶嘴破损和外箱体积。</div>
+    </article>
+    <article class="cat-card">
+      <div class="cat-top">
+        <div class="cat-title">
+          <h3>糖罐</h3>
+          <span>Сахарница · TGD1911</span>
+        </div>
+        <div class="cat-annual">
+          <strong>5.7 亿 ₽</strong>
+          <span>年订购金额</span>
+        </div>
+      </div>
+      <div class="cat-stats">
+        <div class="cat-stat"><b>+81%</b><span>销售动态</span></div>
+        <div class="cat-stat"><b>744 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>5 921</b><span>卖家数</span></div>
+        <div class="cat-stat"><b>79.6%</b><span>买断率</span></div>
+      </div>
+      <div class="spark" aria-label="糖罐 月度销售趋势"><i title="2025.05 0.2 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.2 亿 ₽" style="height:12.0px"></i><i title="2025.07 0.3 亿 ₽" style="height:19.4px"></i><i title="2025.08 0.4 亿 ₽" style="height:26.4px"></i><i title="2025.09 0.4 亿 ₽" style="height:28.0px"></i><i title="2025.10 0.5 亿 ₽" style="height:35.8px"></i><i title="2025.11 0.6 亿 ₽" style="height:44.1px"></i><i title="2025.12 0.8 亿 ₽" style="height:58.0px"></i><i title="2026.01 0.6 亿 ₽" style="height:41.6px"></i><i title="2026.02 0.5 亿 ₽" style="height:37.3px"></i><i title="2026.03 0.6 亿 ₽" style="height:40.3px"></i><i title="2026.04 0.4 亿 ₽" style="height:29.1px"></i></div>
+      <div class="cat-stats" style="margin-top:0;">
+        <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
+        <div class="cat-stat"><b>0.8 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>25.9%</b><span>Top5 卖家份额</span></div>
+        <div class="cat-stat"><b>678</b><span>品牌数</span></div>
+      </div>
+      <div class="cat-lists">
+        <div class="mini-list">
+          <h4>SELLER PRICE BANDS</h4>
+          
+    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>20.1%</b></div>
+  
+    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>17.4%</b></div>
+  
+    <div class="line-item"><span>1 000 ₽ – 1 249 ₽</span><b>12.7%</b></div>
+  
+        </div>
+        <div class="mini-list">
+          <h4>TOP SALES REGIONS</h4>
+          
+    <div class="line-item"><span>Москва / МО / дальние</span><b>23.8%</b></div>
+  
+    <div class="line-item"><span>Санкт-Петербург / СЗО</span><b>12.8%</b></div>
+  
+    <div class="line-item"><span>Казань</span><b>5.2%</b></div>
+  
+        </div>
+      </div>
+      <div class="strategy-text">小件厨房用品，可与储物罐组合形成套装页。</div>
+    </article>
+    <article class="cat-card">
+      <div class="cat-top">
+        <div class="cat-title">
+          <h3>咖啡杯 / 茶杯</h3>
+          <span>Чашка · TCF / L12 套装</span>
+        </div>
+        <div class="cat-annual">
+          <strong>4.0 亿 ₽</strong>
+          <span>年订购金额</span>
+        </div>
+      </div>
+      <div class="cat-stats">
+        <div class="cat-stat"><b>+151%</b><span>销售动态</span></div>
+        <div class="cat-stat"><b>974 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>11 534</b><span>卖家数</span></div>
+        <div class="cat-stat"><b>79.2%</b><span>买断率</span></div>
+      </div>
+      <div class="spark" aria-label="咖啡杯 / 茶杯 月度销售趋势"><i title="2025.05 0.1 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.1 亿 ₽" style="height:11.3px"></i><i title="2025.07 0.2 亿 ₽" style="height:14.0px"></i><i title="2025.08 0.2 亿 ₽" style="height:15.2px"></i><i title="2025.09 0.2 亿 ₽" style="height:14.8px"></i><i title="2025.10 0.4 亿 ₽" style="height:31.1px"></i><i title="2025.11 0.5 亿 ₽" style="height:47.4px"></i><i title="2025.12 0.7 亿 ₽" style="height:58.0px"></i><i title="2026.01 0.4 亿 ₽" style="height:38.1px"></i><i title="2026.02 0.4 亿 ₽" style="height:39.3px"></i><i title="2026.03 0.5 亿 ₽" style="height:40.6px"></i><i title="2026.04 0.4 亿 ₽" style="height:33.8px"></i></div>
+      <div class="cat-stats" style="margin-top:0;">
+        <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
+        <div class="cat-stat"><b>0.7 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>19.2%</b><span>Top5 卖家份额</span></div>
+        <div class="cat-stat"><b>762</b><span>品牌数</span></div>
+      </div>
+      <div class="cat-lists">
+        <div class="mini-list">
+          <h4>SELLER PRICE BANDS</h4>
+          
+    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>11.8%</b></div>
+  
+    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>10.8%</b></div>
+  
+    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>10.3%</b></div>
+  
+        </div>
+        <div class="mini-list">
+          <h4>TOP SALES REGIONS</h4>
+          
+    <div class="line-item"><span>Москва / МО / дальние</span><b>34.5%</b></div>
+  
+    <div class="line-item"><span>Санкт-Петербург / СЗО</span><b>14.3%</b></div>
+  
+    <div class="line-item"><span>Ростов</span><b>4.1%</b></div>
+  
+        </div>
+      </div>
+      <div class="strategy-text">礼品属性强，适合做咖啡杯碟套装和高毛利组合。</div>
+    </article>
+    <article class="cat-card">
+      <div class="cat-top">
+        <div class="cat-title">
+          <h3>分酒器</h3>
+          <span>Графин · TR509 / TR502</span>
+        </div>
+        <div class="cat-annual">
+          <strong>2.7 亿 ₽</strong>
+          <span>年订购金额</span>
+        </div>
+      </div>
+      <div class="cat-stats">
+        <div class="cat-stat"><b>+29%</b><span>销售动态</span></div>
+        <div class="cat-stat"><b>1 280 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>2 858</b><span>卖家数</span></div>
+        <div class="cat-stat"><b>80.3%</b><span>买断率</span></div>
+      </div>
+      <div class="spark" aria-label="分酒器 月度销售趋势"><i title="2025.05 0.1 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.1 亿 ₽" style="height:10.7px"></i><i title="2025.07 0.2 亿 ₽" style="height:18.5px"></i><i title="2025.08 0.2 亿 ₽" style="height:18.1px"></i><i title="2025.09 0.2 亿 ₽" style="height:16.3px"></i><i title="2025.10 0.2 亿 ₽" style="height:21.4px"></i><i title="2025.11 0.3 亿 ₽" style="height:31.2px"></i><i title="2025.12 0.4 亿 ₽" style="height:58.0px"></i><i title="2026.01 0.3 亿 ₽" style="height:34.5px"></i><i title="2026.02 0.3 亿 ₽" style="height:32.2px"></i><i title="2026.03 0.3 亿 ₽" style="height:32.8px"></i><i title="2026.04 0.2 亿 ₽" style="height:24.6px"></i></div>
+      <div class="cat-stats" style="margin-top:0;">
+        <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
+        <div class="cat-stat"><b>0.4 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>26.4%</b><span>Top5 卖家份额</span></div>
+        <div class="cat-stat"><b>368</b><span>品牌数</span></div>
+      </div>
+      <div class="cat-lists">
+        <div class="mini-list">
+          <h4>SELLER PRICE BANDS</h4>
+          
+    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>16.4%</b></div>
+  
+    <div class="line-item"><span>1 250 ₽ – 1 499 ₽</span><b>12.9%</b></div>
+  
+    <div class="line-item"><span>2 000 ₽ – 2 499 ₽</span><b>9.8%</b></div>
+  
+        </div>
+        <div class="mini-list">
+          <h4>TOP SALES REGIONS</h4>
+          
+    <div class="line-item"><span>Москва / МО / дальние</span><b>33.0%</b></div>
+  
+    <div class="line-item"><span>Санкт-Петербург / СЗО</span><b>13.8%</b></div>
+  
+    <div class="line-item"><span>Казань</span><b>4.7%</b></div>
+  
+        </div>
+      </div>
+      <div class="strategy-text">年盘不大但价格带高，适合小批验证，不适合首轮压货。</div>
+    </article>
+    <article class="cat-card">
+      <div class="cat-top">
+        <div class="cat-title">
+          <h3>烟缸</h3>
+          <span>Пепельница · TYG1207 / TYG1204</span>
+        </div>
+        <div class="cat-annual">
+          <strong>2.8 亿 ₽</strong>
+          <span>年订购金额</span>
+        </div>
+      </div>
+      <div class="cat-stats">
+        <div class="cat-stat"><b>+75%</b><span>销售动态</span></div>
+        <div class="cat-stat"><b>614 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>5 992</b><span>卖家数</span></div>
+        <div class="cat-stat"><b>88.8%</b><span>买断率</span></div>
+      </div>
+      <div class="spark" aria-label="烟缸 月度销售趋势"><i title="2025.05 0.2 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.2 亿 ₽" style="height:14.7px"></i><i title="2025.07 0.2 亿 ₽" style="height:24.1px"></i><i title="2025.08 0.2 亿 ₽" style="height:25.4px"></i><i title="2025.09 0.2 亿 ₽" style="height:23.0px"></i><i title="2025.10 0.2 亿 ₽" style="height:29.5px"></i><i title="2025.11 0.3 亿 ₽" style="height:34.5px"></i><i title="2025.12 0.4 亿 ₽" style="height:58.0px"></i><i title="2026.01 0.2 亿 ₽" style="height:23.5px"></i><i title="2026.02 0.2 亿 ₽" style="height:26.9px"></i><i title="2026.03 0.2 亿 ₽" style="height:21.6px"></i><i title="2026.04 0.2 亿 ₽" style="height:25.6px"></i></div>
+      <div class="cat-stats" style="margin-top:0;">
+        <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
+        <div class="cat-stat"><b>0.4 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>17.9%</b><span>Top5 卖家份额</span></div>
+        <div class="cat-stat"><b>460</b><span>品牌数</span></div>
+      </div>
+      <div class="cat-lists">
+        <div class="mini-list">
+          <h4>SELLER PRICE BANDS</h4>
+          
+    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>19.3%</b></div>
+  
+    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>14.8%</b></div>
+  
+    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>11.3%</b></div>
+  
+        </div>
+        <div class="mini-list">
+          <h4>TOP SALES REGIONS</h4>
+          
+    <div class="line-item"><span>Москва / МО / дальние</span><b>29.1%</b></div>
+  
+    <div class="line-item"><span>Санкт-Петербург / СЗО</span><b>14.3%</b></div>
+  
+    <div class="line-item"><span>Юг</span><b>5.8%</b></div>
+  
+        </div>
+      </div>
+      <div class="strategy-text">买断率高但品牌价值有限，建议作为边界验证款。</div>
+    </article>
+    </div>
+    <div class="section-head" style="margin-top:70px;">
+      <div>
+        <div class="section-num">REGION DESK / 销售区域</div>
+        <h2>俄罗斯不是一个平均市场。先看<em>仓位和城市圈</em>。</h2>
+      </div>
+      <p class="lede">莫斯科、莫斯科州和远区通常是第一销售极，圣彼得堡是第二极。对玻璃来说，这不是地理常识，而是破损、履约、投放和备货策略。</p>
+    </div>
+    <table class="region-table">
+      <thead>
+        <tr>
+          <th>类目</th>
+          <th>第一销售区</th>
+          <th>销售额 / 占比</th>
+          <th>第二销售区</th>
+          <th>销售额 / 占比</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><strong>把杯 / 马克杯</strong><span>Кружка</span></td>
+        <td>Москва, МО и Дальние регионы</td>
+        <td>19.2 亿 ₽ <small>26.5%</small></td>
+        <td>Санкт-Петербург и СЗО</td>
+        <td>10.0 亿 ₽ <small>13.7%</small></td>
+      </tr>
+      <tr>
+        <td><strong>食品储物罐</strong><span>Банка для продуктов</span></td>
+        <td>Москва, МО и Дальние регионы</td>
+        <td>9.9 亿 ₽ <small>29.8%</small></td>
+        <td>Санкт-Петербург и СЗО</td>
+        <td>4.7 亿 ₽ <small>14.0%</small></td>
+      </tr>
+      <tr>
+        <td><strong>高脚杯 / 酒杯</strong><span>Бокал</span></td>
+        <td>Москва, МО и Дальние регионы</td>
+        <td>10.2 亿 ₽ <small>30.8%</small></td>
+        <td>Санкт-Петербург и СЗО</td>
+        <td>4.6 亿 ₽ <small>13.9%</small></td>
+      </tr>
+      <tr>
+        <td><strong>玻璃茶壶</strong><span>Чайник заварочный</span></td>
+        <td>Москва, МО и Дальние регионы</td>
+        <td>8.6 亿 ₽ <small>30.7%</small></td>
+        <td>Санкт-Петербург и СЗО</td>
+        <td>3.9 亿 ₽ <small>14.1%</small></td>
+      </tr>
+      <tr>
+        <td><strong>水杯 / 机吹杯</strong><span>Стакан</span></td>
+        <td>Москва, МО и Дальние регионы</td>
+        <td>5.0 亿 ₽ <small>31.4%</small></td>
+        <td>Санкт-Петербург и СЗО</td>
+        <td>2.2 亿 ₽ <small>13.7%</small></td>
+      </tr>
+      <tr>
+        <td><strong>水壶 / 壶杯套装</strong><span>Кувшин</span></td>
+        <td>Москва, МО и Дальние регионы</td>
+        <td>3.0 亿 ₽ <small>30.1%</small></td>
+        <td>Санкт-Петербург и СЗО</td>
+        <td>1.5 亿 ₽ <small>15.0%</small></td>
+      </tr>
+      <tr>
+        <td><strong>糖罐</strong><span>Сахарница</span></td>
+        <td>Москва, МО и Дальние регионы</td>
+        <td>1.4 亿 ₽ <small>23.8%</small></td>
+        <td>Санкт-Петербург и СЗО</td>
+        <td>0.7 亿 ₽ <small>12.8%</small></td>
+      </tr>
+      <tr>
+        <td><strong>咖啡杯 / 茶杯</strong><span>Чашка</span></td>
+        <td>Москва, МО и Дальние регионы</td>
+        <td>1.4 亿 ₽ <small>34.5%</small></td>
+        <td>Санкт-Петербург и СЗО</td>
+        <td>0.6 亿 ₽ <small>14.3%</small></td>
+      </tr>
+      <tr>
+        <td><strong>分酒器</strong><span>Графин</span></td>
+        <td>Москва, МО и Дальние регионы</td>
+        <td>0.9 亿 ₽ <small>33.0%</small></td>
+        <td>Санкт-Петербург и СЗО</td>
+        <td>0.4 亿 ₽ <small>13.8%</small></td>
+      </tr>
+      <tr>
+        <td><strong>烟缸</strong><span>Пепельница</span></td>
+        <td>Москва, МО и Дальние регионы</td>
+        <td>0.8 亿 ₽ <small>29.1%</small></td>
+        <td>Санкт-Петербург и СЗО</td>
+        <td>0.4 亿 ₽ <small>14.3%</small></td>
+      </tr></tbody>
+    </table>
+    <div class="evidence-note" style="margin-top:26px;">
+      结论：第一阶段不建议把库存平均撒向全俄。Ozon 首发应围绕莫斯科与圣彼得堡核心消费圈做入仓和广告验证，再根据破损反馈扩展区域。
+    </div>
+    <div class="section-head" style="margin-top:70px;">
+      <div>
+        <div class="section-num">WATCHLIST / 观察池与数据校准</div>
+        <h2>不是所有有数据的类目，都应该进入<em>第一批货</em>。</h2>
+      </div>
+      <p class="lede">除 10 个主类目外，Excel 中还有茶道器具、醒酒器、葡萄酒醒酒配件和杯盖配件。它们对策略有价值，但角色不同：有的适合二级测试，有的只用于关键词和竞品误差校准。</p>
+    </div>
+    <div class="watch-grid">
+      
+    <article class="watch-card">
+      <div class="watch-level">观察池 A · 茶饮内容外延</div>
+      <h3>茶道器具 / 茶席小件</h3>
+      <div class="ru">Посуда для чайных церемоний · 茶杯、茶壶、杯碟组合的外延池</div>
+      <div class="watch-metrics">
+        <div><b>0.8 亿 ₽</b><span>年订购金额</span></div>
+        <div><b>+155%</b><span>销售动态</span></div>
+        <div><b>1 044 ₽</b><span>卖家均价 RUB</span></div>
+        <div><b>81.3%</b><span>买断率</span></div>
+        <div><b>2025.12</b><span>峰值月份</span></div>
+        <div><b>0.1 亿 ₽</b><span>峰值月销售</span></div>
+        <div><b>1 000 ₽ – 1 249 ₽</b><span>第一卖家价格带</span></div>
+        <div><b>3 123</b><span>卖家数</span></div>
+      </div>
+      <p>年盘不大但 12 月峰值清晰，适合作为茶饮内容和礼品组合的二级验证，不建议首批压重库存。</p>
+      <div class="strategy-text">首批处理：小批验证或后置观察，等主线 SKU 跑通后再评估。</div>
+    </article>
+    <article class="watch-card">
+      <div class="watch-level">观察池 B · 高客单礼品</div>
+      <h3>醒酒器 / 高端酒具</h3>
+      <div class="ru">Декантер · TR 酒具线延展</div>
+      <div class="watch-metrics">
+        <div><b>1.4 亿 ₽</b><span>年订购金额</span></div>
+        <div><b>+34%</b><span>销售动态</span></div>
+        <div><b>2 327 ₽</b><span>卖家均价 RUB</span></div>
+        <div><b>76.8%</b><span>买断率</span></div>
+        <div><b>2025.12</b><span>峰值月份</span></div>
+        <div><b>0.3 亿 ₽</b><span>峰值月销售</span></div>
+        <div><b>3 500 ₽ – 3 999 ₽</b><span>第一卖家价格带</span></div>
+        <div><b>2 361</b><span>卖家数</span></div>
+      </div>
+      <p>均价和礼品属性高，但形态复杂、破损敏感。适合小批高客单验证，放在分酒器跑通之后。</p>
+      <div class="strategy-text">首批处理：小批验证或后置观察，等主线 SKU 跑通后再评估。</div>
+    </article>
+    <article class="watch-card">
+      <div class="watch-level">观察池 C · 暂不主推</div>
+      <h3>葡萄酒醒酒配件</h3>
+      <div class="ru">Аэратор для вина · 非德力核心玻璃款，仅作酒具洞察</div>
+      <div class="watch-metrics">
+        <div><b>0.5 亿 ₽</b><span>年订购金额</span></div>
+        <div><b>-15%</b><span>销售动态</span></div>
+        <div><b>1 319 ₽</b><span>卖家均价 RUB</span></div>
+        <div><b>87.5%</b><span>买断率</span></div>
+        <div><b>2025.12</b><span>峰值月份</span></div>
+        <div><b>0.1 亿 ₽</b><span>峰值月销售</span></div>
+        <div><b>6 000 ₽ – 6 999 ₽</b><span>第一卖家价格带</span></div>
+        <div><b>954</b><span>卖家数</span></div>
+      </div>
+      <p>价格带高但销售动态转弱，且与德力玻璃制造优势不完全匹配。可用于理解酒具关键词，不进入首批 SKU。</p>
+      <div class="strategy-text">首批处理：小批验证或后置观察，等主线 SKU 跑通后再评估。</div>
+    </article>
+    <article class="watch-card">
+      <div class="watch-level">数据校准 · 避免误读</div>
+      <h3>杯盖 / 杯套配件</h3>
+      <div class="ru">Крышка для кружки, чашки, стакана · 不作为德力玻璃核心 SKU</div>
+      <div class="watch-metrics">
+        <div><b>0.3 亿 ₽</b><span>年订购金额</span></div>
+        <div><b>+127%</b><span>销售动态</span></div>
+        <div><b>258 ₽</b><span>卖家均价 RUB</span></div>
+        <div><b>84.9%</b><span>买断率</span></div>
+        <div><b>2026.03</b><span>峰值月份</span></div>
+        <div><b>0.0 亿 ₽</b><span>峰值月销售</span></div>
+        <div><b>0 ₽ – 199 ₽</b><span>第一卖家价格带</span></div>
+        <div><b>3 626</b><span>卖家数</span></div>
+      </div>
+      <p>热卖表中的“Кружки28天热卖”实际落在杯盖类，不是马克杯竞品。这里只作为关键词误差和套装配件提醒。</p>
+      <div class="strategy-text">首批处理：不进入 SKU 清单，只作为配件和关键词误差提醒。</div>
+    </article>
+    </div>
+  </div>
+</section>
+
+<section id="platforms">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 04 / 平台路径</div>
+        <h2>Ozon 先行。WB 跟进。Yandex <em>辅助</em>。</h2>
+      </div>
+      <p class="lede">平台顺序不是偏好，而是风险控制。先在 Ozon 跑出评价、转化、破损率和广告数据，再复制到 WB 放量，Yandex 只上已验证的礼品和品牌搜索款。</p>
+    </div>
+    <div class="platform-grid">
+      
+    <article class="platform-card highlight">
+      <div class="platform-phase">Phase 01 · 0-6 个月</div>
+      <h3>Ozon</h3>
+      <div class="platform-role">首发测款 · 评价资产</div>
+      <div class="platform-metric"><span>核心费率</span><b>39-45%</b></div><div class="platform-metric"><span>活跃买家</span><b>6,300 万</b></div><div class="platform-metric"><span>首批 SKU</span><b>22 款建档上架</b></div><div class="platform-metric"><span>定位</span><b>新品测试 / 搜索广告 / 评价沉淀</b></div>
+      <p>Ozon 扣点不低，但类目工具、搜索、广告、内容和评价体系更适合新品测款。能在 Ozon 40% 左右费率下跑出正贡献的 SKU，才值得进入下一阶段放量。</p>
+    </article>
+    <article class="platform-card">
+      <div class="platform-phase">Phase 02 · 6-12 个月</div>
+      <h3>Wildberries</h3>
+      <div class="platform-role">规模放量 · 套装为主</div>
+      <div class="platform-metric"><span>餐具佣金</span><b>29.5% 起</b></div><div class="platform-metric"><span>水壶费率</span><b>26.5%</b></div><div class="platform-metric"><span>主推 SKU</span><b>8-12 款</b></div><div class="platform-metric"><span>定位</span><b>成熟款复制 / 花色款放量</b></div>
+      <p>WB 量大，但新品冷启动和评价积累压力更高。项目组建议只复制 Ozon 已验证款，重点做套装、花色和礼品化，而不是把 WB 当成全目录仓库。</p>
+    </article>
+    <article class="platform-card">
+      <div class="platform-phase">Phase 03 · 12 个月+</div>
+      <h3>Yandex Market</h3>
+      <div class="platform-role">品牌补充 · 礼品搜索</div>
+      <div class="platform-metric"><span>FBY 费率</span><b>42-44%</b></div><div class="platform-metric"><span>FBS/DBS</span><b>49-51%</b></div><div class="platform-metric"><span>上架范围</span><b>核心礼品款</b></div><div class="platform-metric"><span>定位</span><b>品牌搜索 / 高客单补充</b></div>
+      <p>Yandex 对玻璃器皿费率压力偏高，不适合作为第一阶段库存主仓。更适合在 Ozon 与 WB 跑通后，上咖啡杯碟、茶饮套装和高客单礼品款。</p>
+    </article>
+    </div>
+  </div>
+</section>
+
+<section id="competitor">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 05 / 竞品主图</div>
+        <h2>看竞品，不只看价格。要看<em>套装、主图、品牌和评价资产</em>。</h2>
+      </div>
+      <p class="lede">主图必须完整展示，才能判断俄罗斯平台上真正有效的卖点：几只装、容量表达、白底构图、道具使用、品牌感和是否靠低价冲量。热卖榜商品价格按买家到手价 / 活动价处理，类目价格区间才是正常卖家价口径。</p>
+    </div>
+    <div class="competitor-grid">
+      
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_mug_real.webp" alt="Ozon 搜索页实采 · 透明玻璃把杯 / 马克杯主图" data-lightbox-caption="Ozon 搜索页实采 · 透明玻璃把杯 / 马克杯主图">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Кружка · 对标 把杯 / 马克杯</div>
+        <div class="competitor-title">Ozon 搜索页实采 · 透明玻璃把杯 / 马克杯主图</div>
+        <div class="competitor-meta">
+          <div><b>0.0 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>0</b><span>28D 订单</span></div>
+          <div><b>501 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>Ozon / mark…</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/category/kruzhki-stakany-i-bokaly-19034/?__rr=1&amp;category_was_predicted=true&amp;deny_category_prediction=true&amp;text=%D0%BA%D1%80%D1%83%D0%B6%D0%BA%D0%B0+%D1%81%D1%82%D0%B5%D0%BA%D0%BB%D1%8F%D0%BD%D0%BD%D0%B0%D1%8F" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：716–1 002 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">从 Ozon 当前搜索页实采主图；仅补主图构图对标，销量仍以类目年盘和价格区间为准。<br>卖家：Ozon 页面实采</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_jar_real.webp" alt="Ozon Home · 玻璃食品储物罐主图" data-lightbox-caption="Ozon Home · 玻璃食品储物罐主图">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Банка для продуктов · 对标 食品储物罐</div>
+        <div class="competitor-title">Ozon Home · 玻璃食品储物罐主图</div>
+        <div class="competitor-meta">
+          <div><b>0.0 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>0</b><span>28D 订单</span></div>
+          <div><b>650 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>Ozon Home</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/category/hranenie-produktov-14552/?category_was_predicted=true&amp;deny_category_prediction=true&amp;text=%D0%B1%D0%B0%D0%BD%D0%BA%D0%B0+%D0%B4%D0%BB%D1%8F+%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D0%BE%D0%B2+%D1%81%D1%82%D0%B5%D0%BA%D0%BB%D1%8F%D0%BD%D0%BD%D0%B0%D1%8F" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：929–1 300 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">从 Ozon 当前搜索页实采主图；用于补齐储物罐类目主图对标，不作为热卖榜销量样本。<br>卖家：Ozon 页面实采</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_144052235.webp" alt="Набор стаканов Pasabahce &quot;Valse&quot; для воды, сока, коктейлей, 290 мл, стекло, 6 шт" data-lightbox-caption="Набор стаканов Pasabahce &quot;Valse&quot; для воды, сока, коктейлей, 290 мл, стекло, 6 шт">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Стакан · 对标 水杯 / 机吹杯</div>
+        <div class="competitor-title">Набор стаканов Pasabahce &quot;Valse&quot; для воды, сока, коктейлей, 290 мл, стекло, 6 шт</div>
+        <div class="competitor-meta">
+          <div><b>89.2 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>1 780</b><span>28D 订单</span></div>
+          <div><b>501 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>Pasabahce</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/nabor-stakanov-pasabahce-valse-dlya-vody-soka-kokteyley-290-ml-steklo-6-sht-144052235/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：716–1 002 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">页面出现 1 ₽ / 低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：Ozon</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_726322189.webp" alt="Пивная кружка СССР, объем 500 мл, &quot;Ностальгия&quot;" data-lightbox-caption="Пивная кружка СССР, объем 500 мл, &quot;Ностальгия&quot;">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Бокал · 对标 高脚杯 / 酒杯</div>
+        <div class="competitor-title">Пивная кружка СССР, объем 500 мл, &quot;Ностальгия&quot;</div>
+        <div class="competitor-meta">
+          <div><b>111.3 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>5 285</b><span>28D 订单</span></div>
+          <div><b>211 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>без бренда</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/pivnaya-kruzhka-sssr-obem-500-ml-nostalgiya-726322189/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：301–422 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">客单价高，但破损敏感，必须靠包装和跌落测试兜底。<br>卖家：Сима-Ленд - Посуда и Хозтовары</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_3215661470.webp" alt="Чайник стеклянный заварочный &quot;Бочонок 900 мл&quot; ThermoGlass с бамбуковой крышкой." data-lightbox-caption="Чайник стеклянный заварочный &quot;Бочонок 900 мл&quot; ThermoGlass с бамбуковой крышкой.">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Чайник заварочный · 对标 玻璃茶壶</div>
+        <div class="competitor-title">Чайник стеклянный заварочный &quot;Бочонок 900 мл&quot; ThermoGlass с бамбуковой крышкой.</div>
+        <div class="competitor-meta">
+          <div><b>714.1 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>31 285</b><span>28D 订单</span></div>
+          <div><b>228 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>THERMOGLASS</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/chaynik-steklyannyy-zavarochnyy-bochonok-900-ml-thermoglass-s-bambukovoy-kryshkoy-3215661470/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：326–456 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">页面出现 1 ₽ / 低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：ThermoGlass</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_2236851079.webp" alt="Кувшин, 3.5 л" data-lightbox-caption="Кувшин, 3.5 л">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Кувшин · 对标 水壶 / 壶杯套装</div>
+        <div class="competitor-title">Кувшин, 3.5 л</div>
+        <div class="competitor-meta">
+          <div><b>245.3 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>9 770</b><span>28D 订单</span></div>
+          <div><b>251 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>без бренда</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/kuvshin-3-5-l-2236851079/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：359–502 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">大件高客单，核心变量是壶嘴破损和外箱体积。<br>卖家：Восход Гранд Универмаг</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_1633412490.webp" alt="Сахарница с крышкой и ложкой из бамбука стеклянная, баночка для специй и других сыпучих продуктов" data-lightbox-caption="Сахарница с крышкой и ложкой из бамбука стеклянная, баночка для специй и других сыпучих продуктов">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Сахарница · 对标 糖罐</div>
+        <div class="competitor-title">Сахарница с крышкой и ложкой из бамбука стеклянная, баночка для специй и других сыпучих про…</div>
+        <div class="competitor-meta">
+          <div><b>88.4 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>3 809</b><span>28D 订单</span></div>
+          <div><b>232 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>VOSC</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/saharnitsa-s-kryshkoy-i-lozhkoy-iz-bambuka-steklyannaya-banochka-dlya-spetsiy-i-drugih-1633412490/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：331–464 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">页面出现 1 ₽ / 低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：VOSC</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_1659045634.webp" alt="Графин для воды 2,6 л стеклянный, кувшин для воды с фильтром, чайник заварочный стеклянный" data-lightbox-caption="Графин для воды 2,6 л стеклянный, кувшин для воды с фильтром, чайник заварочный стеклянный">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Графин · 对标 分酒器</div>
+        <div class="competitor-title">Графин для воды 2,6 л стеклянный, кувшин для воды с фильтром, чайник заварочный стеклянный</div>
+        <div class="competitor-meta">
+          <div><b>55.1 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>575</b><span>28D 订单</span></div>
+          <div><b>958 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>DELISOGA</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/grafin-dlya-vody-2-6-l-steklyannyy-kuvshin-dlya-vody-s-filtrom-chaynik-zavarochnyy-steklyannyy-1659045634/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：1 369–1 916 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">页面出现 1 ₽ / 低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：Регент Рус</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_1587493409.webp" alt="Чашка для завтрака 350 мл, Cellini, Villeroy &amp; Boch, Премиум-Фарфор" data-lightbox-caption="Чашка для завтрака 350 мл, Cellini, Villeroy &amp; Boch, Премиум-Фарфор">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Чашка · 对标 咖啡杯 / 茶杯</div>
+        <div class="competitor-title">Чашка для завтрака 350 мл, Cellini, Villeroy &amp; Boch, Премиум-Фарфор</div>
+        <div class="competitor-meta">
+          <div><b>40.8 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>191</b><span>28D 订单</span></div>
+          <div><b>2 134 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>Villeroy &amp; …</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/chashka-dlya-zavtraka-350-ml-cellini-villeroy-boch-premium-farfor-1587493409/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：3 049–4 268 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">礼品属性强，适合做咖啡杯碟套装和高毛利组合。<br>卖家：Villeroy &amp; Boch</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_334037343.webp" alt="Пепельница для дома с крышкой &quot;Юла&quot; большая, бездымная вращающаяся чёрная кожа, для дачи, для улицы, диаметр 13 см" data-lightbox-caption="Пепельница для дома с крышкой &quot;Юла&quot; большая, бездымная вращающаяся чёрная кожа, для дачи, для улицы, диаметр 13 см">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Пепельница · 对标 烟缸</div>
+        <div class="competitor-title">Пепельница для дома с крышкой &quot;Юла&quot; большая, бездымная вращающаяся чёрная кожа, для дачи, д…</div>
+        <div class="competitor-meta">
+          <div><b>49.1 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>1 016</b><span>28D 订单</span></div>
+          <div><b>483 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>Ashtray</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/pepelnitsa-dlya-doma-s-kryshkoy-yula-bolshaya-bezdymnaya-vrashchayushchayasya-chernaya-kozha-dlya-334037343/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：690–966 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">买断率高但品牌价值有限，建议作为边界验证款。<br>卖家：Мир грез</div>
+      </div>
+    </article>
+      
+    </div>
+    <div class="evidence-note" style="margin-top:26px;">
+      价格口径：热卖商品里的均价 / 低价按买家价、活动价或页面展示价处理，不等于卖家后台标价。可用买家价反推卖家标价，例如买家价约 500 ₽ 时，若按平台促销折让和券后口径折回，卖家标价通常要落在约 714-999 ₽ 区间；类目“价格区间”表则按正常卖家价格读取。当前真实单品主图已覆盖 8 个主类目；Кружка、Банка для продуктов 在现有抓取包里没有可用商品主图，页面明确标成待补。
+    </div>
+  </div>
+</section>
+
+<section id="sku">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 06 / 首批 SKU 清单</div>
+        <h2>22 个 SKU，4 种角色，<em>先测再放量</em>。</h2>
+      </div>
+      <p class="lede">首批不是 22 款都压大货，而是 22 款建档验证。成交款和利润款负责首轮库存，礼品款用低 MOQ 观察，验证款只用于确认搜索需求、破损风险和价格天花板；达标才进入二次备货。</p>
+    </div>
+    <div class="sku-table">
+      <div class="sku-head"><div>No.</div><div>产品图</div><div>产品方向</div><div>德力型号</div><div>包装规格</div><div>首发平台</div><div>角色</div></div>
+      
+    <div class="sku-row">
+      <div>01</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p05_26_269x384.webp" alt="基础水杯 · TY1628 · 280ml" data-lightbox-caption="德力目录相近款 · 透明直身水杯">
+      </div>
+      <div><strong>基础水杯</strong></div>
+      <div><span class="model">TY1628 · 280ml</span></div>
+      <div>6 只装</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-成交">成交</span></div>
+    </div>
+    <div class="sku-row">
+      <div>02</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p05_27_276x364.webp" alt="大容量水杯 · TY1640 · 400ml" data-lightbox-caption="德力目录相近款 · 竖纹大容量水杯">
+      </div>
+      <div><strong>大容量水杯</strong></div>
+      <div><span class="model">TY1640 · 400ml</span></div>
+      <div>4 只装</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-成交">成交</span></div>
+    </div>
+    <div class="sku-row">
+      <div>03</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p04_08_291x397.webp" alt="轻量水杯 · TS5163-2 · 310ml" data-lightbox-caption="德力目录相近款 · 机吹水杯">
+      </div>
+      <div><strong>轻量水杯</strong></div>
+      <div><span class="model">TS5163-2 · 310ml</span></div>
+      <div>6 只装</div>
+      <div>Ozon / WB</div>
+      <div><span class="role-pill role-成交">成交</span></div>
+    </div>
+    <div class="sku-row">
+      <div>04</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p04_12_269x326.webp" alt="小杯 / 茶水杯 · TKB512 · 190ml" data-lightbox-caption="德力目录相近款 · 小容量水杯">
+      </div>
+      <div><strong>小杯 / 茶水杯</strong></div>
+      <div><span class="model">TKB512 · 190ml</span></div>
+      <div>6 只装</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-成交">成交</span></div>
+    </div>
+    <div class="sku-row">
+      <div>05</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p07_24_362x348.webp" alt="玻璃马克杯 · TZ2829 · 290ml" data-lightbox-caption="德力目录相近款 · 透明玻璃把杯">
+      </div>
+      <div><strong>玻璃马克杯</strong></div>
+      <div><span class="model">TZ2829 · 290ml</span></div>
+      <div>2 / 4 只装</div>
+      <div>Ozon / WB</div>
+      <div><span class="role-pill role-成交">成交</span></div>
+    </div>
+    <div class="sku-row">
+      <div>06</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p07_23_381x324.webp" alt="中容量把杯 · TZ3052 · 380ml" data-lightbox-caption="德力目录相近款 · 厚底把杯">
+      </div>
+      <div><strong>中容量把杯</strong></div>
+      <div><span class="model">TZ3052 · 380ml</span></div>
+      <div>2 只装</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-利润">利润</span></div>
+    </div>
+    <div class="sku-row">
+      <div>07</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p09_05_397x511.webp" alt="大容量把杯 · TZ4306-1 · 430ml" data-lightbox-caption="德力目录相近款 · 大容量把杯">
+      </div>
+      <div><strong>大容量把杯</strong></div>
+      <div><span class="model">TZ4306-1 · 430ml</span></div>
+      <div>2 只装</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-利润">利润</span></div>
+    </div>
+    <div class="sku-row">
+      <div>08</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p10_13_472x303.webp" alt="咖啡杯碟套装 · TCF053/L12 · 110ml" data-lightbox-caption="德力目录相近款 · 咖啡杯">
+      </div>
+      <div><strong>咖啡杯碟套装</strong></div>
+      <div><span class="model">TCF053/L12 · 110ml</span></div>
+      <div>6 套 12 件</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-礼品">礼品</span></div>
+    </div>
+    <div class="sku-row">
+      <div>09</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p10_02_453x290.webp" alt="咖啡杯碟套装 · TCF9003/L12 · 230ml" data-lightbox-caption="德力目录相近款 · 纹理咖啡杯">
+      </div>
+      <div><strong>咖啡杯碟套装</strong></div>
+      <div><span class="model">TCF9003/L12 · 230ml</span></div>
+      <div>6 套 12 件</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-礼品">礼品</span></div>
+    </div>
+    <div class="sku-row">
+      <div>10</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p09_13_293x302.webp" alt="咖啡杯碟套装 · TCF057/L12 · 275ml" data-lightbox-caption="德力目录相近款 · 高脚咖啡杯">
+      </div>
+      <div><strong>咖啡杯碟套装</strong></div>
+      <div><span class="model">TCF057/L12 · 275ml</span></div>
+      <div>6 套 12 件</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-礼品">礼品</span></div>
+    </div>
+    <div class="sku-row">
+      <div>11</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p19_06_832x445.webp" alt="壶杯套装 · TR502/L7" data-lightbox-caption="德力目录相近款 · 壶杯套装">
+      </div>
+      <div><strong>壶杯套装</strong></div>
+      <div><span class="model">TR502/L7</span></div>
+      <div>1 壶 + 6 杯</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-礼品">礼品</span></div>
+    </div>
+    <div class="sku-row">
+      <div>12</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p11_14_309x338.webp" alt="壶杯套装 · TKB508/L5" data-lightbox-caption="德力目录相近款 · 带盖茶杯">
+      </div>
+      <div><strong>壶杯套装</strong></div>
+      <div><span class="model">TKB508/L5</span></div>
+      <div>1 壶 + 4 杯</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-利润">利润</span></div>
+    </div>
+    <div class="sku-row">
+      <div>13</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p16_21_2160x1440.webp" alt="花色水杯 · TY1628T · 6 图案" data-lightbox-caption="德力目录相近款 · 花色加工系列">
+      </div>
+      <div><strong>花色水杯</strong></div>
+      <div><span class="model">TY1628T · 6 图案</span></div>
+      <div>6 图案</div>
+      <div>Ozon / WB</div>
+      <div><span class="role-pill role-差异化">差异化</span></div>
+    </div>
+    <div class="sku-row">
+      <div>14</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p16_21_2160x1440.webp" alt="花色大杯 · TY1640T · 4 图案" data-lightbox-caption="德力目录相近款 · 花色加工系列">
+      </div>
+      <div><strong>花色大杯</strong></div>
+      <div><span class="model">TY1640T · 4 图案</span></div>
+      <div>4 图案</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-差异化">差异化</span></div>
+    </div>
+    <div class="sku-row">
+      <div>15</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p16_21_2160x1440.webp" alt="花色把杯 · TZ2829 波浪/草莓/柠檬" data-lightbox-caption="德力目录相近款 · 花色加工系列">
+      </div>
+      <div><strong>花色把杯</strong></div>
+      <div><span class="model">TZ2829 波浪/草莓/柠檬</span></div>
+      <div>2 只装</div>
+      <div>Ozon / WB</div>
+      <div><span class="role-pill role-差异化">差异化</span></div>
+    </div>
+    <div class="sku-row">
+      <div>16</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p16_21_2160x1440.webp" alt="创意文字杯 · TZ301-470T" data-lightbox-caption="德力目录相近款 · 花色加工系列">
+      </div>
+      <div><strong>创意文字杯</strong></div>
+      <div><span class="model">TZ301-470T</span></div>
+      <div>单只 / 礼盒</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-差异化">差异化</span></div>
+    </div>
+    <div class="sku-row">
+      <div>17</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p11_11_273x319.webp" alt="糖罐 / 储物 · TGD1911-5/7" data-lightbox-caption="德力目录相近款 · 糖罐 / 储物">
+      </div>
+      <div><strong>糖罐 / 储物</strong></div>
+      <div><span class="model">TGD1911-5/7</span></div>
+      <div>单只 / 2 件套</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-利润">利润</span></div>
+    </div>
+    <div class="sku-row">
+      <div>18</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p11_12_311x327.webp" alt="储物罐 · TBT001 · 950ml" data-lightbox-caption="德力目录相近款 · 玻璃储物罐">
+      </div>
+      <div><strong>储物罐</strong></div>
+      <div><span class="model">TBT001 · 950ml</span></div>
+      <div>单只 / 2 只装</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-利润">利润</span></div>
+    </div>
+    <div class="sku-row">
+      <div>19</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p11_08_209x429.webp" alt="高脚小杯 · TK518" data-lightbox-caption="德力目录相近款 · 高脚小杯">
+      </div>
+      <div><strong>高脚小杯</strong></div>
+      <div><span class="model">TK518</span></div>
+      <div>6 只装</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-验证">验证</span></div>
+    </div>
+    <div class="sku-row">
+      <div>20</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p12_27_278x364.webp" alt="分酒器 · TR509 · 1000ml" data-lightbox-caption="德力目录相近款 · 分酒器">
+      </div>
+      <div><strong>分酒器</strong></div>
+      <div><span class="model">TR509 · 1000ml</span></div>
+      <div>单只 / 礼盒</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-验证">验证</span></div>
+    </div>
+    <div class="sku-row">
+      <div>21</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p15_25_310x614.webp" alt="小酒杯 · TF206-100B" data-lightbox-caption="德力目录相近款 · 小酒杯">
+      </div>
+      <div><strong>小酒杯</strong></div>
+      <div><span class="model">TF206-100B</span></div>
+      <div>6 只装</div>
+      <div>Ozon</div>
+      <div><span class="role-pill role-验证">验证</span></div>
+    </div>
+    <div class="sku-row">
+      <div>22</div>
+      <div class="sku-thumb">
+        <img src="assets/deli_pdf_images/p23_04_239x251.webp" alt="玻璃烟缸 · TYG1207 / TYG1204" data-lightbox-caption="德力目录相近款 · 玻璃烟缸">
+      </div>
+      <div><strong>玻璃烟缸</strong></div>
+      <div><span class="model">TYG1207 / TYG1204</span></div>
+      <div>单只</div>
+      <div>WB / Ozon</div>
+      <div><span class="role-pill role-验证">验证</span></div>
+    </div>
+    </div>
+    <div class="evidence-note" style="margin-top:26px;">
+      主推 SKU 建议每款备货 100-300 套，验证 SKU 优先走样品、目录现货或最低 MOQ。它们不是“预测卖不了”的款，而是用来回答俄罗斯平台是否存在需求、能否控制破损、价格是否站得住。具体数量需在工厂提供 MOQ、装箱数、外箱尺寸、毛重和头程报价后确定。
+    </div>
+  </div>
+</section>
+
+<section id="profit">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 07 / 单品利润模型</div>
+        <h2>可以反算。不只是算成本，而是算<em>可承受供货价</em>。</h2>
+      </div>
+      <p class="lede">用现有三平台定价表，可以把售价、佣金、广告、物流、仓储、税费、破损、回款损耗和管理费先固定，再反推在 8% / 12% 净利率目标下，供货成本最多能到多少。当前卡片里的货值成本是测算假设，不是德力正式报价。</p>
+    </div>
+    <div class="method" style="margin-bottom:28px;">
+      <div>
+        <h3 style="font-size:30px;margin-bottom:14px;">反算方法</h3>
+        <p style="margin:0;color:var(--paper-2);font-size:14px;">先把非货成本全部算清楚，再把目标利润率从售价中扣掉，剩下的就是可承受供货成本上限。正式报价低于这个上限，SKU 才有进入测试的意义。</p>
+      </div>
+      <div class="formula">
+        <div>非货成本 = 包装 + 头程清关 + 操作费 + 平台扣除 + 税费 + 破损售后 + 回款损耗 + 管理费</div>
+        <div>利润 = 售价 - 预估货值成本 - 非货成本</div>
+        <div>可承受供货成本 RMB = [售价 × (1 - 目标净利率) - 非货成本] / 汇率</div>
+      </div>
+    </div>
+    <div class="profit-grid">
+      
+    <article class="profit-card">
+      <div class="profit-visual">
+        <img src="assets/deli_pdf_images/p05_26_269x384.webp" alt="TY1628 · 基础水杯 6 只装" data-lightbox-caption="德力目录相近款 · 透明直身水杯">
+        <span>德力目录相近款 · 透明直身水杯 · 待工厂提供精确型号图确认</span>
+      </div>
+      <h3>TY1628</h3>
+      <div class="role">基础水杯 6 只装 · Ozon FBO · 成交评价款</div>
+      <div class="profit-price"><span>平台售价</span><strong>1 290 ₽</strong></div>
+      <div class="profit-line"><span>预估货值成本</span><b>18.0 RMB / 230 ₽</b></div>
+      <div class="profit-line"><span>平台扣除</span><b>900 ₽ · 69.8%</b></div>
+      <div class="profit-line"><span>广告费</span><b>155 ₽ · 12.0%</b></div>
+      <div class="profit-line"><span>税费</span><b>61 ₽</b></div>
+      <div class="profit-line"><span>破损售后</span><b>65 ₽ · 5.0%</b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>1 256 ₽</b></div>
+      <div class="profit-result warn">
+        <strong>-197 ₽ / -15.4 RMB</strong>
+        <span>场景利润 · 净利率 -15.3% · ROI -85.4%</span>
+      </div>
+      <div class="cost-ceiling">
+        <div class="ceiling-row"><span>保 8% 净利率，供货成本上限</span><b>-5.4 RMB</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，供货成本上限</span><b>-9.5 RMB</b></div>
+      </div>
+      <div class="profit-note">基础透明杯不打极限低价，花色版才是利润延展。</div>
+    </article>
+    <article class="profit-card">
+      <div class="profit-visual">
+        <img src="assets/deli_pdf_images/p05_27_276x364.webp" alt="TY1640 · 大容量水杯 4 只装" data-lightbox-caption="德力目录相近款 · 竖纹大容量水杯">
+        <span>德力目录相近款 · 竖纹大容量水杯 · 待工厂提供精确型号图确认</span>
+      </div>
+      <h3>TY1640</h3>
+      <div class="role">大容量水杯 4 只装 · Ozon FBO · 容量升级款</div>
+      <div class="profit-price"><span>平台售价</span><strong>1 590 ₽</strong></div>
+      <div class="profit-line"><span>预估货值成本</span><b>22.0 RMB / 282 ₽</b></div>
+      <div class="profit-line"><span>平台扣除</span><b>1 111 ₽ · 69.9%</b></div>
+      <div class="profit-line"><span>广告费</span><b>191 ₽ · 12.0%</b></div>
+      <div class="profit-line"><span>税费</span><b>76 ₽</b></div>
+      <div class="profit-line"><span>破损售后</span><b>80 ₽ · 5.0%</b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>1 537 ₽</b></div>
+      <div class="profit-result warn">
+        <strong>-228 ₽ / -17.8 RMB</strong>
+        <span>场景利润 · 净利率 -14.4% · ROI -81.1%</span>
+      </div>
+      <div class="cost-ceiling">
+        <div class="ceiling-row"><span>保 8% 净利率，供货成本上限</span><b>-5.8 RMB</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，供货成本上限</span><b>-10.7 RMB</b></div>
+      </div>
+      <div class="profit-note">400ml 以上更看重重量和仓配费，报价后需重算。</div>
+    </article>
+    <article class="profit-card">
+      <div class="profit-visual">
+        <img src="assets/deli_pdf_images/p07_24_362x348.webp" alt="TZ2829 · 玻璃把杯 2 只装" data-lightbox-caption="德力目录相近款 · 透明玻璃把杯">
+        <span>德力目录相近款 · 透明玻璃把杯 · 待工厂提供精确型号图确认</span>
+      </div>
+      <h3>TZ2829</h3>
+      <div class="role">玻璃把杯 2 只装 · WB FBW · WB 放量款</div>
+      <div class="profit-price"><span>平台售价</span><strong>1 190 ₽</strong></div>
+      <div class="profit-line"><span>预估货值成本</span><b>16.0 RMB / 205 ₽</b></div>
+      <div class="profit-line"><span>平台扣除</span><b>707 ₽ · 59.4%</b></div>
+      <div class="profit-line"><span>广告费</span><b>143 ₽ · 12.0%</b></div>
+      <div class="profit-line"><span>税费</span><b>68 ₽</b></div>
+      <div class="profit-line"><span>破损售后</span><b>60 ₽ · 5.0%</b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>1 048 ₽</b></div>
+      <div class="profit-result warn">
+        <strong>-63 ₽ / -4.9 RMB</strong>
+        <span>场景利润 · 净利率 -5.3% · ROI -30.9%</span>
+      </div>
+      <div class="cost-ceiling">
+        <div class="ceiling-row"><span>保 8% 净利率，供货成本上限</span><b>3.6 RMB</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，供货成本上限</span><b>-0.1 RMB</b></div>
+      </div>
+      <div class="profit-note">适合复制 Ozon 验证款，不建议 WB 盲铺新款。</div>
+    </article>
+    <article class="profit-card">
+      <div class="profit-visual">
+        <img src="assets/deli_pdf_images/p10_13_472x303.webp" alt="TCF053/L12 · 咖啡杯碟 12 件套" data-lightbox-caption="德力目录相近款 · 咖啡杯">
+        <span>德力目录相近款 · 咖啡杯 · 待工厂提供精确型号图确认</span>
+      </div>
+      <h3>TCF053/L12</h3>
+      <div class="role">咖啡杯碟 12 件套 · Ozon FBO · 礼品高客单</div>
+      <div class="profit-price"><span>平台售价</span><strong>3 990 ₽</strong></div>
+      <div class="profit-line"><span>预估货值成本</span><b>95.0 RMB / 1 216 ₽</b></div>
+      <div class="profit-line"><span>平台扣除</span><b>2 575 ₽ · 64.5%</b></div>
+      <div class="profit-line"><span>广告费</span><b>479 ₽ · 12.0%</b></div>
+      <div class="profit-line"><span>税费</span><b>190 ₽</b></div>
+      <div class="profit-line"><span>破损售后</span><b>319 ₽ · 8.0%</b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>3 698 ₽</b></div>
+      <div class="profit-result warn">
+        <strong>-924 ₽ / -72.2 RMB</strong>
+        <span>场景利润 · 净利率 -23.2% · ROI -76.0%</span>
+      </div>
+      <div class="cost-ceiling">
+        <div class="ceiling-row"><span>保 8% 净利率，供货成本上限</span><b>-2.1 RMB</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，供货成本上限</span><b>-14.6 RMB</b></div>
+      </div>
+      <div class="profit-note">高客单能摊薄履约成本，但内托和跌落测试必须先过。</div>
+    </article>
+    <article class="profit-card">
+      <div class="profit-visual">
+        <img src="assets/deli_pdf_images/p19_06_832x445.webp" alt="TR502/L7 · 壶杯套装" data-lightbox-caption="德力目录相近款 · 壶杯套装">
+        <span>德力目录相近款 · 壶杯套装 · 待工厂提供精确型号图确认</span>
+      </div>
+      <h3>TR502/L7</h3>
+      <div class="role">壶杯套装 · Yandex FBY · 品牌辅助款</div>
+      <div class="profit-price"><span>平台售价</span><strong>3 590 ₽</strong></div>
+      <div class="profit-line"><span>预估货值成本</span><b>82.0 RMB / 1 050 ₽</b></div>
+      <div class="profit-line"><span>平台扣除</span><b>2 456 ₽ · 68.4%</b></div>
+      <div class="profit-line"><span>广告费</span><b>359 ₽ · 10.0%</b></div>
+      <div class="profit-line"><span>税费</span><b>647 ₽</b></div>
+      <div class="profit-line"><span>破损售后</span><b>287 ₽ · 8.0%</b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>3 948 ₽</b></div>
+      <div class="profit-result warn">
+        <strong>-1 408 ₽ / -110.0 RMB</strong>
+        <span>场景利润 · 净利率 -39.2% · ROI -134.1%</span>
+      </div>
+      <div class="cost-ceiling">
+        <div class="ceiling-row"><span>保 8% 净利率，供货成本上限</span><b>-50.4 RMB</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，供货成本上限</span><b>-61.6 RMB</b></div>
+      </div>
+      <div class="profit-note">Yandex 费率压力高，只适合成熟礼品款补充曝光。</div>
+    </article>
+    </div>
+    <div class="evidence-note" style="margin-top:26px;">
+      这些数来自现有 Excel 模板的示例假设，用于判断模型结构和谈判边界。正式版本要替换真实工厂报价、外箱尺寸、毛重、平台仓费、破损率和税务主体方案。
+    </div>
+  </div>
+</section>
+
+<section id="investment">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 08 / 投资测算</div>
+        <h2>三档情景，诚实的<em>资金边界</em>。</h2>
+      </div>
+      <p class="lede">没有工厂报价之前，不给精确净利润承诺。投资拆成消耗型启动费用和滚动占用资金，先按三档情景设置资金、销售和回本预期。</p>
+    </div>
+    <div class="investment-grid">
+      
+    <article class="investment-card">
+      <div class="investment-tag">Scenario A · 保守试水</div>
+      <div class="investment-name">Conservative</div>
+      <div class="investment-amount">78-141 万 RMB</div>
+      <div class="investment-line"><span>样品 / 包装 / 跌落测试</span><b>5-8 万</b></div><div class="investment-line"><span>俄文内容 / 拍摄素材</span><b>5-8 万</b></div><div class="investment-line"><span>认证 / 标签 / 合规</span><b>8-15 万</b></div><div class="investment-line"><span>首批库存采购</span><b>25-45 万</b></div><div class="investment-line"><span>头程清关入仓</span><b>15-25 万</b></div><div class="investment-line"><span>广告测款预算</span><b>10-20 万</b></div><div class="investment-line"><span>破损与现金流储备</span><b>10-20 万</b></div>
+      <div class="investment-foot"><b>500-800 万 RMB</b><span>第一年销售目标 · 以 Ozon 测款为主，不追求当年完整回本，目标是跑出 8-12 个稳定 SKU。</span></div>
+      <a class="model-entry" href="../?project=deli-glass-russia-22sku-conservative-project.json" target="_blank" rel="noopener">打开 A 模型 →</a>
+    </article>
+    <article class="investment-card featured">
+      <div class="investment-tag">Scenario B · 标准启动 · 推荐</div>
+      <div class="investment-name">Standard</div>
+      <div class="investment-amount">171-312 万 RMB</div>
+      <div class="investment-line"><span>样品 / 包装 / 跌落测试</span><b>8-15 万</b></div><div class="investment-line"><span>俄文内容 / 拍摄素材</span><b>8-12 万</b></div><div class="investment-line"><span>认证 / 标签 / 合规</span><b>15-25 万</b></div><div class="investment-line"><span>首批库存采购</span><b>60-100 万</b></div><div class="investment-line"><span>头程清关入仓</span><b>30-60 万</b></div><div class="investment-line"><span>广告测款预算</span><b>25-50 万</b></div><div class="investment-line"><span>破损与现金流储备</span><b>25-50 万</b></div>
+      <div class="investment-foot"><b>1,500-2,500 万 RMB</b><span>第一年销售目标 · Ozon 跑通后 WB 跟进，贡献利润率按 8%-12% 做场景测算。</span></div>
+      <a class="model-entry" href="../?project=deli-glass-russia-22sku-standard-project.json" target="_blank" rel="noopener">打开 B 模型 →</a>
+    </article>
+    <article class="investment-card">
+      <div class="investment-tag">Scenario C · 进取放量</div>
+      <div class="investment-name">Aggressive</div>
+      <div class="investment-amount">442-755 万 RMB</div>
+      <div class="investment-line"><span>样品 / 包装 / 跌落测试</span><b>15-25 万</b></div><div class="investment-line"><span>俄文内容 / 拍摄素材</span><b>12-20 万</b></div><div class="investment-line"><span>认证 / 标签 / 合规</span><b>25-40 万</b></div><div class="investment-line"><span>首批库存采购</span><b>150-250 万</b></div><div class="investment-line"><span>头程清关入仓</span><b>80-150 万</b></div><div class="investment-line"><span>广告测款预算</span><b>80-150 万</b></div><div class="investment-line"><span>破损与现金流储备</span><b>80-120 万</b></div>
+      <div class="investment-foot"><b>4,000-6,000 万 RMB</b><span>第一年销售目标 · 需要稳定供应、包装升级、广告预算和多平台放量，要求工厂提供更深合作支持。</span></div>
+      <a class="model-entry" href="../?project=deli-glass-russia-22sku-aggressive-project.json" target="_blank" rel="noopener">打开 C 模型 →</a>
+    </article>
+    </div>
+    <div class="model-grid">
+      <div class="model-panel">
+        <h3>三套损益模型入口</h3>
+        <p>方案页的三档投资不是概念卡片，已同步成可打开的 A / B / C 损益表。模型里包含 22 SKU 建档验证、分层补货、月度售价排期、平台费随售价联动，以及 one-time 启动费用扣减。</p>
+      </div>
+      <div class="model-list">
+        <a href="../?project=deli-glass-russia-22sku-conservative-project.json" target="_blank" rel="noopener"><strong>Scenario A · 保守试水</strong><span>以 Ozon 测款为主，不追求当年完整回本，目标是跑出 8-12 个稳定 SKU。</span><b>打开 A 模型</b></a><a href="../?project=deli-glass-russia-22sku-standard-project.json" target="_blank" rel="noopener"><strong>Scenario B · 标准启动</strong><span>Ozon 跑通后 WB 跟进，贡献利润率按 8%-12% 做场景测算。</span><b>打开 B 模型</b></a><a href="../?project=deli-glass-russia-22sku-aggressive-project.json" target="_blank" rel="noopener"><strong>Scenario C · 进取放量</strong><span>需要稳定供应、包装升级、广告预算和多平台放量，要求工厂提供更深合作支持。</span><b>打开 C 模型</b></a>
+      </div>
+    </div>
+    <div class="evidence-note" style="margin-top:26px;">
+      标准启动 171-312 万中，库存、头程和现金流储备属于滚动占用资金，不是一次性亏损；样品、内容、认证和广告属于启动消耗。若工厂支持样品、包装开发、破损补偿、账期或返利，现金投入可下降。
+    </div>
+  </div>
+</section>
+
+<section id="terms">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 09 / 合作条款</div>
+        <h2>先谈条款，再谈<em>拿货</em>。</h2>
+      </div>
+      <p class="lede">项目组投入平台、内容、评价和渠道资源之后，最危险的是同款被其他俄罗斯卖家复制。合作条款必须在第一批货之前锁定。</p>
+    </div>
+    <div class="terms-grid">
+      <div class="term-block">
+        <h3>红线条款</h3>
+        <div class="term-item"><strong>俄罗斯区域授权</strong><p>授权范围明确覆盖 Ozon、Wildberries、Yandex Market 和线下批发，最好扩展到 EAEU 相关国家。</p></div>
+        <div class="term-item"><strong>核心 SKU 独家</strong><p>首批主推花色款、套装款和俄文包装款必须独家；普通透明杯可视情况不独家。</p></div>
+        <div class="term-item"><strong>价格保护</strong><p>工厂不能向其他俄罗斯贸易商提供更低供货价，不能绕开项目组直接供货俄罗斯客户。</p></div>
+        <div class="term-item"><strong>包装与破损责任</strong><p>超过约定破损率的部分，需有补货、折让或费用分担机制。</p></div>
+        <div class="term-item"><strong>合规资料配合</strong><p>检测报告、材质说明、出口资料、EAC 与食品接触认证路径提前确认。</p></div>
+      </div>
+      <div class="term-block">
+        <h3>加分条款</h3>
+        <div class="term-item"><strong>俄文包装支持</strong><p>在重庆基地完成俄文彩盒或贴标，减少国内二次包装成本。</p></div>
+        <div class="term-item"><strong>样品支持</strong><p>首批 30-50 个样品用于拍摄、达人评测和平台合规预审，样品费可抵扣大货。</p></div>
+        <div class="term-item"><strong>滞销换货</strong><p>非定制 SKU 在 6 个月内可换成动销款，降低库存风险。</p></div>
+        <div class="term-item"><strong>新品优先权</strong><p>后续新模具、新花色优先给俄罗斯项目测试。</p></div>
+        <div class="term-item"><strong>素材授权与账期</strong><p>产品图、工厂视频、检测资料可用于内容营销；成熟后争取定金加到仓或销售后结算机制。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 10 / 执行路径</div>
+        <h2>90 天起步，12 个月<em>成型</em>。</h2>
+      </div>
+      <p class="lede">每个节点都有明确产出：资料、样品、模型、上架、评价、动销款、包装升级、平台复制和品牌资产。</p>
+    </div>
+    <div class="roadmap-grid">
+      <div class="roadmap-card"><div class="tag">DAY 0-30</div><h3>资料 · 样品 · 建模型</h3><ul><li>索取 22-30 个 SKU 报价、MOQ、装箱、毛重和外箱尺寸。</li><li>确认包装方案、跌落测试、食品接触资料和出口认证。</li><li>建立 Ozon / WB / Yandex 单品利润模型。</li></ul></div>
+      <div class="roadmap-card"><div class="tag">DAY 31-90</div><h3>Ozon 首发 · 测款</h3><ul><li>上架 20-30 个 SKU，主推 12-15 个。</li><li>投放核心俄文关键词：набор стаканов、кружка стеклянная、кофейная пара。</li><li>每周复盘点击、转化、ACOS、退货和破损。</li></ul></div>
+      <div class="roadmap-card"><div class="tag">3-6 MONTHS</div><h3>形成稳定放量款</h3><ul><li>淘汰低点击、高破损、低毛利款。</li><li>把预算集中到 8-12 个胜出 SKU。</li><li>与工厂谈第二批价格、包装优化、独家条款和账期。</li></ul></div>
+      <div class="roadmap-card"><div class="tag">6-12 MONTHS</div><h3>多平台扩张 · 品牌成型</h3><ul><li>将 Ozon 验证款复制到 WB。</li><li>Yandex 只上礼品、咖啡和茶饮套装。</li><li>准备俄文品牌名、商标注册和俄罗斯长期运营主体。</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="next" class="cta">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <div class="section-num">SECTION 11 / 下一步资料</div>
+        <h2>项目组已经完成初筛，下一步需要德力提供<em>可计算资料</em>。</h2>
+      </div>
+      <p class="lede">有了报价和装箱参数，项目组就能把每个 SKU 从“场景模型”推进到“可做 / 小测 / 砍”的正式结论。</p>
+    </div>
+    <div class="cta-grid">
+      <div class="cta-item"><b>22 SKU 报价</b><span>EXW / FOB、MOQ、阶梯价、样品费、账期和返利条件。</span></div>
+      <div class="cta-item"><b>装箱参数</b><span>单套净重、毛重、彩盒尺寸、外箱尺寸、每箱套数。</span></div>
+      <div class="cta-item"><b>包装验证</b><span>现有包装方案、跌落测试、平台仓破损补偿机制。</span></div>
+      <div class="cta-item"><b>合规资料</b><span>食品接触材料、EAC 可用资料、检测报告和俄文标签配合。</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Data sources: Deli annual report and factory materials · Ozon Category Tool 2025.05-2026.04 · Ozon product scrape samples · Three-platform SKU unit economics template. Document v1.0 fused proposal.
+  </div>
+</footer>
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lightbox-close" type="button" aria-label="关闭">×</button>
+  <img alt="">
+  <div class="lightbox-caption"></div>
+</div>
+<script>
+(() => {
+  const box = document.getElementById("lightbox");
+  if (!box) return;
+  const img = box.querySelector("img");
+  const caption = box.querySelector(".lightbox-caption");
+  const close = () => {
+    box.classList.remove("open");
+    box.setAttribute("aria-hidden", "true");
+    img.removeAttribute("src");
+    caption.textContent = "";
+  };
+  document.addEventListener("click", (event) => {
+    const source = event.target.closest("img, .profit-visual, .sku-thumb, .competitor-img");
+    const node = source?.matches("img") ? source : source?.querySelector("img");
+    if (!node || box.contains(node)) return;
+    box.classList.add("open");
+    box.setAttribute("aria-hidden", "false");
+    img.src = node.currentSrc || node.src;
+    img.alt = node.alt || "";
+    caption.textContent = node.dataset.lightboxCaption || node.alt || "";
+  });
+  box.addEventListener("click", (event) => {
+    if (event.target === box || event.target.classList.contains("lightbox-close")) close();
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") close();
+  });
+})();
+</script>
+</body>
+</html>

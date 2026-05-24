@@ -677,6 +677,39 @@ function AppContent({ lang, setLang }) {
 
   // --- 启动时加载数据：优先从分享链接 hash，其次 localStorage ---
   useEffect(() => {
+    const loadProjectFile = async (projectFile) => {
+      try {
+        const safeFile = decodeURIComponent(projectFile || "").trim();
+        if (!safeFile || safeFile.includes("..") || safeFile.includes("/") || safeFile.includes("\\")) {
+          throw new Error("Invalid project file");
+        }
+        const basePath = import.meta.env.BASE_URL || "/";
+        const response = await fetch(`${basePath}${safeFile}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Project file not found: ${safeFile}`);
+        const parsed = await response.json();
+        const data = {
+          params: parsed.p || parsed.params || DEFAULT_PARAMS,
+          products: parsed.pr || parsed.products || [],
+          scheduleStore: parsed.ss || parsed.scheduleStore || {},
+          priceScheduleStore: parsed.ps || parsed.priceScheduleStore || {},
+          restockStore: parsed.rs || parsed.restockStore || {},
+          withdrawalStore: parsed.ws || parsed.withdrawalStore || { amounts: [] },
+          projection: parsed.pj || parsed.projection || DEFAULT_PROJECTION,
+        };
+        applyData(data);
+        const loadedName = parsed.projectName || safeFile.replace(/\.json$/i, "");
+        setProjectName(loadedName);
+        setStorageStatus(t("projectLoaded", { name: loadedName }));
+        setTimeout(() => setStorageStatus(""), 3000);
+        setLoaded(true);
+      } catch (e) {
+        console.error("Failed to load project file:", e);
+        setStorageStatus(t("projectImportFail"));
+        setTimeout(() => setStorageStatus(""), 3000);
+        setLoaded(true);
+      }
+    };
+
     const loadShared = async (b64) => {
       try {
         const bin = atob(decodeURIComponent(b64));
@@ -710,6 +743,8 @@ function AppContent({ lang, setLang }) {
 
     const hash = window.location.hash;
     if (hash.startsWith('#share=')) { loadShared(hash.slice(7)); return; }
+    const projectFile = new URLSearchParams(window.location.search).get("project");
+    if (projectFile) { loadProjectFile(projectFile); return; }
 
     // 尝试从多项目索引加载上次打开的项目
     try {
@@ -1012,12 +1047,18 @@ function AppContent({ lang, setLang }) {
       a.totalInputVAT += r.c.totalInputVAT; a.totalOutputVAT += r.c.totalOutputVAT;
       a.netProfit += r.c.netProfit; a.bookNetProfit += r.c.bookNetProfit; a.profitBeforeTax += r.c.profitBeforeTax;
     }
+    a.operatingNetProfit = a.netProfit;
+    a.operatingBookNetProfit = a.bookNetProfit;
+    a.operatingCostBasis = a.totalInvestment;
+    a.operatingProfitMargin = a.totalGMV > 0 ? a.operatingNetProfit / a.totalGMV : 0;
+    a.operatingRoi = a.totalInvestment > 0 ? a.operatingNetProfit / a.totalInvestment : 0;
     a.netProfit -= params.oneTimeCosts;
     a.bookNetProfit -= params.oneTimeCosts;
     a.totalCostBasis = a.totalInvestment + params.oneTimeCosts;
     a.profitMargin = a.totalGMV > 0 ? a.netProfit / a.totalGMV : 0;
     a.roi = a.totalCostBasis > 0 ? a.netProfit / a.totalCostBasis : 0;
     a.netProfitCNY = a.netProfit / params.exchangeRate;
+    a.operatingNetProfitCNY = a.operatingNetProfit / params.exchangeRate;
     return a;
   }, [calcs, params.oneTimeCosts, params.exchangeRate]);
 
@@ -1276,7 +1317,8 @@ function AppContent({ lang, setLang }) {
 
     // Cost structure bar
     const costParts = [
-      { label: lang === 'zh' ? '采购成本' : 'COGS', val: totals.totalCostBasis, clr: '#5C1A1B' },
+      { label: lang === 'zh' ? '预估采购到仓成本' : 'COGS', val: totals.totalInvestment, clr: '#5C1A1B' },
+      { label: lang === 'zh' ? '一次性启动费' : 'Setup', val: setupCost, clr: '#5C544A' },
       { label: lang === 'zh' ? '平台费' : 'Platform', val: calcs.reduce((s, r) => s + (r.platformFee || 0) * (r.qty || 0), 0), clr: '#7A2A2C' },
       { label: lang === 'zh' ? '仓储' : 'Warehouse', val: calcs.reduce((s, r) => s + (r.warehouse || 0) * (r.qty || 0), 0), clr: '#B8860B' },
       { label: lang === 'zh' ? '管理费' : 'Mgmt', val: calcs.reduce((s, r) => s + (r.mgmt || 0) * (r.qty || 0), 0), clr: '#D4A93A' },
@@ -1295,11 +1337,14 @@ function AppContent({ lang, setLang }) {
     const beText = proj.breakEvenMonth
       ? (lang === 'zh' ? `预计<span class="highlight">第${proj.breakEvenMonth}个月回本</span>` : lang === 'ru' ? `Окупаемость за <span class="highlight">${proj.breakEvenMonth} мес.</span>` : `Expected break-even at <span class="highlight">month ${proj.breakEvenMonth}</span>`)
       : (lang === 'zh' ? '预测期内未能回本' : lang === 'ru' ? 'Не окупается в прогнозе' : 'No break-even in forecast period');
+    const setupCost = params.oneTimeCosts || 0;
+    const inventoryInvestment = totals.totalInvestment;
+    const projectNetAfterSetup = totals.netProfit;
     const summaryText = lang === 'zh'
-      ? `本批次共 <strong>${calcs.length} 个 SKU</strong>，总备货 <strong>${totals.qty} 件</strong>。采用 <strong>${scheme}</strong> 税制方案，总投资 <strong>${fR(totals.totalCostBasis)}</strong>（${fC(totals.totalCostBasis / params.exchangeRate)}），预计 ${projection.monthsHorizon} 个月内可产生总营收 <strong>${fR(totals.totalRevenue)}</strong>，扣除所有成本和税费后，现金净利润 <strong>${fR(totals.netProfit)}</strong>，投资回报率 <strong>${fP(totals.roi)}</strong>。${beText}。`
+      ? `本批次共 <strong>${calcs.length} 个 SKU</strong>，总备货 <strong>${totals.qty} 件</strong>。商品 <strong>list 为卖家标价</strong>，竞品买家活动价需反推至卖家标价后再进入模型；platformFee 为平台佣金、履约、促销和广告折让的综合扣减项。当前采购价与申报价为 <strong>测算假设</strong>，不是德力正式报价。经营口径下，预计 ${projection.monthsHorizon} 个月产生营收 <strong>${fR(totals.totalRevenue)}</strong>，经营净利 <strong>${fR(totals.operatingNetProfit)}</strong>，经营 ROI <strong>${fP(totals.operatingRoi)}</strong>。项目口径再扣除一次性启动费 <strong>${fR(setupCost)}</strong> 后，项目净利为 <strong>${fR(projectNetAfterSetup)}</strong>。现金流口径包含首批备货与补货支出，${beText}。`
       : lang === 'ru'
-      ? `В партии <strong>${calcs.length} SKU</strong>, всего <strong>${totals.qty} шт.</strong> Режим <strong>${scheme}</strong>, инвестиции <strong>${fR(totals.totalCostBasis)}</strong>, выручка за ${projection.monthsHorizon} мес. — <strong>${fR(totals.totalRevenue)}</strong>, чистая прибыль <strong>${fR(totals.netProfit)}</strong>, ROI <strong>${fP(totals.roi)}</strong>. ${beText}.`
-      : `This batch contains <strong>${calcs.length} SKUs</strong> totaling <strong>${totals.qty} units</strong>. Using <strong>${scheme}</strong> tax scheme, total investment <strong>${fR(totals.totalCostBasis)}</strong> (${fC(totals.totalCostBasis / params.exchangeRate)}), projected ${projection.monthsHorizon}-month revenue <strong>${fR(totals.totalRevenue)}</strong>, net profit <strong>${fR(totals.netProfit)}</strong>, ROI <strong>${fP(totals.roi)}</strong>. ${beText}.`;
+      ? `В партии <strong>${calcs.length} SKU</strong>, всего <strong>${totals.qty} шт.</strong> Операционная прибыль без стартовых расходов: <strong>${fR(totals.operatingNetProfit)}</strong>, ROI <strong>${fP(totals.operatingRoi)}</strong>. После стартовых расходов <strong>${fR(setupCost)}</strong> проектная прибыль: <strong>${fR(projectNetAfterSetup)}</strong>. ${beText}.`
+      : `This batch contains <strong>${calcs.length} SKUs</strong> totaling <strong>${totals.qty} units</strong>. Operating net profit before setup costs is <strong>${fR(totals.operatingNetProfit)}</strong> with operating ROI <strong>${fP(totals.operatingRoi)}</strong>. After one-time setup costs of <strong>${fR(setupCost)}</strong>, project net profit is <strong>${fR(projectNetAfterSetup)}</strong>. Cash flow includes initial inventory and restocking. ${beText}.`;
 
     // Glossary tips
     const glossaryItems = lang === 'zh' ? [
@@ -1388,6 +1433,8 @@ function AppContent({ lang, setLang }) {
   .summary-text{background:white;border:1px solid #D9CFB8;padding:20px 24px;margin:24px 0;font-size:13px;line-height:1.8;color:#1F1B16}
   .summary-text strong{color:#5C1A1B}
   .summary-text .highlight{display:inline-block;padding:1px 6px;background:rgba(31,79,46,0.08);color:#1F4F2E;font-weight:600;border-radius:2px}
+  .logic-note{background:#F2EDE3;border-left:3px solid #B8860B;padding:14px 18px;margin:18px 0;font-size:12px;color:#1F1B16;line-height:1.7}
+  .logic-note strong{color:#5C1A1B}
 
   /* Rank table */
   .rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
@@ -1452,6 +1499,11 @@ function AppContent({ lang, setLang }) {
   <div class="summary-text">
     ${summaryText}
   </div>
+  <div class="logic-note">
+    <strong>计算口径说明：</strong>当前采购价/申报价为测算假设，需待工厂 EXW/FOB 正式报价、装箱尺寸、毛重和头程报价确认后替换。经营净利 = 商品销售回款 - 预估采购到仓成本 - 仓储管理 - 破损 - 税，不含一次性启动费；
+    项目净利 = 经营净利 - 一次性启动费；
+    期末现金 = 项目净利再叠加首批备货、补货节奏和现金回收时间。三者口径不同，不能混读。
+  </div>
 
   <!-- Summary Cards -->
   <div class="section">
@@ -1470,19 +1522,23 @@ function AppContent({ lang, setLang }) {
       <div class="sub">${fC(totals.totalCostBasis / params.exchangeRate)}</div>
     </div>
     <div class="card accent">
-      <div class="label">${t("cashNetProfit")}</div>
-      <div class="value ${totals.netProfit >= 0 ? 'pos' : 'neg'}">${fR(totals.netProfit)}</div>
-      <div class="sub">${fC(totals.netProfitCNY)}</div>
+      <div class="label">经营净利</div>
+      <div class="value ${totals.operatingNetProfit >= 0 ? 'pos' : 'neg'}">${fR(totals.operatingNetProfit)}</div>
+      <div class="sub">不含启动费 · ${fC(totals.operatingNetProfitCNY)}</div>
     </div>
     <div class="card">
-      <div class="label">ROI</div>
-      <div class="value" style="color:#B8860B">${fP(totals.roi)}</div>
-      <div class="sub">${t("netMargin")} ${fP(totals.profitMargin)}</div>
+      <div class="label">项目净利</div>
+      <div class="value ${totals.netProfit >= 0 ? 'pos' : 'neg'}">${fR(totals.netProfit)}</div>
+      <div class="sub">扣启动费后 · ROI ${fP(totals.roi)}</div>
     </div>
   </div>
 
   <!-- Investor Metrics -->
   <div class="cards" style="grid-template-columns:repeat(4,1fr)">
+    <div class="card">
+      <div class="label">一次性启动费</div>
+      <div class="value neg">${fR(-setupCost)}</div>
+    </div>
     <div class="card">
       <div class="label">${t("initialOutflow")}</div>
       <div class="value neg">${fR(-proj.initialOutflow)}</div>
@@ -1576,8 +1632,8 @@ function AppContent({ lang, setLang }) {
           <td class="r mono">${fR(totals.totalInvestment)}</td>
           <td class="r mono">${fR(totals.totalRevenue)}</td>
           <td class="r mono">${fR(totals.tax)}</td>
-          <td class="r mono ${totals.netProfit >= 0 ? 'pos' : 'neg'}">${fR(totals.netProfit)}</td>
-          <td class="r mono">${fP(totals.roi)}</td>
+          <td class="r mono ${totals.operatingNetProfit >= 0 ? 'pos' : 'neg'}">${fR(totals.operatingNetProfit)}</td>
+          <td class="r mono">${fP(totals.operatingRoi)}</td>
         </tr>
       </tbody>
     </table>
@@ -1943,14 +1999,14 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang, fmt }) =>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
           <Metric label={t("totalRevenue")} value={F(totals.totalRevenue)} sub={fmtRubShort(totals.totalRevenue)} big />
         </div>
-        <div className="p-4 sm:p-5 card-hover rounded-sm border-2" style={{ borderColor: proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson, background: "rgba(255,255,255,0.7)" }}>
-          <Metric label={t("endingCash")}
-            value={F(proj.finalCash)}
-            sub={t("projMonthsRange", { n: projection.monthsHorizon })}
-            color={proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson} big />
+        <div className="p-4 sm:p-5 card-hover rounded-sm border-2" style={{ borderColor: totals.operatingNetProfit >= 0 ? COLORS.emerald : COLORS.crimson, background: "rgba(255,255,255,0.7)" }}>
+          <Metric label="经营净利"
+            value={F(totals.operatingNetProfit)}
+            sub={`不含启动费 · ROI ${fmtPct(totals.operatingRoi)}`}
+            color={totals.operatingNetProfit >= 0 ? COLORS.emerald : COLORS.crimson} big />
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
-          <Metric label={t("roiLabel")} value={fmtPct(totals.roi)} sub={`${t("netMargin")} ${fmtPct(totals.profitMargin)}`} color={COLORS.gold} big />
+          <Metric label="项目净利" value={F(totals.netProfit)} sub={`含启动费 · ROI ${fmtPct(totals.roi)}`} color={totals.netProfit >= 0 ? COLORS.emerald : COLORS.gold} big />
         </div>
       </div>
 
@@ -3322,7 +3378,7 @@ const GLOSSARY = {
   zh: [
     { section: "📊 总览仪表盘", items: [
       { term: "总营收", desc: "所有商品卖出后，平台打给你的总金额（售价 − 平台佣金）。", example: "商品售价 1249₽，平台费 652₽ → 单件回款 597₽。30件 → 总营收 = 597 × 30 × 97%（扣货损）= 17,373₽" },
-      { term: "总投资", desc: "你实际掏出去的所有钱：采购成本 + 到俄运费 + 一次性费用。", example: "采购价 17.65¥ × 汇率12 = 211.8₽，运费 100₽ → 单件成本 311.8₽。30件 → 投资 = 9,354₽" },
+      { term: "总投资", desc: "测算口径下需要占用的资金：预估采购成本 + 到俄运费 + 一次性费用。正式报价后必须替换采购成本。", example: "预估采购价 17.65¥ × 汇率12 = 211.8₽，运费 100₽ → 单件成本 311.8₽。30件 → 投资 = 9,354₽" },
       { term: "现金净利", desc: "按每个SKU单独算税后汇总的利润。= 总营收 − 总投资 − 仓储 − 管理费 − 税。", example: "营收 17,373₽ − 投资 9,354₽ − 仓 2,970₽ − 管理 1,080₽ − 税 580₽ = 净利 3,389₽" },
       { term: "期末现金", desc: "经过N个月销售排期后，你账上实际还剩多少钱。按月度累计计算。", example: "M0投入 -108万₽ → M1回款+15万 → M2回款+20万 → ... → M8累计 = +57.5万₽" },
       { term: "⚠️ 现金净利 vs 期末现金", desc: "两个数不一样是正常的！现金净利是按每个SKU单独算税再汇总；期末现金是按月合算税。月合算时税额可能更低，所以期末现金通常略高。", example: "38个SKU单独算税各交一点最低税 → 总税高；按月合在一起算 → 利润合并后不触发最低税 → 总税低 → 到手多" },
@@ -3336,7 +3392,7 @@ const GLOSSARY = {
       { term: "平均月回款", desc: "总营收 ÷ 预测月数。代表平均每个月能收回多少钱。", example: "总营收230万₽ ÷ 8个月 = 平均每月28.7万₽" },
     ]},
     { section: "🏷️ 商品明细", items: [
-      { term: "实际采购价 vs 申报价", desc: "实际采购价 = 你真正付给工厂的钱。申报价 = 报关时写的价格（可能低于实际价）。OSN税制下，进项VAT按申报价算。", example: "实际买20¥，报关写15¥ → 进项VAT按15¥算，差额5¥不能抵税" },
+      { term: "预估采购价 vs 申报价", desc: "当前采购价/申报价是测算假设，不是德力正式报价。拿到工厂 EXW/FOB、MOQ、装箱和毛重后，需要替换并重跑模型。OSN税制下，进项VAT按申报价算。", example: "预估采购20¥，申报15¥ → 进项VAT按15¥算；正式报价后若价格变化，利润和税务损耗都要重算" },
       { term: "平台费", desc: "Ozon/WB等平台从每笔订单中扣取的佣金（含物流费、广告费等）。", example: "售价1249₽，平台费652₽ → 你实际到手 597₽" },
       { term: "仓费 + 管理费", desc: "仓费 = 海外仓存储费/件。管理费 = 代运营/标签/客服等费用/件。", example: "仓费99₽/件 + 管理费36₽/件 = 每件额外成本135₽" },
       { term: "有效件数", desc: "考虑货损率后的实际可售数量。默认货损3%。", example: "备货100件 × (1-3%) = 有效97件。3件在运输中损坏不能卖" },
