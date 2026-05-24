@@ -422,6 +422,125 @@ h2 {
   font-family: var(--font-mono);
   font-size: 10px;
 }
+.money-sub {
+  display: block;
+  margin-top: 3px;
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.exchange-note {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.scatter-wrap {
+  margin: 0 0 36px;
+  border: 1px solid var(--line);
+  background: linear-gradient(150deg, rgba(201, 131, 66, .08), rgba(21, 18, 15, .94));
+  padding: 26px;
+}
+.scatter-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 20px;
+}
+.scatter-head h3 {
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+.scatter-head p {
+  margin: 0;
+  color: var(--paper-2);
+  font-size: 13px;
+  max-width: 760px;
+}
+.scatter-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.scatter-plot {
+  position: relative;
+  min-width: 760px;
+  height: 390px;
+  border: 1px solid var(--line-soft);
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 20% 100%,
+    linear-gradient(0deg, rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 100% 25%,
+    rgba(13, 11, 9, .58);
+}
+.scatter-axis {
+  position: absolute;
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+.scatter-axis.x { left: 48px; right: 24px; bottom: 12px; text-align: center; }
+.scatter-axis.y { left: 12px; top: 44px; writing-mode: vertical-rl; transform: rotate(180deg); }
+.scatter-point {
+  --s: 28px;
+  --tx: -50%;
+  --ty: -50%;
+  position: absolute;
+  left: var(--x);
+  bottom: var(--y);
+  transform: translate(var(--tx), var(--ty));
+  min-width: 120px;
+  min-height: 58px;
+  pointer-events: auto;
+}
+.scatter-point i {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(circle at 35% 30%, var(--copper-2), var(--copper));
+  border: 1px solid rgba(255,255,255,.42);
+  box-shadow: 0 0 0 8px rgba(201, 131, 66, .10);
+}
+.scatter-point strong {
+  display: block;
+  margin-left: calc(var(--s) + 8px);
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.scatter-point span {
+  display: block;
+  margin-left: calc(var(--s) + 8px);
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+.scatter-point.primary i {
+  background: radial-gradient(circle at 35% 30%, #f0b978, var(--copper));
+  box-shadow: 0 0 0 10px rgba(227, 167, 111, .14);
+}
+.scatter-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 14px;
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .07em;
+}
 .cat-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -639,6 +758,104 @@ h2 {
   color: var(--paper-2);
   font-size: 12px;
   line-height: 1.65;
+}
+.seller-summary {
+  margin-top: 34px;
+  border: 1px solid var(--line);
+  background: rgba(21, 18, 15, .72);
+  padding: 28px;
+}
+.seller-summary-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 22px;
+}
+.seller-summary-head h3 {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.seller-summary-head p {
+  margin: 0;
+  color: var(--paper-2);
+  font-size: 13px;
+  max-width: 780px;
+}
+.seller-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.seller-card {
+  border: 1px solid var(--line-soft);
+  background: var(--ink);
+  padding: 18px;
+}
+.seller-card .tag {
+  color: var(--copper-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.seller-card h4 {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+.seller-card .metric {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line-soft);
+  margin-bottom: 12px;
+}
+.seller-card .metric div {
+  background: var(--ink-1);
+  padding: 10px;
+}
+.seller-card .metric b {
+  display: block;
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 300;
+}
+.seller-card .metric span {
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
+.seller-card p {
+  color: var(--paper-2);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.brand-rank {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--line-soft);
+}
+.brand-rank div {
+  background: var(--ink);
+  padding: 14px;
+}
+.brand-rank b {
+  display: block;
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 400;
+}
+.brand-rank span {
+  display: block;
+  color: var(--paper-3);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  margin-top: 4px;
 }
 .watch-grid {
   display: grid;
@@ -1210,6 +1427,8 @@ footer {
   .proof-grid,
   .competitor-grid,
   .watch-grid,
+  .seller-grid,
+  .brand-rank,
   .platform-grid,
   .cta-grid { grid-template-columns: repeat(2, 1fr); }
   .profit-grid,
@@ -1234,6 +1453,8 @@ footer {
   .cat-lists,
   .competitor-grid,
   .watch-grid,
+  .seller-grid,
+  .brand-rank,
   .profit-grid,
   .platform-grid,
   .investment-grid,
@@ -1247,6 +1468,12 @@ footer {
   .cat-stats { grid-template-columns: repeat(2, 1fr); }
   .region-table { display: block; overflow-x: auto; }
   .region-table th, .region-table td { min-width: 145px; }
+  .scatter-head,
+  .seller-summary-head { grid-template-columns: 1fr; }
+  .scatter-wrap,
+  .seller-summary { padding: 20px; }
+  .scatter-point strong { font-size: 12px; }
+  .scatter-point span { font-size: 9px; }
   .sku-table { overflow-x: auto; }
   .sku-row, .sku-head { min-width: 930px; }
   .lightbox { padding: 18px; }
@@ -1279,8 +1506,8 @@ footer {
         <p class="hero-copy">不做单纯采购，不做低价铺货。项目组以德力制造能力为底座，用平台仓、俄文内容、套装化、花色差异化和单品利润模型切入俄罗斯电商中端价格带。</p>
       </div>
       <aside class="hero-metrics" aria-label="关键指标">
-        <div class="hero-metric"><small>01</small><span>Ozon 10 个重点相关类目年订购池</span><strong>208.1 亿 ₽</strong></div>
-        <div class="hero-metric"><small>02</small><span>最大单类目，把杯 / 马克杯</span><strong>72.7 亿 ₽</strong></div>
+        <div class="hero-metric"><small>01</small><span>Ozon 10 个重点相关类目年订购池</span><strong>16.26 亿 RMB<span class="money-sub">原始 208.1 亿 ₽</span></strong></div>
+        <div class="hero-metric"><small>02</small><span>最大单类目，把杯 / 马克杯</span><strong>5.68 亿 RMB<span class="money-sub">原始 72.7 亿 ₽</span></strong></div>
         <div class="hero-metric"><small>03</small><span>建议首批建档验证 SKU 数量</span><strong>22 款</strong></div>
         <div class="hero-metric"><small>04</small><span>标准启动资金区间</span><strong>171-312 万</strong></div>
       </aside>
@@ -1335,8 +1562,8 @@ footer {
       <p class="lede">宜家等西方家居渠道退出后，中国供应链接受度提升，但玻璃不是低风险类目。机会属于能把破损、扣点、包装、内容和价格带一起算清楚的团队。</p>
     </div>
     <div class="proof-grid">
-      <div class="proof-card"><div class="label">ONLINE RETAIL</div><div class="value">11.5 万亿 ₽</div><p>2025 俄罗斯互联网贸易总额，同比增长约 28%，家居餐厨属于高频消费场景。</p></div>
-      <div class="proof-card"><div class="label">FOCUS POOL</div><div class="value">208.1 亿 ₽</div><p>10 个重点玻璃餐厨相关类目的 Ozon 年订购池，用于锁定首批切入范围。</p></div>
+      <div class="proof-card"><div class="label">ONLINE RETAIL</div><div class="value">约 8,984 亿 RMB<span class="money-sub">原始 11.5 万亿 ₽</span></div><p>2025 俄罗斯互联网贸易总额，同比增长约 28%，家居餐厨属于高频消费场景。</p></div>
+      <div class="proof-card"><div class="label">FOCUS POOL</div><div class="value">16.26 亿 RMB<span class="money-sub">原始 208.1 亿 ₽</span></div><p>10 个重点玻璃餐厨相关类目的 Ozon 年订购池，用于锁定首批切入范围。</p></div>
       <div class="proof-card"><div class="label">PEAK WINDOW</div><div class="value">2025.12</div><p>多类目在 11-12 月形成峰值，首批 SKU 需要提前上架积累评价。</p></div>
       <div class="proof-card"><div class="label">MODEL RULE</div><div class="value">8%-12%</div><p>标准情景按贡献利润率 8%-12% 作为目标区间，所有 SKU 先算再压货。</p></div>
     </div>
@@ -1352,6 +1579,37 @@ footer {
       </div>
       <p class="lede">只讲年销售额会误导决策。玻璃器皿真正要看月度峰值、价格带结构、卖家集中度和区域集中度，这些决定首批 SKU 的上架时间、包装规格、平台选择和广告预算。</p>
     </div>
+    <div class="scatter-wrap">
+      <div class="scatter-head">
+        <div>
+          <div class="section-num">CATEGORY MAP / 人民币口径散点</div>
+          <h3>盘子大小和价格带，要放在同一张图里看。</h3>
+          <p>横轴为 Ozon 类目年订购金额，纵轴为卖家均价，均已按 1 RMB = 12.8 RUB 折成人民币。气泡越大，卖家数越多，竞争也越碎。</p>
+        </div>
+        <div class="exchange-note">RMB FIRST · 原始 RUB 口径保留在卡片备注</div>
+      </div>
+      <div class="scatter-scroll">
+        <div class="scatter-plot" role="img" aria-label="Ozon 玻璃餐厨类目年订购金额和卖家均价散点图">
+          <div class="scatter-axis x">年订购金额 · RMB 亿</div>
+          <div class="scatter-axis y">卖家均价 · RMB / 上架销售单位</div>
+          <div class="scatter-point primary" style="--x:88%;--y:31%;--s:46px;" title="把杯 / 马克杯：约 5.68 亿 RMB，卖家均价约 63 RMB，卖家 31,081"><i></i><strong>把杯 / 马克杯</strong><span>5.68 亿 · ¥63</span></div>
+          <div class="scatter-point" style="--x:48%;--y:60%;--s:36px;" title="食品储物罐：约 2.60 亿 RMB，卖家均价约 93 RMB，卖家 13,015"><i></i><strong>食品储物罐</strong><span>2.60 亿 · ¥93</span></div>
+          <div class="scatter-point" style="--x:48%;--y:85%;--s:35px;" title="高脚杯 / 酒杯：约 2.59 亿 RMB，卖家均价约 119 RMB，卖家 12,665"><i></i><strong>高脚杯 / 酒杯</strong><span>2.59 亿 · ¥119</span></div>
+          <div class="scatter-point" style="--x:42%;--y:45%;--s:39px;" title="玻璃茶壶：约 2.19 亿 RMB，卖家均价约 77 RMB，卖家 16,546"><i></i><strong>玻璃茶壶</strong><span>2.19 亿 · ¥77</span></div>
+          <div class="scatter-point" style="--x:28%;--y:40%;--s:34px;" title="水杯 / 机吹杯：约 1.23 亿 RMB，卖家均价约 71 RMB，卖家 12,082"><i></i><strong>水杯 / 机吹杯</strong><span>1.23 亿 · ¥71</span></div>
+          <div class="scatter-point" style="--x:21%;--y:34%;--s:30px;" title="水壶 / 壶杯套装：约 0.77 亿 RMB，卖家均价约 66 RMB，卖家 7,955"><i></i><strong>水壶 / 壶杯</strong><span>0.77 亿 · ¥66</span></div>
+          <div class="scatter-point" style="--x:16%;--y:26%;--s:27px;" title="糖罐：约 0.45 亿 RMB，卖家均价约 58 RMB，卖家 5,921"><i></i><strong>糖罐</strong><span>0.45 亿 · ¥58</span></div>
+          <div class="scatter-point" style="--x:14%;--y:48%;--s:33px;" title="咖啡杯 / 茶杯：约 0.31 亿 RMB，卖家均价约 76 RMB，卖家 11,534"><i></i><strong>咖啡杯 / 茶杯</strong><span>0.31 亿 · ¥76</span></div>
+          <div class="scatter-point" style="--x:12%;--y:68%;--s:24px;" title="分酒器：约 0.21 亿 RMB，卖家均价约 100 RMB，卖家 2,858"><i></i><strong>分酒器</strong><span>0.21 亿 · ¥100</span></div>
+          <div class="scatter-point" style="--x:12%;--y:15%;--s:27px;" title="烟缸：约 0.22 亿 RMB，卖家均价约 48 RMB，卖家 5,992"><i></i><strong>烟缸</strong><span>0.22 亿 · ¥48</span></div>
+        </div>
+      </div>
+      <div class="scatter-legend">
+        <span>● 气泡大小 = 卖家数量</span>
+        <span>● 把杯/马克杯最大但竞争最碎</span>
+        <span>● 高脚杯、储物罐客单更高，需用包装和套装兜利润</span>
+      </div>
+    </div>
     <div class="category-grid">
       
     <article class="cat-card">
@@ -1361,20 +1619,20 @@ footer {
           <span>Кружка · TZ2829 / TZ3052 / 花色把杯</span>
         </div>
         <div class="cat-annual">
-          <strong>72.7 亿 ₽</strong>
+          <strong>5.68 亿 RMB<span class="money-sub">原始 72.7 亿 ₽</span></strong>
           <span>年订购金额</span>
         </div>
       </div>
       <div class="cat-stats">
         <div class="cat-stat"><b>+173%</b><span>销售动态</span></div>
-        <div class="cat-stat"><b>807 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>63 RMB</b><span>卖家均价 / 原始 807 ₽</span></div>
         <div class="cat-stat"><b>31 081</b><span>卖家数</span></div>
         <div class="cat-stat"><b>82.4%</b><span>买断率</span></div>
       </div>
       <div class="spark" aria-label="把杯 / 马克杯 月度销售趋势"><i title="2025.05 1.8 亿 ₽" style="height:10.0px"></i><i title="2025.06 1.9 亿 ₽" style="height:10.3px"></i><i title="2025.07 2.5 亿 ₽" style="height:11.9px"></i><i title="2025.08 2.9 亿 ₽" style="height:13.1px"></i><i title="2025.09 3.5 亿 ₽" style="height:14.8px"></i><i title="2025.10 5.5 亿 ₽" style="height:20.7px"></i><i title="2025.11 9.0 亿 ₽" style="height:31.2px"></i><i title="2025.12 18.2 亿 ₽" style="height:58.0px"></i><i title="2026.01 6.8 亿 ₽" style="height:24.6px"></i><i title="2026.02 9.3 亿 ₽" style="height:32.1px"></i><i title="2026.03 6.8 亿 ₽" style="height:24.7px"></i><i title="2026.04 4.5 亿 ₽" style="height:17.8px"></i></div>
       <div class="cat-stats" style="margin-top:0;">
         <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
-        <div class="cat-stat"><b>18.2 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>1.42 亿 RMB</b><span>峰值月销售 / 原始 18.2 亿 ₽</span></div>
         <div class="cat-stat"><b>13.2%</b><span>Top5 卖家份额</span></div>
         <div class="cat-stat"><b>2 923</b><span>品牌数</span></div>
       </div>
@@ -1382,11 +1640,11 @@ footer {
         <div class="mini-list">
           <h4>SELLER PRICE BANDS</h4>
           
-    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>21.5%</b></div>
+    <div class="line-item"><span>59-78 RMB <small>原始 750-999 ₽</small></span><b>21.5%</b></div>
   
-    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>20.7%</b></div>
+    <div class="line-item"><span>39-59 RMB <small>原始 500-749 ₽</small></span><b>20.7%</b></div>
   
-    <div class="line-item"><span>1 000 ₽ – 1 249 ₽</span><b>12.8%</b></div>
+    <div class="line-item"><span>78-98 RMB <small>原始 1,000-1,249 ₽</small></span><b>12.8%</b></div>
   
         </div>
         <div class="mini-list">
@@ -1409,20 +1667,20 @@ footer {
           <span>Банка для продуктов · TBT001 / TGD1911</span>
         </div>
         <div class="cat-annual">
-          <strong>33.3 亿 ₽</strong>
+          <strong>2.60 亿 RMB<span class="money-sub">原始 33.3 亿 ₽</span></strong>
           <span>年订购金额</span>
         </div>
       </div>
       <div class="cat-stats">
         <div class="cat-stat"><b>+88%</b><span>销售动态</span></div>
-        <div class="cat-stat"><b>1 189 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>93 RMB</b><span>卖家均价 / 原始 1,189 ₽</span></div>
         <div class="cat-stat"><b>13 015</b><span>卖家数</span></div>
         <div class="cat-stat"><b>83.3%</b><span>买断率</span></div>
       </div>
       <div class="spark" aria-label="食品储物罐 月度销售趋势"><i title="2025.05 1.3 亿 ₽" style="height:10.0px"></i><i title="2025.06 1.4 亿 ₽" style="height:12.1px"></i><i title="2025.07 1.9 亿 ₽" style="height:20.3px"></i><i title="2025.08 2.5 亿 ₽" style="height:32.6px"></i><i title="2025.09 2.8 亿 ₽" style="height:37.8px"></i><i title="2025.10 3.5 亿 ₽" style="height:49.8px"></i><i title="2025.11 3.9 亿 ₽" style="height:56.7px"></i><i title="2025.12 3.9 亿 ₽" style="height:58.0px"></i><i title="2026.01 3.2 亿 ₽" style="height:44.8px"></i><i title="2026.02 3.0 亿 ₽" style="height:40.5px"></i><i title="2026.03 3.2 亿 ₽" style="height:44.9px"></i><i title="2026.04 2.8 亿 ₽" style="height:36.9px"></i></div>
       <div class="cat-stats" style="margin-top:0;">
         <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
-        <div class="cat-stat"><b>3.9 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>0.30 亿 RMB</b><span>峰值月销售 / 原始 3.9 亿 ₽</span></div>
         <div class="cat-stat"><b>25.6%</b><span>Top5 卖家份额</span></div>
         <div class="cat-stat"><b>1 244</b><span>品牌数</span></div>
       </div>
@@ -1430,11 +1688,11 @@ footer {
         <div class="mini-list">
           <h4>SELLER PRICE BANDS</h4>
           
-    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>14.6%</b></div>
+    <div class="line-item"><span>117-156 RMB <small>原始 1,500-1,999 ₽</small></span><b>14.6%</b></div>
   
-    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>12.5%</b></div>
+    <div class="line-item"><span>59-78 RMB <small>原始 750-999 ₽</small></span><b>12.5%</b></div>
   
-    <div class="line-item"><span>2 000 ₽ – 2 499 ₽</span><b>12.4%</b></div>
+    <div class="line-item"><span>156-195 RMB <small>原始 2,000-2,499 ₽</small></span><b>12.4%</b></div>
   
         </div>
         <div class="mini-list">
@@ -1457,20 +1715,20 @@ footer {
           <span>Бокал · TDZ / TL 系列</span>
         </div>
         <div class="cat-annual">
-          <strong>33.1 亿 ₽</strong>
+          <strong>2.59 亿 RMB<span class="money-sub">原始 33.1 亿 ₽</span></strong>
           <span>年订购金额</span>
         </div>
       </div>
       <div class="cat-stats">
         <div class="cat-stat"><b>+394%</b><span>销售动态</span></div>
-        <div class="cat-stat"><b>1 526 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>119 RMB</b><span>卖家均价 / 原始 1,526 ₽</span></div>
         <div class="cat-stat"><b>12 665</b><span>卖家数</span></div>
         <div class="cat-stat"><b>79.5%</b><span>买断率</span></div>
       </div>
       <div class="spark" aria-label="高脚杯 / 酒杯 月度销售趋势"><i title="2025.05 0.3 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.4 亿 ₽" style="height:10.3px"></i><i title="2025.07 0.5 亿 ₽" style="height:10.9px"></i><i title="2025.08 0.5 亿 ₽" style="height:10.9px"></i><i title="2025.09 0.5 亿 ₽" style="height:10.9px"></i><i title="2025.10 2.1 亿 ₽" style="height:18.3px"></i><i title="2025.11 4.9 亿 ₽" style="height:31.9px"></i><i title="2025.12 10.3 亿 ₽" style="height:58.0px"></i><i title="2026.01 3.7 亿 ₽" style="height:26.0px"></i><i title="2026.02 4.0 亿 ₽" style="height:27.9px"></i><i title="2026.03 3.4 亿 ₽" style="height:24.7px"></i><i title="2026.04 2.6 亿 ₽" style="height:21.1px"></i></div>
       <div class="cat-stats" style="margin-top:0;">
         <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
-        <div class="cat-stat"><b>10.3 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>0.80 亿 RMB</b><span>峰值月销售 / 原始 10.3 亿 ₽</span></div>
         <div class="cat-stat"><b>24.7%</b><span>Top5 卖家份额</span></div>
         <div class="cat-stat"><b>1 289</b><span>品牌数</span></div>
       </div>
@@ -1478,11 +1736,11 @@ footer {
         <div class="mini-list">
           <h4>SELLER PRICE BANDS</h4>
           
-    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>14.9%</b></div>
+    <div class="line-item"><span>117-156 RMB <small>原始 1,500-1,999 ₽</small></span><b>14.9%</b></div>
   
-    <div class="line-item"><span>2 000 ₽ – 2 499 ₽</span><b>11.8%</b></div>
+    <div class="line-item"><span>156-195 RMB <small>原始 2,000-2,499 ₽</small></span><b>11.8%</b></div>
   
-    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>9.5%</b></div>
+    <div class="line-item"><span>59-78 RMB <small>原始 750-999 ₽</small></span><b>9.5%</b></div>
   
         </div>
         <div class="mini-list">
@@ -1505,20 +1763,20 @@ footer {
           <span>Чайник заварочный · TR / TKB 壶杯组</span>
         </div>
         <div class="cat-annual">
-          <strong>28.0 亿 ₽</strong>
+          <strong>2.19 亿 RMB<span class="money-sub">原始 28.0 亿 ₽</span></strong>
           <span>年订购金额</span>
         </div>
       </div>
       <div class="cat-stats">
         <div class="cat-stat"><b>+67%</b><span>销售动态</span></div>
-        <div class="cat-stat"><b>981 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>77 RMB</b><span>卖家均价 / 原始 981 ₽</span></div>
         <div class="cat-stat"><b>16 546</b><span>卖家数</span></div>
         <div class="cat-stat"><b>81.2%</b><span>买断率</span></div>
       </div>
       <div class="spark" aria-label="玻璃茶壶 月度销售趋势"><i title="2025.05 1.2 亿 ₽" style="height:10.0px"></i><i title="2025.06 1.2 亿 ₽" style="height:10.1px"></i><i title="2025.07 1.3 亿 ₽" style="height:11.9px"></i><i title="2025.08 1.8 亿 ₽" style="height:19.4px"></i><i title="2025.09 1.7 亿 ₽" style="height:19.1px"></i><i title="2025.10 2.5 亿 ₽" style="height:31.1px"></i><i title="2025.11 2.9 亿 ₽" style="height:39.1px"></i><i title="2025.12 4.1 亿 ₽" style="height:58.0px"></i><i title="2026.01 3.1 亿 ₽" style="height:42.4px"></i><i title="2026.02 3.0 亿 ₽" style="height:41.0px"></i><i title="2026.03 2.9 亿 ₽" style="height:38.9px"></i><i title="2026.04 2.2 亿 ₽" style="height:27.3px"></i></div>
       <div class="cat-stats" style="margin-top:0;">
         <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
-        <div class="cat-stat"><b>4.1 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>0.32 亿 RMB</b><span>峰值月销售 / 原始 4.1 亿 ₽</span></div>
         <div class="cat-stat"><b>23.7%</b><span>Top5 卖家份额</span></div>
         <div class="cat-stat"><b>1 158</b><span>品牌数</span></div>
       </div>
@@ -1526,11 +1784,11 @@ footer {
         <div class="mini-list">
           <h4>SELLER PRICE BANDS</h4>
           
-    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>19.5%</b></div>
+    <div class="line-item"><span>39-59 RMB <small>原始 500-749 ₽</small></span><b>19.5%</b></div>
   
-    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>15.9%</b></div>
+    <div class="line-item"><span>59-78 RMB <small>原始 750-999 ₽</small></span><b>15.9%</b></div>
   
-    <div class="line-item"><span>1 000 ₽ – 1 249 ₽</span><b>10.2%</b></div>
+    <div class="line-item"><span>78-98 RMB <small>原始 1,000-1,249 ₽</small></span><b>10.2%</b></div>
   
         </div>
         <div class="mini-list">
@@ -1553,20 +1811,20 @@ footer {
           <span>Стакан · TY1628 / TY1640 / TS5163</span>
         </div>
         <div class="cat-annual">
-          <strong>15.8 亿 ₽</strong>
+          <strong>1.23 亿 RMB<span class="money-sub">原始 15.8 亿 ₽</span></strong>
           <span>年订购金额</span>
         </div>
       </div>
       <div class="cat-stats">
         <div class="cat-stat"><b>+377%</b><span>销售动态</span></div>
-        <div class="cat-stat"><b>908 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>71 RMB</b><span>卖家均价 / 原始 908 ₽</span></div>
         <div class="cat-stat"><b>12 082</b><span>卖家数</span></div>
         <div class="cat-stat"><b>81.4%</b><span>买断率</span></div>
       </div>
       <div class="spark" aria-label="水杯 / 机吹杯 月度销售趋势"><i title="2025.05 0.3 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.3 亿 ₽" style="height:10.2px"></i><i title="2025.07 0.4 亿 ₽" style="height:11.5px"></i><i title="2025.08 0.4 亿 ₽" style="height:11.5px"></i><i title="2025.09 0.4 亿 ₽" style="height:11.3px"></i><i title="2025.10 1.1 亿 ₽" style="height:20.9px"></i><i title="2025.11 2.2 亿 ₽" style="height:37.0px"></i><i title="2025.12 3.7 亿 ₽" style="height:58.0px"></i><i title="2026.01 1.9 亿 ₽" style="height:32.3px"></i><i title="2026.02 1.8 亿 ₽" style="height:31.2px"></i><i title="2026.03 1.8 亿 ₽" style="height:30.4px"></i><i title="2026.04 1.5 亿 ₽" style="height:26.8px"></i></div>
       <div class="cat-stats" style="margin-top:0;">
         <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
-        <div class="cat-stat"><b>3.7 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>0.29 亿 RMB</b><span>峰值月销售 / 原始 3.7 亿 ₽</span></div>
         <div class="cat-stat"><b>19.5%</b><span>Top5 卖家份额</span></div>
         <div class="cat-stat"><b>1 251</b><span>品牌数</span></div>
       </div>
@@ -1574,11 +1832,11 @@ footer {
         <div class="mini-list">
           <h4>SELLER PRICE BANDS</h4>
           
-    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>12.9%</b></div>
+    <div class="line-item"><span>117-156 RMB <small>原始 1,500-1,999 ₽</small></span><b>12.9%</b></div>
   
-    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>12.8%</b></div>
+    <div class="line-item"><span>39-59 RMB <small>原始 500-749 ₽</small></span><b>12.8%</b></div>
   
-    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>12.7%</b></div>
+    <div class="line-item"><span>59-78 RMB <small>原始 750-999 ₽</small></span><b>12.7%</b></div>
   
         </div>
         <div class="mini-list">
@@ -1601,20 +1859,20 @@ footer {
           <span>Кувшин · TR502 / TR509</span>
         </div>
         <div class="cat-annual">
-          <strong>9.8 亿 ₽</strong>
+          <strong>0.77 亿 RMB<span class="money-sub">原始 9.8 亿 ₽</span></strong>
           <span>年订购金额</span>
         </div>
       </div>
       <div class="cat-stats">
         <div class="cat-stat"><b>+89%</b><span>销售动态</span></div>
-        <div class="cat-stat"><b>847 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>66 RMB</b><span>卖家均价 / 原始 847 ₽</span></div>
         <div class="cat-stat"><b>7 955</b><span>卖家数</span></div>
         <div class="cat-stat"><b>79.6%</b><span>买断率</span></div>
       </div>
       <div class="spark" aria-label="水壶 / 壶杯套装 月度销售趋势"><i title="2025.05 0.5 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.6 亿 ₽" style="height:16.3px"></i><i title="2025.07 0.7 亿 ₽" style="height:24.4px"></i><i title="2025.08 0.7 亿 ₽" style="height:20.7px"></i><i title="2025.09 0.6 亿 ₽" style="height:19.7px"></i><i title="2025.10 0.8 亿 ₽" style="height:27.3px"></i><i title="2025.11 1.0 亿 ₽" style="height:41.3px"></i><i title="2025.12 1.2 亿 ₽" style="height:58.0px"></i><i title="2026.01 0.9 亿 ₽" style="height:39.0px"></i><i title="2026.02 0.9 亿 ₽" style="height:39.2px"></i><i title="2026.03 1.0 亿 ₽" style="height:45.8px"></i><i title="2026.04 0.9 亿 ₽" style="height:36.8px"></i></div>
       <div class="cat-stats" style="margin-top:0;">
         <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
-        <div class="cat-stat"><b>1.2 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>0.09 亿 RMB</b><span>峰值月销售 / 原始 1.2 亿 ₽</span></div>
         <div class="cat-stat"><b>30.7%</b><span>Top5 卖家份额</span></div>
         <div class="cat-stat"><b>705</b><span>品牌数</span></div>
       </div>
@@ -1622,11 +1880,11 @@ footer {
         <div class="mini-list">
           <h4>SELLER PRICE BANDS</h4>
           
-    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>19.0%</b></div>
+    <div class="line-item"><span>117-156 RMB <small>原始 1,500-1,999 ₽</small></span><b>19.0%</b></div>
   
-    <div class="line-item"><span>1 000 ₽ – 1 249 ₽</span><b>11.5%</b></div>
+    <div class="line-item"><span>78-98 RMB <small>原始 1,000-1,249 ₽</small></span><b>11.5%</b></div>
   
-    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>10.4%</b></div>
+    <div class="line-item"><span>59-78 RMB <small>原始 750-999 ₽</small></span><b>10.4%</b></div>
   
         </div>
         <div class="mini-list">
@@ -1649,20 +1907,20 @@ footer {
           <span>Сахарница · TGD1911</span>
         </div>
         <div class="cat-annual">
-          <strong>5.7 亿 ₽</strong>
+          <strong>0.45 亿 RMB<span class="money-sub">原始 5.7 亿 ₽</span></strong>
           <span>年订购金额</span>
         </div>
       </div>
       <div class="cat-stats">
         <div class="cat-stat"><b>+81%</b><span>销售动态</span></div>
-        <div class="cat-stat"><b>744 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>58 RMB</b><span>卖家均价 / 原始 744 ₽</span></div>
         <div class="cat-stat"><b>5 921</b><span>卖家数</span></div>
         <div class="cat-stat"><b>79.6%</b><span>买断率</span></div>
       </div>
       <div class="spark" aria-label="糖罐 月度销售趋势"><i title="2025.05 0.2 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.2 亿 ₽" style="height:12.0px"></i><i title="2025.07 0.3 亿 ₽" style="height:19.4px"></i><i title="2025.08 0.4 亿 ₽" style="height:26.4px"></i><i title="2025.09 0.4 亿 ₽" style="height:28.0px"></i><i title="2025.10 0.5 亿 ₽" style="height:35.8px"></i><i title="2025.11 0.6 亿 ₽" style="height:44.1px"></i><i title="2025.12 0.8 亿 ₽" style="height:58.0px"></i><i title="2026.01 0.6 亿 ₽" style="height:41.6px"></i><i title="2026.02 0.5 亿 ₽" style="height:37.3px"></i><i title="2026.03 0.6 亿 ₽" style="height:40.3px"></i><i title="2026.04 0.4 亿 ₽" style="height:29.1px"></i></div>
       <div class="cat-stats" style="margin-top:0;">
         <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
-        <div class="cat-stat"><b>0.8 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>625 万 RMB</b><span>峰值月销售 / 原始 0.8 亿 ₽</span></div>
         <div class="cat-stat"><b>25.9%</b><span>Top5 卖家份额</span></div>
         <div class="cat-stat"><b>678</b><span>品牌数</span></div>
       </div>
@@ -1670,11 +1928,11 @@ footer {
         <div class="mini-list">
           <h4>SELLER PRICE BANDS</h4>
           
-    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>20.1%</b></div>
+    <div class="line-item"><span>39-59 RMB <small>原始 500-749 ₽</small></span><b>20.1%</b></div>
   
-    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>17.4%</b></div>
+    <div class="line-item"><span>59-78 RMB <small>原始 750-999 ₽</small></span><b>17.4%</b></div>
   
-    <div class="line-item"><span>1 000 ₽ – 1 249 ₽</span><b>12.7%</b></div>
+    <div class="line-item"><span>78-98 RMB <small>原始 1,000-1,249 ₽</small></span><b>12.7%</b></div>
   
         </div>
         <div class="mini-list">
@@ -1697,20 +1955,20 @@ footer {
           <span>Чашка · TCF / L12 套装</span>
         </div>
         <div class="cat-annual">
-          <strong>4.0 亿 ₽</strong>
+          <strong>0.31 亿 RMB<span class="money-sub">原始 4.0 亿 ₽</span></strong>
           <span>年订购金额</span>
         </div>
       </div>
       <div class="cat-stats">
         <div class="cat-stat"><b>+151%</b><span>销售动态</span></div>
-        <div class="cat-stat"><b>974 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>76 RMB</b><span>卖家均价 / 原始 974 ₽</span></div>
         <div class="cat-stat"><b>11 534</b><span>卖家数</span></div>
         <div class="cat-stat"><b>79.2%</b><span>买断率</span></div>
       </div>
       <div class="spark" aria-label="咖啡杯 / 茶杯 月度销售趋势"><i title="2025.05 0.1 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.1 亿 ₽" style="height:11.3px"></i><i title="2025.07 0.2 亿 ₽" style="height:14.0px"></i><i title="2025.08 0.2 亿 ₽" style="height:15.2px"></i><i title="2025.09 0.2 亿 ₽" style="height:14.8px"></i><i title="2025.10 0.4 亿 ₽" style="height:31.1px"></i><i title="2025.11 0.5 亿 ₽" style="height:47.4px"></i><i title="2025.12 0.7 亿 ₽" style="height:58.0px"></i><i title="2026.01 0.4 亿 ₽" style="height:38.1px"></i><i title="2026.02 0.4 亿 ₽" style="height:39.3px"></i><i title="2026.03 0.5 亿 ₽" style="height:40.6px"></i><i title="2026.04 0.4 亿 ₽" style="height:33.8px"></i></div>
       <div class="cat-stats" style="margin-top:0;">
         <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
-        <div class="cat-stat"><b>0.7 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>547 万 RMB</b><span>峰值月销售 / 原始 0.7 亿 ₽</span></div>
         <div class="cat-stat"><b>19.2%</b><span>Top5 卖家份额</span></div>
         <div class="cat-stat"><b>762</b><span>品牌数</span></div>
       </div>
@@ -1718,11 +1976,11 @@ footer {
         <div class="mini-list">
           <h4>SELLER PRICE BANDS</h4>
           
-    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>11.8%</b></div>
+    <div class="line-item"><span>117-156 RMB <small>原始 1,500-1,999 ₽</small></span><b>11.8%</b></div>
   
-    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>10.8%</b></div>
+    <div class="line-item"><span>39-59 RMB <small>原始 500-749 ₽</small></span><b>10.8%</b></div>
   
-    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>10.3%</b></div>
+    <div class="line-item"><span>59-78 RMB <small>原始 750-999 ₽</small></span><b>10.3%</b></div>
   
         </div>
         <div class="mini-list">
@@ -1745,20 +2003,20 @@ footer {
           <span>Графин · TR509 / TR502</span>
         </div>
         <div class="cat-annual">
-          <strong>2.7 亿 ₽</strong>
+          <strong>0.21 亿 RMB<span class="money-sub">原始 2.7 亿 ₽</span></strong>
           <span>年订购金额</span>
         </div>
       </div>
       <div class="cat-stats">
         <div class="cat-stat"><b>+29%</b><span>销售动态</span></div>
-        <div class="cat-stat"><b>1 280 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>100 RMB</b><span>卖家均价 / 原始 1,280 ₽</span></div>
         <div class="cat-stat"><b>2 858</b><span>卖家数</span></div>
         <div class="cat-stat"><b>80.3%</b><span>买断率</span></div>
       </div>
       <div class="spark" aria-label="分酒器 月度销售趋势"><i title="2025.05 0.1 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.1 亿 ₽" style="height:10.7px"></i><i title="2025.07 0.2 亿 ₽" style="height:18.5px"></i><i title="2025.08 0.2 亿 ₽" style="height:18.1px"></i><i title="2025.09 0.2 亿 ₽" style="height:16.3px"></i><i title="2025.10 0.2 亿 ₽" style="height:21.4px"></i><i title="2025.11 0.3 亿 ₽" style="height:31.2px"></i><i title="2025.12 0.4 亿 ₽" style="height:58.0px"></i><i title="2026.01 0.3 亿 ₽" style="height:34.5px"></i><i title="2026.02 0.3 亿 ₽" style="height:32.2px"></i><i title="2026.03 0.3 亿 ₽" style="height:32.8px"></i><i title="2026.04 0.2 亿 ₽" style="height:24.6px"></i></div>
       <div class="cat-stats" style="margin-top:0;">
         <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
-        <div class="cat-stat"><b>0.4 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>313 万 RMB</b><span>峰值月销售 / 原始 0.4 亿 ₽</span></div>
         <div class="cat-stat"><b>26.4%</b><span>Top5 卖家份额</span></div>
         <div class="cat-stat"><b>368</b><span>品牌数</span></div>
       </div>
@@ -1766,11 +2024,11 @@ footer {
         <div class="mini-list">
           <h4>SELLER PRICE BANDS</h4>
           
-    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>16.4%</b></div>
+    <div class="line-item"><span>117-156 RMB <small>原始 1,500-1,999 ₽</small></span><b>16.4%</b></div>
   
-    <div class="line-item"><span>1 250 ₽ – 1 499 ₽</span><b>12.9%</b></div>
+    <div class="line-item"><span>98-117 RMB <small>原始 1,250-1,499 ₽</small></span><b>12.9%</b></div>
   
-    <div class="line-item"><span>2 000 ₽ – 2 499 ₽</span><b>9.8%</b></div>
+    <div class="line-item"><span>156-195 RMB <small>原始 2,000-2,499 ₽</small></span><b>9.8%</b></div>
   
         </div>
         <div class="mini-list">
@@ -1793,20 +2051,20 @@ footer {
           <span>Пепельница · TYG1207 / TYG1204</span>
         </div>
         <div class="cat-annual">
-          <strong>2.8 亿 ₽</strong>
+          <strong>0.22 亿 RMB<span class="money-sub">原始 2.8 亿 ₽</span></strong>
           <span>年订购金额</span>
         </div>
       </div>
       <div class="cat-stats">
         <div class="cat-stat"><b>+75%</b><span>销售动态</span></div>
-        <div class="cat-stat"><b>614 ₽</b><span>卖家均价 RUB</span></div>
+        <div class="cat-stat"><b>48 RMB</b><span>卖家均价 / 原始 614 ₽</span></div>
         <div class="cat-stat"><b>5 992</b><span>卖家数</span></div>
         <div class="cat-stat"><b>88.8%</b><span>买断率</span></div>
       </div>
       <div class="spark" aria-label="烟缸 月度销售趋势"><i title="2025.05 0.2 亿 ₽" style="height:10.0px"></i><i title="2025.06 0.2 亿 ₽" style="height:14.7px"></i><i title="2025.07 0.2 亿 ₽" style="height:24.1px"></i><i title="2025.08 0.2 亿 ₽" style="height:25.4px"></i><i title="2025.09 0.2 亿 ₽" style="height:23.0px"></i><i title="2025.10 0.2 亿 ₽" style="height:29.5px"></i><i title="2025.11 0.3 亿 ₽" style="height:34.5px"></i><i title="2025.12 0.4 亿 ₽" style="height:58.0px"></i><i title="2026.01 0.2 亿 ₽" style="height:23.5px"></i><i title="2026.02 0.2 亿 ₽" style="height:26.9px"></i><i title="2026.03 0.2 亿 ₽" style="height:21.6px"></i><i title="2026.04 0.2 亿 ₽" style="height:25.6px"></i></div>
       <div class="cat-stats" style="margin-top:0;">
         <div class="cat-stat"><b>2025.12</b><span>热销峰值</span></div>
-        <div class="cat-stat"><b>0.4 亿 ₽</b><span>峰值月销售</span></div>
+        <div class="cat-stat"><b>313 万 RMB</b><span>峰值月销售 / 原始 0.4 亿 ₽</span></div>
         <div class="cat-stat"><b>17.9%</b><span>Top5 卖家份额</span></div>
         <div class="cat-stat"><b>460</b><span>品牌数</span></div>
       </div>
@@ -1814,11 +2072,11 @@ footer {
         <div class="mini-list">
           <h4>SELLER PRICE BANDS</h4>
           
-    <div class="line-item"><span>500 ₽ – 749 ₽</span><b>19.3%</b></div>
+    <div class="line-item"><span>39-59 RMB <small>原始 500-749 ₽</small></span><b>19.3%</b></div>
   
-    <div class="line-item"><span>750 ₽ – 999 ₽</span><b>14.8%</b></div>
+    <div class="line-item"><span>59-78 RMB <small>原始 750-999 ₽</small></span><b>14.8%</b></div>
   
-    <div class="line-item"><span>1 500 ₽ – 1 999 ₽</span><b>11.3%</b></div>
+    <div class="line-item"><span>117-156 RMB <small>原始 1,500-1,999 ₽</small></span><b>11.3%</b></div>
   
         </div>
         <div class="mini-list">
@@ -1856,72 +2114,72 @@ footer {
       <tr>
         <td><strong>把杯 / 马克杯</strong><span>Кружка</span></td>
         <td>Москва, МО и Дальние регионы</td>
-        <td>19.2 亿 ₽ <small>26.5%</small></td>
+        <td>1.50 亿 RMB <small>26.5% · 原始 19.2 亿 ₽</small></td>
         <td>Санкт-Петербург и СЗО</td>
-        <td>10.0 亿 ₽ <small>13.7%</small></td>
+        <td>0.78 亿 RMB <small>13.7% · 原始 10.0 亿 ₽</small></td>
       </tr>
       <tr>
         <td><strong>食品储物罐</strong><span>Банка для продуктов</span></td>
         <td>Москва, МО и Дальние регионы</td>
-        <td>9.9 亿 ₽ <small>29.8%</small></td>
+        <td>0.77 亿 RMB <small>29.8% · 原始 9.9 亿 ₽</small></td>
         <td>Санкт-Петербург и СЗО</td>
-        <td>4.7 亿 ₽ <small>14.0%</small></td>
+        <td>0.37 亿 RMB <small>14.0% · 原始 4.7 亿 ₽</small></td>
       </tr>
       <tr>
         <td><strong>高脚杯 / 酒杯</strong><span>Бокал</span></td>
         <td>Москва, МО и Дальние регионы</td>
-        <td>10.2 亿 ₽ <small>30.8%</small></td>
+        <td>0.80 亿 RMB <small>30.8% · 原始 10.2 亿 ₽</small></td>
         <td>Санкт-Петербург и СЗО</td>
-        <td>4.6 亿 ₽ <small>13.9%</small></td>
+        <td>0.36 亿 RMB <small>13.9% · 原始 4.6 亿 ₽</small></td>
       </tr>
       <tr>
         <td><strong>玻璃茶壶</strong><span>Чайник заварочный</span></td>
         <td>Москва, МО и Дальние регионы</td>
-        <td>8.6 亿 ₽ <small>30.7%</small></td>
+        <td>0.67 亿 RMB <small>30.7% · 原始 8.6 亿 ₽</small></td>
         <td>Санкт-Петербург и СЗО</td>
-        <td>3.9 亿 ₽ <small>14.1%</small></td>
+        <td>0.30 亿 RMB <small>14.1% · 原始 3.9 亿 ₽</small></td>
       </tr>
       <tr>
         <td><strong>水杯 / 机吹杯</strong><span>Стакан</span></td>
         <td>Москва, МО и Дальние регионы</td>
-        <td>5.0 亿 ₽ <small>31.4%</small></td>
+        <td>0.39 亿 RMB <small>31.4% · 原始 5.0 亿 ₽</small></td>
         <td>Санкт-Петербург и СЗО</td>
-        <td>2.2 亿 ₽ <small>13.7%</small></td>
+        <td>0.17 亿 RMB <small>13.7% · 原始 2.2 亿 ₽</small></td>
       </tr>
       <tr>
         <td><strong>水壶 / 壶杯套装</strong><span>Кувшин</span></td>
         <td>Москва, МО и Дальние регионы</td>
-        <td>3.0 亿 ₽ <small>30.1%</small></td>
+        <td>0.23 亿 RMB <small>30.1% · 原始 3.0 亿 ₽</small></td>
         <td>Санкт-Петербург и СЗО</td>
-        <td>1.5 亿 ₽ <small>15.0%</small></td>
+        <td>0.12 亿 RMB <small>15.0% · 原始 1.5 亿 ₽</small></td>
       </tr>
       <tr>
         <td><strong>糖罐</strong><span>Сахарница</span></td>
         <td>Москва, МО и Дальние регионы</td>
-        <td>1.4 亿 ₽ <small>23.8%</small></td>
+        <td>0.11 亿 RMB <small>23.8% · 原始 1.4 亿 ₽</small></td>
         <td>Санкт-Петербург и СЗО</td>
-        <td>0.7 亿 ₽ <small>12.8%</small></td>
+        <td>0.05 亿 RMB <small>12.8% · 原始 0.7 亿 ₽</small></td>
       </tr>
       <tr>
         <td><strong>咖啡杯 / 茶杯</strong><span>Чашка</span></td>
         <td>Москва, МО и Дальние регионы</td>
-        <td>1.4 亿 ₽ <small>34.5%</small></td>
+        <td>0.11 亿 RMB <small>34.5% · 原始 1.4 亿 ₽</small></td>
         <td>Санкт-Петербург и СЗО</td>
-        <td>0.6 亿 ₽ <small>14.3%</small></td>
+        <td>0.05 亿 RMB <small>14.3% · 原始 0.6 亿 ₽</small></td>
       </tr>
       <tr>
         <td><strong>分酒器</strong><span>Графин</span></td>
         <td>Москва, МО и Дальние регионы</td>
-        <td>0.9 亿 ₽ <small>33.0%</small></td>
+        <td>0.07 亿 RMB <small>33.0% · 原始 0.9 亿 ₽</small></td>
         <td>Санкт-Петербург и СЗО</td>
-        <td>0.4 亿 ₽ <small>13.8%</small></td>
+        <td>0.03 亿 RMB <small>13.8% · 原始 0.4 亿 ₽</small></td>
       </tr>
       <tr>
         <td><strong>烟缸</strong><span>Пепельница</span></td>
         <td>Москва, МО и Дальние регионы</td>
-        <td>0.8 亿 ₽ <small>29.1%</small></td>
+        <td>0.06 亿 RMB <small>29.1% · 原始 0.8 亿 ₽</small></td>
         <td>Санкт-Петербург и СЗО</td>
-        <td>0.4 亿 ₽ <small>14.3%</small></td>
+        <td>0.03 亿 RMB <small>14.3% · 原始 0.4 亿 ₽</small></td>
       </tr></tbody>
     </table>
     <div class="evidence-note" style="margin-top:26px;">
@@ -1941,13 +2199,13 @@ footer {
       <h3>茶道器具 / 茶席小件</h3>
       <div class="ru">Посуда для чайных церемоний · 茶杯、茶壶、杯碟组合的外延池</div>
       <div class="watch-metrics">
-        <div><b>0.8 亿 ₽</b><span>年订购金额</span></div>
+        <div><b>625 万 RMB</b><span>年订购金额 / 原始 0.8 亿 ₽</span></div>
         <div><b>+155%</b><span>销售动态</span></div>
-        <div><b>1 044 ₽</b><span>卖家均价 RUB</span></div>
+        <div><b>82 RMB</b><span>卖家均价 / 原始 1,044 ₽</span></div>
         <div><b>81.3%</b><span>买断率</span></div>
         <div><b>2025.12</b><span>峰值月份</span></div>
-        <div><b>0.1 亿 ₽</b><span>峰值月销售</span></div>
-        <div><b>1 000 ₽ – 1 249 ₽</b><span>第一卖家价格带</span></div>
+        <div><b>78 万 RMB</b><span>峰值月销售 / 原始 0.1 亿 ₽</span></div>
+        <div><b>78-98 RMB</b><span>第一卖家价格带 / 原始 1,000-1,249 ₽</span></div>
         <div><b>3 123</b><span>卖家数</span></div>
       </div>
       <p>年盘不大但 12 月峰值清晰，适合作为茶饮内容和礼品组合的二级验证，不建议首批压重库存。</p>
@@ -1958,13 +2216,13 @@ footer {
       <h3>醒酒器 / 高端酒具</h3>
       <div class="ru">Декантер · TR 酒具线延展</div>
       <div class="watch-metrics">
-        <div><b>1.4 亿 ₽</b><span>年订购金额</span></div>
+        <div><b>0.11 亿 RMB</b><span>年订购金额 / 原始 1.4 亿 ₽</span></div>
         <div><b>+34%</b><span>销售动态</span></div>
-        <div><b>2 327 ₽</b><span>卖家均价 RUB</span></div>
+        <div><b>182 RMB</b><span>卖家均价 / 原始 2,327 ₽</span></div>
         <div><b>76.8%</b><span>买断率</span></div>
         <div><b>2025.12</b><span>峰值月份</span></div>
-        <div><b>0.3 亿 ₽</b><span>峰值月销售</span></div>
-        <div><b>3 500 ₽ – 3 999 ₽</b><span>第一卖家价格带</span></div>
+        <div><b>234 万 RMB</b><span>峰值月销售 / 原始 0.3 亿 ₽</span></div>
+        <div><b>273-312 RMB</b><span>第一卖家价格带 / 原始 3,500-3,999 ₽</span></div>
         <div><b>2 361</b><span>卖家数</span></div>
       </div>
       <p>均价和礼品属性高，但形态复杂、破损敏感。适合小批高客单验证，放在分酒器跑通之后。</p>
@@ -1975,13 +2233,13 @@ footer {
       <h3>葡萄酒醒酒配件</h3>
       <div class="ru">Аэратор для вина · 非德力核心玻璃款，仅作酒具洞察</div>
       <div class="watch-metrics">
-        <div><b>0.5 亿 ₽</b><span>年订购金额</span></div>
+        <div><b>391 万 RMB</b><span>年订购金额 / 原始 0.5 亿 ₽</span></div>
         <div><b>-15%</b><span>销售动态</span></div>
-        <div><b>1 319 ₽</b><span>卖家均价 RUB</span></div>
+        <div><b>103 RMB</b><span>卖家均价 / 原始 1,319 ₽</span></div>
         <div><b>87.5%</b><span>买断率</span></div>
         <div><b>2025.12</b><span>峰值月份</span></div>
-        <div><b>0.1 亿 ₽</b><span>峰值月销售</span></div>
-        <div><b>6 000 ₽ – 6 999 ₽</b><span>第一卖家价格带</span></div>
+        <div><b>78 万 RMB</b><span>峰值月销售 / 原始 0.1 亿 ₽</span></div>
+        <div><b>469-547 RMB</b><span>第一卖家价格带 / 原始 6,000-6,999 ₽</span></div>
         <div><b>954</b><span>卖家数</span></div>
       </div>
       <p>价格带高但销售动态转弱，且与德力玻璃制造优势不完全匹配。可用于理解酒具关键词，不进入首批 SKU。</p>
@@ -1992,13 +2250,13 @@ footer {
       <h3>杯盖 / 杯套配件</h3>
       <div class="ru">Крышка для кружки, чашки, стакана · 不作为德力玻璃核心 SKU</div>
       <div class="watch-metrics">
-        <div><b>0.3 亿 ₽</b><span>年订购金额</span></div>
+        <div><b>234 万 RMB</b><span>年订购金额 / 原始 0.3 亿 ₽</span></div>
         <div><b>+127%</b><span>销售动态</span></div>
-        <div><b>258 ₽</b><span>卖家均价 RUB</span></div>
+        <div><b>20 RMB</b><span>卖家均价 / 原始 258 ₽</span></div>
         <div><b>84.9%</b><span>买断率</span></div>
         <div><b>2026.03</b><span>峰值月份</span></div>
-        <div><b>0.0 亿 ₽</b><span>峰值月销售</span></div>
-        <div><b>0 ₽ – 199 ₽</b><span>第一卖家价格带</span></div>
+        <div><b>低于 40 万 RMB</b><span>峰值月销售 / 原始约 0.0 亿 ₽</span></div>
+        <div><b>0-16 RMB</b><span>第一卖家价格带 / 原始 0-199 ₽</span></div>
         <div><b>3 626</b><span>卖家数</span></div>
       </div>
       <p>热卖表中的“Кружки28天热卖”实际落在杯盖类，不是马克杯竞品。这里只作为关键词误差和套装配件提醒。</p>
@@ -2063,13 +2321,13 @@ footer {
         <div class="competitor-tag">Кружка · 对标 把杯 / 马克杯</div>
         <div class="competitor-title">Ozon 搜索页实采 · 透明玻璃把杯 / 马克杯主图</div>
         <div class="competitor-meta">
-          <div><b>0.0 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>0.0 万 RMB</b><span>28D 销售额</span></div>
           <div><b>0</b><span>28D 订单</span></div>
-          <div><b>501 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>39 RMB</b><span>买家价 / 原始 501 ₽</span></div>
           <div><b>Ozon / mark…</b><span>品牌</span></div>
         </div>
         <a class="ozon-link" href="https://www.ozon.ru/category/kruzhki-stakany-i-bokaly-19034/?__rr=1&amp;category_was_predicted=true&amp;deny_category_prediction=true&amp;text=%D0%BA%D1%80%D1%83%D0%B6%D0%BA%D0%B0+%D1%81%D1%82%D0%B5%D0%BA%D0%BB%D1%8F%D0%BD%D0%BD%D0%B0%D1%8F" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
-        <div class="price-note">反推卖家标价：716–1 002 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="price-note">反推卖家标价：56-78 RMB（原始 716-1,002 ₽）。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
         <div class="competitor-note">从 Ozon 当前搜索页实采主图；仅补主图构图对标，销量仍以类目年盘和价格区间为准。<br>卖家：Ozon 页面实采</div>
       </div>
     </article>
@@ -2081,13 +2339,13 @@ footer {
         <div class="competitor-tag">Банка для продуктов · 对标 食品储物罐</div>
         <div class="competitor-title">Ozon Home · 玻璃食品储物罐主图</div>
         <div class="competitor-meta">
-          <div><b>0.0 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>0.0 万 RMB</b><span>28D 销售额</span></div>
           <div><b>0</b><span>28D 订单</span></div>
-          <div><b>650 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>51 RMB</b><span>买家价 / 原始 650 ₽</span></div>
           <div><b>Ozon Home</b><span>品牌</span></div>
         </div>
         <a class="ozon-link" href="https://www.ozon.ru/category/hranenie-produktov-14552/?category_was_predicted=true&amp;deny_category_prediction=true&amp;text=%D0%B1%D0%B0%D0%BD%D0%BA%D0%B0+%D0%B4%D0%BB%D1%8F+%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D0%BE%D0%B2+%D1%81%D1%82%D0%B5%D0%BA%D0%BB%D1%8F%D0%BD%D0%BD%D0%B0%D1%8F" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
-        <div class="price-note">反推卖家标价：929–1 300 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="price-note">反推卖家标价：73-102 RMB（原始 929-1,300 ₽）。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
         <div class="competitor-note">从 Ozon 当前搜索页实采主图；用于补齐储物罐类目主图对标，不作为热卖榜销量样本。<br>卖家：Ozon 页面实采</div>
       </div>
     </article>
@@ -2099,14 +2357,14 @@ footer {
         <div class="competitor-tag">Стакан · 对标 水杯 / 机吹杯</div>
         <div class="competitor-title">Набор стаканов Pasabahce &quot;Valse&quot; для воды, сока, коктейлей, 290 мл, стекло, 6 шт</div>
         <div class="competitor-meta">
-          <div><b>89.2 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>6.97 万 RMB</b><span>28D 销售额 / 原始 89.2 万 ₽</span></div>
           <div><b>1 780</b><span>28D 订单</span></div>
-          <div><b>501 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>39 RMB</b><span>买家价 / 原始 501 ₽</span></div>
           <div><b>Pasabahce</b><span>品牌</span></div>
         </div>
         <a class="ozon-link" href="https://www.ozon.ru/product/nabor-stakanov-pasabahce-valse-dlya-vody-soka-kokteyley-290-ml-steklo-6-sht-144052235/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
-        <div class="price-note">反推卖家标价：716–1 002 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
-        <div class="competitor-note">页面出现 1 ₽ / 低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：Ozon</div>
+        <div class="price-note">反推卖家标价：56-78 RMB（原始 716-1,002 ₽）。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">页面出现约 0.08 RMB 的极低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：Ozon</div>
       </div>
     </article>
     <article class="competitor-card">
@@ -2117,13 +2375,13 @@ footer {
         <div class="competitor-tag">Бокал · 对标 高脚杯 / 酒杯</div>
         <div class="competitor-title">Пивная кружка СССР, объем 500 мл, &quot;Ностальгия&quot;</div>
         <div class="competitor-meta">
-          <div><b>111.3 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>8.70 万 RMB</b><span>28D 销售额 / 原始 111.3 万 ₽</span></div>
           <div><b>5 285</b><span>28D 订单</span></div>
-          <div><b>211 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>16 RMB</b><span>买家价 / 原始 211 ₽</span></div>
           <div><b>без бренда</b><span>品牌</span></div>
         </div>
         <a class="ozon-link" href="https://www.ozon.ru/product/pivnaya-kruzhka-sssr-obem-500-ml-nostalgiya-726322189/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
-        <div class="price-note">反推卖家标价：301–422 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="price-note">反推卖家标价：24-33 RMB（原始 301-422 ₽）。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
         <div class="competitor-note">客单价高，但破损敏感，必须靠包装和跌落测试兜底。<br>卖家：Сима-Ленд - Посуда и Хозтовары</div>
       </div>
     </article>
@@ -2135,14 +2393,14 @@ footer {
         <div class="competitor-tag">Чайник заварочный · 对标 玻璃茶壶</div>
         <div class="competitor-title">Чайник стеклянный заварочный &quot;Бочонок 900 мл&quot; ThermoGlass с бамбуковой крышкой.</div>
         <div class="competitor-meta">
-          <div><b>714.1 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>55.79 万 RMB</b><span>28D 销售额 / 原始 714.1 万 ₽</span></div>
           <div><b>31 285</b><span>28D 订单</span></div>
-          <div><b>228 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>18 RMB</b><span>买家价 / 原始 228 ₽</span></div>
           <div><b>THERMOGLASS</b><span>品牌</span></div>
         </div>
         <a class="ozon-link" href="https://www.ozon.ru/product/chaynik-steklyannyy-zavarochnyy-bochonok-900-ml-thermoglass-s-bambukovoy-kryshkoy-3215661470/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
-        <div class="price-note">反推卖家标价：326–456 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
-        <div class="competitor-note">页面出现 1 ₽ / 低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：ThermoGlass</div>
+        <div class="price-note">反推卖家标价：25-36 RMB（原始 326-456 ₽）。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">页面出现约 0.08 RMB 的极低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：ThermoGlass</div>
       </div>
     </article>
     <article class="competitor-card">
@@ -2153,13 +2411,13 @@ footer {
         <div class="competitor-tag">Кувшин · 对标 水壶 / 壶杯套装</div>
         <div class="competitor-title">Кувшин, 3.5 л</div>
         <div class="competitor-meta">
-          <div><b>245.3 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>19.16 万 RMB</b><span>28D 销售额 / 原始 245.3 万 ₽</span></div>
           <div><b>9 770</b><span>28D 订单</span></div>
-          <div><b>251 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>20 RMB</b><span>买家价 / 原始 251 ₽</span></div>
           <div><b>без бренда</b><span>品牌</span></div>
         </div>
         <a class="ozon-link" href="https://www.ozon.ru/product/kuvshin-3-5-l-2236851079/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
-        <div class="price-note">反推卖家标价：359–502 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="price-note">反推卖家标价：28-39 RMB（原始 359-502 ₽）。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
         <div class="competitor-note">大件高客单，核心变量是壶嘴破损和外箱体积。<br>卖家：Восход Гранд Универмаг</div>
       </div>
     </article>
@@ -2171,14 +2429,14 @@ footer {
         <div class="competitor-tag">Сахарница · 对标 糖罐</div>
         <div class="competitor-title">Сахарница с крышкой и ложкой из бамбука стеклянная, баночка для специй и других сыпучих про…</div>
         <div class="competitor-meta">
-          <div><b>88.4 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>6.91 万 RMB</b><span>28D 销售额 / 原始 88.4 万 ₽</span></div>
           <div><b>3 809</b><span>28D 订单</span></div>
-          <div><b>232 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>18 RMB</b><span>买家价 / 原始 232 ₽</span></div>
           <div><b>VOSC</b><span>品牌</span></div>
         </div>
         <a class="ozon-link" href="https://www.ozon.ru/product/saharnitsa-s-kryshkoy-i-lozhkoy-iz-bambuka-steklyannaya-banochka-dlya-spetsiy-i-drugih-1633412490/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
-        <div class="price-note">反推卖家标价：331–464 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
-        <div class="competitor-note">页面出现 1 ₽ / 低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：VOSC</div>
+        <div class="price-note">反推卖家标价：26-36 RMB（原始 331-464 ₽）。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">页面出现约 0.08 RMB 的极低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：VOSC</div>
       </div>
     </article>
     <article class="competitor-card">
@@ -2189,14 +2447,14 @@ footer {
         <div class="competitor-tag">Графин · 对标 分酒器</div>
         <div class="competitor-title">Графин для воды 2,6 л стеклянный, кувшин для воды с фильтром, чайник заварочный стеклянный</div>
         <div class="competitor-meta">
-          <div><b>55.1 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>4.30 万 RMB</b><span>28D 销售额 / 原始 55.1 万 ₽</span></div>
           <div><b>575</b><span>28D 订单</span></div>
-          <div><b>958 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>75 RMB</b><span>买家价 / 原始 958 ₽</span></div>
           <div><b>DELISOGA</b><span>品牌</span></div>
         </div>
         <a class="ozon-link" href="https://www.ozon.ru/product/grafin-dlya-vody-2-6-l-steklyannyy-kuvshin-dlya-vody-s-filtrom-chaynik-zavarochnyy-steklyannyy-1659045634/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
-        <div class="price-note">反推卖家标价：1 369–1 916 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
-        <div class="competitor-note">页面出现 1 ₽ / 低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：Регент Рус</div>
+        <div class="price-note">反推卖家标价：107-150 RMB（原始 1,369-1,916 ₽）。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="competitor-note">页面出现约 0.08 RMB 的极低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：Регент Рус</div>
       </div>
     </article>
     <article class="competitor-card">
@@ -2207,13 +2465,13 @@ footer {
         <div class="competitor-tag">Чашка · 对标 咖啡杯 / 茶杯</div>
         <div class="competitor-title">Чашка для завтрака 350 мл, Cellini, Villeroy &amp; Boch, Премиум-Фарфор</div>
         <div class="competitor-meta">
-          <div><b>40.8 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>3.19 万 RMB</b><span>28D 销售额 / 原始 40.8 万 ₽</span></div>
           <div><b>191</b><span>28D 订单</span></div>
-          <div><b>2 134 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>167 RMB</b><span>买家价 / 原始 2,134 ₽</span></div>
           <div><b>Villeroy &amp; …</b><span>品牌</span></div>
         </div>
         <a class="ozon-link" href="https://www.ozon.ru/product/chashka-dlya-zavtraka-350-ml-cellini-villeroy-boch-premium-farfor-1587493409/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
-        <div class="price-note">反推卖家标价：3 049–4 268 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="price-note">反推卖家标价：238-333 RMB（原始 3,049-4,268 ₽）。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
         <div class="competitor-note">礼品属性强，适合做咖啡杯碟套装和高毛利组合。<br>卖家：Villeroy &amp; Boch</div>
       </div>
     </article>
@@ -2225,20 +2483,171 @@ footer {
         <div class="competitor-tag">Пепельница · 对标 烟缸</div>
         <div class="competitor-title">Пепельница для дома с крышкой &quot;Юла&quot; большая, бездымная вращающаяся чёрная кожа, для дачи, д…</div>
         <div class="competitor-meta">
-          <div><b>49.1 万 ₽</b><span>28D 销售额</span></div>
+          <div><b>3.84 万 RMB</b><span>28D 销售额 / 原始 49.1 万 ₽</span></div>
           <div><b>1 016</b><span>28D 订单</span></div>
-          <div><b>483 ₽</b><span>买家价 / 活动价</span></div>
+          <div><b>38 RMB</b><span>买家价 / 原始 483 ₽</span></div>
           <div><b>Ashtray</b><span>品牌</span></div>
         </div>
         <a class="ozon-link" href="https://www.ozon.ru/product/pepelnitsa-dlya-doma-s-kryshkoy-yula-bolshaya-bezdymnaya-vrashchayushchayasya-chernaya-kozha-dlya-334037343/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
-        <div class="price-note">反推卖家标价：690–966 ₽。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
+        <div class="price-note">反推卖家标价：54-75 RMB（原始 690-966 ₽）。用于选品和利润模型时，以类目价格区间或卖家后台标价为准，不直接用买家价。</div>
         <div class="competitor-note">买断率高但品牌价值有限，建议作为边界验证款。<br>卖家：Мир грез</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/comp_pasabahce_allegra.jpg" alt="Pasabahce Allegra 水杯 4 只装竞品主图" data-lightbox-caption="Pasabahce Allegra 水杯 4 只装竞品主图">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Стакан · Pasabahce 系列样本</div>
+        <div class="competitor-title">Набор стаканов Pasabahce “Аллегра” для воды, сока, 425 мл, стекло, 4 шт</div>
+        <div class="competitor-meta">
+          <div><b>5.19 万 RMB</b><span>28D 销售额 / 原始 66.4 万 ₽</span></div>
+          <div><b>1 840</b><span>28D 订单</span></div>
+          <div><b>28 RMB</b><span>买家价 / 原始 361 ₽</span></div>
+          <div><b>Pasabahce</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/162784621" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：40-56 RMB（原始 516-722 ₽）。这类基础杯要看 4 只装 / 6 只装规格，而不是只看单杯价格。</div>
+        <div class="competitor-note">主图重点是白底、透明质感、数量表达；德力基础水杯可对标其“清晰规格 + 套装化”表达。</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/comp_pasabahce_elysia.jpg" alt="Pasabahce Elysia 鸡尾酒杯竞品主图" data-lightbox-caption="Pasabahce Elysia 鸡尾酒杯竞品主图">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Стакан · 高质感杯型</div>
+        <div class="competitor-title">Набор стаканов Pasabahce “Elysia” для коктейлей, воды, сока, 450 мл, 4 шт</div>
+        <div class="competitor-meta">
+          <div><b>4.87 万 RMB</b><span>28D 销售额 / 原始 62.3 万 ₽</span></div>
+          <div><b>719</b><span>28D 订单</span></div>
+          <div><b>68 RMB</b><span>买家价 / 原始 867 ₽</span></div>
+          <div><b>Pasabahce</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/1050093976" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：97-135 RMB（原始 1,239-1,734 ₽）。这说明“设计感杯型”可以脱离低价透明杯红海。</div>
+        <div class="competitor-note">适合对标德力加工花色款和高质感杯型：利润不靠极低采购价，而靠质感、套装和主图高级感。</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/comp_pasabahce_official_allegra.jpg" alt="Pasabahce 官方风格 Allegra 主图样本" data-lightbox-caption="Pasabahce 官方风格 Allegra 主图样本">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Стакан · 官方品牌表达</div>
+        <div class="competitor-title">Pasabahce Allegra 官方风格样本：透明杯身、套装数量、品牌识别同时出现</div>
+        <div class="competitor-meta">
+          <div><b>视觉样本</b><span>非热卖销量样本</span></div>
+          <div><b>4-6 只装</b><span>常见组合</span></div>
+          <div><b>40-80 RMB</b><span>常见到手区间</span></div>
+          <div><b>Pasabahce</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/search/?text=Pasabahce%20Allegra%20%D1%81%D1%82%D0%B0%D0%BA%D0%B0%D0%BD%D1%8B" target="_blank" rel="noopener noreferrer">打开 Ozon 搜索 ↗</a>
+        <div class="price-note">主图样本用于学习构图，不直接进入利润测算。德力如果做俄文包装，应把“几只装 + 容量 + 食品接触安全”写进首屏。</div>
+        <div class="competitor-note">竞品不是只有价格，品牌化表达会影响点击率和买家信任。</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/comp_thermoglass_bochonok.webp" alt="ThermoGlass Бочонок 茶壶主图样本" data-lightbox-caption="ThermoGlass Бочонок 茶壶主图样本">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Чайник · 爆款茶壶样本</div>
+        <div class="competitor-title">ThermoGlass “Бочонок” 系列：低买家价、高订单量，茶饮场景非常强</div>
+        <div class="competitor-meta">
+          <div><b>55.79 万 RMB</b><span>28D 销售额 / 原始 714.1 万 ₽</span></div>
+          <div><b>31 285</b><span>28D 订单</span></div>
+          <div><b>18 RMB</b><span>买家价 / 原始 228 ₽</span></div>
+          <div><b>THERMOGLASS</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/3215661470" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：25-36 RMB（原始 326-456 ₽）。低买家价能冲量，但德力壶杯套装不能照抄，需要用套装和包装拉高客单。</div>
+        <div class="competitor-note">茶壶类目必须重点关注壶嘴、滤网、盖子和外箱抗摔，不然销量越高售后越重。</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/comp_beer_mug_sssr.jpg" alt="СССР 啤酒杯竞品主图样本" data-lightbox-caption="СССР 啤酒杯竞品主图样本">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Бокал · 本土情绪款</div>
+        <div class="competitor-title">Пивная кружка СССР, 500 мл：强本土符号 + 低价冲量</div>
+        <div class="competitor-meta">
+          <div><b>8.70 万 RMB</b><span>28D 销售额 / 原始 111.3 万 ₽</span></div>
+          <div><b>5 285</b><span>28D 订单</span></div>
+          <div><b>16 RMB</b><span>买家价 / 原始 211 ₽</span></div>
+          <div><b>без бренда</b><span>品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/product/726322189" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <div class="price-note">反推卖家标价：24-33 RMB（原始 301-422 ₽）。这类款能出单，但品牌护城河弱，适合用来判断俄罗斯本土图案偏好。</div>
+        <div class="competitor-note">给德力花色款的启发：俄文文字、复古图案、节日场景可以做差异化，但不应牺牲毛利率。</div>
+      </div>
+    </article>
+    <article class="competitor-card">
+      <div class="competitor-img">
+        <img src="assets/ozon_product_images/ozon_jars.png" alt="Ozon 储物罐搜索页主图样本" data-lightbox-caption="Ozon 储物罐搜索页主图样本">
+      </div>
+      <div class="competitor-body">
+        <div class="competitor-tag">Банка · 搜索页构图样本</div>
+        <div class="competitor-title">玻璃储物罐搜索页样本：木盖、套组、容量层级是高频视觉信息</div>
+        <div class="competitor-meta">
+          <div><b>2.60 亿 RMB</b><span>类目年盘 / 原始 33.3 亿 ₽</span></div>
+          <div><b>13 015</b><span>类目卖家数</span></div>
+          <div><b>93 RMB</b><span>卖家均价 / 原始 1,189 ₽</span></div>
+          <div><b>Ozon Home</b><span>代表品牌</span></div>
+        </div>
+        <a class="ozon-link" href="https://www.ozon.ru/category/hranenie-produktov-14552/?text=%D0%B1%D0%B0%D0%BD%D0%BA%D0%B0%20%D0%B4%D0%BB%D1%8F%20%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D0%BE%D0%B2%20%D1%81%D1%82%D0%B5%D0%BA%D0%BB%D1%8F%D0%BD%D0%BD%D0%B0%D1%8F" target="_blank" rel="noopener noreferrer">打开 Ozon 搜索 ↗</a>
+        <div class="price-note">储物罐适合做 2 件 / 3 件套，利润模型应按整套销售单位算，不按单罐拆成本。</div>
+        <div class="competitor-note">这张图补充的是你说的“竞品主图不能只截一截”：页面现在用完整图承载构图判断。</div>
       </div>
     </article>
       
     </div>
+    <div class="seller-summary">
+      <div class="seller-summary-head">
+        <div>
+          <div class="section-num">SELLER & BRAND READ / 热卖卖家与品牌</div>
+          <h3>热卖不是只有“品牌”。俄罗斯平台上，强卖家和强渠道同样重要。</h3>
+          <p>下面按热卖表 28 天样本聚合，金额折成人民币展示。它说明首批打法不能只对标单个产品，还要看谁在卖、靠什么卖、是否有品牌信任或渠道分发能力。</p>
+        </div>
+        <div class="exchange-note">28D SAMPLE · RMB PRIMARY</div>
+      </div>
+      <div class="seller-grid">
+        <article class="seller-card">
+          <div class="tag">平台自营 / 强入口</div>
+          <h4>Ozon</h4>
+          <div class="metric"><div><b>206.9 万 RMB</b><span>28D 样本销售额</span></div><div><b>54,880</b><span>样本订单</span></div></div>
+          <p>Ozon 自营和平台型店铺在水杯、酒杯、壶具等多个类目出现，说明平台入口会吃掉一部分基础款流量。</p>
+        </article>
+        <article class="seller-card">
+          <div class="tag">垂直品牌 / 茶壶强势</div>
+          <h4>ThermoGlass</h4>
+          <div class="metric"><div><b>92.9 万 RMB</b><span>28D 样本销售额</span></div><div><b>44,693</b><span>样本订单</span></div></div>
+          <p>茶壶类目高度集中在少数爆款，低到手价换高订单。德力若做壶杯套装，需要用包装和套装客单绕开纯低价。</p>
+        </article>
+        <article class="seller-card">
+          <div class="tag">大分销商 / 多类目铺货</div>
+          <h4>Сима-Ленд</h4>
+          <div class="metric"><div><b>72.3 万 RMB</b><span>28D 样本销售额</span></div><div><b>25,831</b><span>样本订单</span></div></div>
+          <p>这类卖家靠供应链和铺货能力，不一定靠品牌。德力项目要用独家 SKU 和价格保护，避免被同款分销冲散。</p>
+        </article>
+        <article class="seller-card">
+          <div class="tag">高信任品牌 / 高客单</div>
+          <h4>Villeroy & Boch</h4>
+          <div class="metric"><div><b>24.2 万 RMB</b><span>28D 样本销售额</span></div><div><b>1,237</b><span>样本订单</span></div></div>
+          <p>订单少但客单高，适合给咖啡杯碟和礼品套装做价格天花板参考，不适合照搬为基础杯打法。</p>
+        </article>
+      </div>
+      <div class="brand-rank">
+        <div><b>无品牌</b><span>235.0 万 RMB · 量大但难守价</span></div>
+        <div><b>Pasabahce</b><span>157.3 万 RMB · 水杯/壶具强品牌</span></div>
+        <div><b>THERMOGLASS</b><span>97.2 万 RMB · 茶壶集中爆款</span></div>
+        <div><b>AMI MEBEL</b><span>49.5 万 RMB · 家居渠道型</span></div>
+        <div><b>Ozon Home</b><span>45.8 万 RMB · 平台自有心智</span></div>
+      </div>
+    </div>
     <div class="evidence-note" style="margin-top:26px;">
-      价格口径：热卖商品里的均价 / 低价按买家价、活动价或页面展示价处理，不等于卖家后台标价。可用买家价反推卖家标价，例如买家价约 500 ₽ 时，若按平台促销折让和券后口径折回，卖家标价通常要落在约 714-999 ₽ 区间；类目“价格区间”表则按正常卖家价格读取。当前真实单品主图已覆盖 8 个主类目；Кружка、Банка для продуктов 在现有抓取包里没有可用商品主图，页面明确标成待补。
+      价格口径：热卖商品里的均价 / 低价按买家价、活动价或页面展示价处理，不等于卖家后台标价。可用买家价反推卖家标价，例如买家价约 39 RMB（原始 500 ₽）时，若按平台促销折让和券后口径折回，卖家标价通常要落在约 56-78 RMB（原始 714-999 ₽）区间；类目“价格区间”表则按正常卖家价格读取。当前竞品区已覆盖真实热卖单品、搜索页实采图和品牌主图样本；没有销量字段的卡片只作为主图构图和类目表达参考，不进入单品利润基准。
     </div>
   </div>
 </section>
@@ -2534,16 +2943,16 @@ footer {
       <h3>TY1628</h3>
       <div class="role">基础水杯 6 只装 · Ozon FBO · 成交评价款</div>
       <div class="unit-basis">计价单位：1 套 = 6 只。18 RMB 是整套预估采购价，不是单只杯价。</div>
-      <div class="profit-price"><span>基准卖家售价</span><strong>1 490 ₽</strong></div>
-      <div class="profit-line"><span>预估采购价</span><b>18.0 RMB / 230 ₽</b></div>
-      <div class="profit-line"><span>到俄运费 + 贴标</span><b>142 ₽</b></div>
-      <div class="profit-line"><span>平台费</span><b>596 ₽ · 40.0%</b></div>
-      <div class="profit-line"><span>仓费 + 管理</span><b>144 ₽</b></div>
-      <div class="profit-line"><span>税费</span><b>107 ₽</b></div>
-      <div class="profit-line"><span>破损售后</span><b>45 ₽ · 5.0%</b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>1 034 ₽</b></div>
+      <div class="profit-price"><span>基准卖家售价</span><strong>116 RMB <span class="money-sub">原始 1,490 ₽</span></strong></div>
+      <div class="profit-line"><span>预估采购价</span><b>18.0 RMB <span class="money-sub">原始 230 ₽</span></b></div>
+      <div class="profit-line"><span>到俄运费 + 贴标</span><b>11.1 RMB <span class="money-sub">原始 142 ₽</span></b></div>
+      <div class="profit-line"><span>平台费</span><b>46.6 RMB · 40.0% <span class="money-sub">原始 596 ₽</span></b></div>
+      <div class="profit-line"><span>仓费 + 管理</span><b>11.3 RMB <span class="money-sub">原始 144 ₽</span></b></div>
+      <div class="profit-line"><span>税费</span><b>8.4 RMB <span class="money-sub">原始 107 ₽</span></b></div>
+      <div class="profit-line"><span>破损售后</span><b>3.5 RMB · 5.0% <span class="money-sub">原始 45 ₽</span></b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>80.8 RMB <span class="money-sub">原始 1,034 ₽</span></b></div>
       <div class="profit-result">
-        <strong>226 ₽ / 17.6 RMB</strong>
+        <strong>17.6 RMB <span class="money-sub">原始 226 ₽</span></strong>
         <span>B 标准模型 · 净利率 15.9% · ROI 60.6%</span>
       </div>
       <div class="cost-ceiling">
@@ -2560,16 +2969,16 @@ footer {
       <h3>TY1640</h3>
       <div class="role">大容量水杯 4 只装 · Ozon FBO · 容量升级款</div>
       <div class="unit-basis">计价单位：1 套 = 4 只。22 RMB 是整套预估采购价。</div>
-      <div class="profit-price"><span>基准卖家售价</span><strong>1 790 ₽</strong></div>
-      <div class="profit-line"><span>预估采购价</span><b>22.0 RMB / 282 ₽</b></div>
-      <div class="profit-line"><span>到俄运费 + 贴标</span><b>142 ₽</b></div>
-      <div class="profit-line"><span>平台费</span><b>716 ₽ · 40.0%</b></div>
-      <div class="profit-line"><span>仓费 + 管理</span><b>168 ₽</b></div>
-      <div class="profit-line"><span>税费</span><b>133 ₽</b></div>
-      <div class="profit-line"><span>破损售后</span><b>54 ₽ · 5.0%</b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>1 213 ₽</b></div>
+      <div class="profit-price"><span>基准卖家售价</span><strong>140 RMB <span class="money-sub">原始 1,790 ₽</span></strong></div>
+      <div class="profit-line"><span>预估采购价</span><b>22.0 RMB <span class="money-sub">原始 282 ₽</span></b></div>
+      <div class="profit-line"><span>到俄运费 + 贴标</span><b>11.1 RMB <span class="money-sub">原始 142 ₽</span></b></div>
+      <div class="profit-line"><span>平台费</span><b>55.9 RMB · 40.0% <span class="money-sub">原始 716 ₽</span></b></div>
+      <div class="profit-line"><span>仓费 + 管理</span><b>13.1 RMB <span class="money-sub">原始 168 ₽</span></b></div>
+      <div class="profit-line"><span>税费</span><b>10.4 RMB <span class="money-sub">原始 133 ₽</span></b></div>
+      <div class="profit-line"><span>破损售后</span><b>4.2 RMB · 5.0% <span class="money-sub">原始 54 ₽</span></b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>94.8 RMB <span class="money-sub">原始 1,213 ₽</span></b></div>
       <div class="profit-result">
-        <strong>296 ₽ / 23.1 RMB</strong>
+        <strong>23.1 RMB <span class="money-sub">原始 296 ₽</span></strong>
         <span>B 标准模型 · 净利率 17.4% · ROI 69.8%</span>
       </div>
       <div class="cost-ceiling">
@@ -2586,16 +2995,16 @@ footer {
       <h3>TZ2829</h3>
       <div class="role">玻璃把杯 2 只装 · WB FBW · WB 放量款</div>
       <div class="unit-basis">计价单位：1 套 = 2 只。16 RMB 是整套预估采购价。</div>
-      <div class="profit-price"><span>基准卖家售价</span><strong>1 490 ₽</strong></div>
-      <div class="profit-line"><span>预估采购价</span><b>16.0 RMB / 205 ₽</b></div>
-      <div class="profit-line"><span>到俄运费 + 贴标</span><b>142 ₽</b></div>
-      <div class="profit-line"><span>平台费</span><b>566 ₽ · 38.0%</b></div>
-      <div class="profit-line"><span>仓费 + 管理</span><b>141 ₽</b></div>
-      <div class="profit-line"><span>税费</span><b>116 ₽</b></div>
-      <div class="profit-line"><span>破损售后</span><b>46 ₽ · 5.0%</b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>1 011 ₽</b></div>
+      <div class="profit-price"><span>基准卖家售价</span><strong>116 RMB <span class="money-sub">原始 1,490 ₽</span></strong></div>
+      <div class="profit-line"><span>预估采购价</span><b>16.0 RMB <span class="money-sub">原始 205 ₽</span></b></div>
+      <div class="profit-line"><span>到俄运费 + 贴标</span><b>11.1 RMB <span class="money-sub">原始 142 ₽</span></b></div>
+      <div class="profit-line"><span>平台费</span><b>44.2 RMB · 38.0% <span class="money-sub">原始 566 ₽</span></b></div>
+      <div class="profit-line"><span>仓费 + 管理</span><b>11.0 RMB <span class="money-sub">原始 141 ₽</span></b></div>
+      <div class="profit-line"><span>税费</span><b>9.1 RMB <span class="money-sub">原始 116 ₽</span></b></div>
+      <div class="profit-line"><span>破损售后</span><b>3.6 RMB · 5.0% <span class="money-sub">原始 46 ₽</span></b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>79.0 RMB <span class="money-sub">原始 1,011 ₽</span></b></div>
       <div class="profit-result">
-        <strong>274 ₽ / 21.4 RMB</strong>
+        <strong>21.4 RMB <span class="money-sub">原始 274 ₽</span></strong>
         <span>B 标准模型 · 净利率 19.4% · ROI 79.1%</span>
       </div>
       <div class="cost-ceiling">
@@ -2612,16 +3021,16 @@ footer {
       <h3>TCF053/L12</h3>
       <div class="role">咖啡杯碟 12 件套 · Ozon FBO · 礼品高客单</div>
       <div class="unit-basis">计价单位：1 套 = 12 件。95 RMB 是整套预估采购价。</div>
-      <div class="profit-price"><span>基准卖家售价</span><strong>5 590 ₽</strong></div>
-      <div class="profit-line"><span>预估采购价</span><b>95.0 RMB / 1 216 ₽</b></div>
-      <div class="profit-line"><span>到俄运费 + 贴标</span><b>142 ₽</b></div>
-      <div class="profit-line"><span>平台费</span><b>2 236 ₽ · 40.0%</b></div>
-      <div class="profit-line"><span>仓费 + 管理</span><b>400 ₽</b></div>
-      <div class="profit-line"><span>税费</span><b>429 ₽</b></div>
-      <div class="profit-line"><span>破损售后</span><b>168 ₽ · 5.0%</b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>3 375 ₽</b></div>
+      <div class="profit-price"><span>基准卖家售价</span><strong>437 RMB <span class="money-sub">原始 5,590 ₽</span></strong></div>
+      <div class="profit-line"><span>预估采购价</span><b>95.0 RMB <span class="money-sub">原始 1,216 ₽</span></b></div>
+      <div class="profit-line"><span>到俄运费 + 贴标</span><b>11.1 RMB <span class="money-sub">原始 142 ₽</span></b></div>
+      <div class="profit-line"><span>平台费</span><b>174.7 RMB · 40.0% <span class="money-sub">原始 2,236 ₽</span></b></div>
+      <div class="profit-line"><span>仓费 + 管理</span><b>31.3 RMB <span class="money-sub">原始 400 ₽</span></b></div>
+      <div class="profit-line"><span>税费</span><b>33.5 RMB <span class="money-sub">原始 429 ₽</span></b></div>
+      <div class="profit-line"><span>破损售后</span><b>13.1 RMB · 5.0% <span class="money-sub">原始 168 ₽</span></b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>263.7 RMB <span class="money-sub">原始 3,375 ₽</span></b></div>
       <div class="profit-result">
-        <strong>999 ₽ / 78.1 RMB</strong>
+        <strong>78.1 RMB <span class="money-sub">原始 999 ₽</span></strong>
         <span>B 标准模型 · 净利率 18.8% · ROI 73.6%</span>
       </div>
       <div class="cost-ceiling">
@@ -2638,16 +3047,16 @@ footer {
       <h3>TR502/L7</h3>
       <div class="role">壶杯套装 · Ozon/WB 测款口径 · 礼品高客单</div>
       <div class="unit-basis">计价单位：1 套 = 1 壶 6 杯。82 RMB 是整套预估采购价。</div>
-      <div class="profit-price"><span>基准卖家售价</span><strong>4 690 ₽</strong></div>
-      <div class="profit-line"><span>预估采购价</span><b>82.0 RMB / 1 050 ₽</b></div>
-      <div class="profit-line"><span>到俄运费 + 贴标</span><b>142 ₽</b></div>
-      <div class="profit-line"><span>平台费</span><b>1 876 ₽ · 40.0%</b></div>
-      <div class="profit-line"><span>仓费 + 管理</span><b>398 ₽</b></div>
-      <div class="profit-line"><span>税费</span><b>343 ₽</b></div>
-      <div class="profit-line"><span>破损售后</span><b>141 ₽ · 5.0%</b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>2 900 ₽</b></div>
+      <div class="profit-price"><span>基准卖家售价</span><strong>366 RMB <span class="money-sub">原始 4,690 ₽</span></strong></div>
+      <div class="profit-line"><span>预估采购价</span><b>82.0 RMB <span class="money-sub">原始 1,050 ₽</span></b></div>
+      <div class="profit-line"><span>到俄运费 + 贴标</span><b>11.1 RMB <span class="money-sub">原始 142 ₽</span></b></div>
+      <div class="profit-line"><span>平台费</span><b>146.6 RMB · 40.0% <span class="money-sub">原始 1,876 ₽</span></b></div>
+      <div class="profit-line"><span>仓费 + 管理</span><b>31.1 RMB <span class="money-sub">原始 398 ₽</span></b></div>
+      <div class="profit-line"><span>税费</span><b>26.8 RMB <span class="money-sub">原始 343 ₽</span></b></div>
+      <div class="profit-line"><span>破损售后</span><b>11.0 RMB · 5.0% <span class="money-sub">原始 141 ₽</span></b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>226.6 RMB <span class="money-sub">原始 2,900 ₽</span></b></div>
       <div class="profit-result">
-        <strong>741 ₽ / 57.9 RMB</strong>
+        <strong>57.9 RMB <span class="money-sub">原始 741 ₽</span></strong>
         <span>B 标准模型 · 净利率 16.6% · ROI 62.2%</span>
       </div>
       <div class="cost-ceiling">
