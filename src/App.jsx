@@ -47,7 +47,7 @@ const TAX_SCHEMES = {
 };
 
 const DEFAULT_PARAMS = {
-  exchangeRate: 12.0, usdRate: 95, damageRate: 0.03, shippingPerUnit: 100, labelingPerUnit: 0,
+  exchangeRate: 12.0, usdRate: 95, damageRate: 0.03, shippingPerUnit: 0, labelingPerUnit: 0,
   grayShipPrice: 0, whiteShipPrice: 0,  // ¥/kg 和 ¥/m³，用户自行输入
   taxScheme: "usn_15", vatRate: 0.22, profitTaxRate: 0.25, customTaxRate: 0.15,
   incomeBasis: "payout", oneTimeCosts: 0,
@@ -1317,7 +1317,7 @@ function AppContent({ lang, setLang }) {
 
     // Cost structure bar
     const costParts = [
-      { label: lang === 'zh' ? '预估采购到仓成本' : 'COGS', val: totals.totalInvestment, clr: '#5C1A1B' },
+      { label: lang === 'zh' ? '预估采购/贴标成本' : 'COGS', val: totals.totalInvestment, clr: '#5C1A1B' },
       { label: lang === 'zh' ? '一次性启动费' : 'Setup', val: setupCost, clr: '#5C544A' },
       { label: lang === 'zh' ? '平台费' : 'Platform', val: calcs.reduce((s, r) => s + (r.platformFee || 0) * (r.qty || 0), 0), clr: '#7A2A2C' },
       { label: lang === 'zh' ? '仓储' : 'Warehouse', val: calcs.reduce((s, r) => s + (r.warehouse || 0) * (r.qty || 0), 0), clr: '#B8860B' },
@@ -1500,7 +1500,7 @@ function AppContent({ lang, setLang }) {
     ${summaryText}
   </div>
   <div class="logic-note">
-    <strong>计算口径说明：</strong>当前采购价/申报价为测算假设，且均按“上架销售单位”计算：6只装、12件套、壶杯套装都按整套计，不按单只杯子计。需待工厂 EXW/FOB 正式报价、装箱尺寸、毛重和头程报价确认后替换。经营净利 = 商品销售回款 - 预估采购到仓成本 - 仓储管理 - 破损 - 税，不含一次性启动费；
+    <strong>计算口径说明：</strong>当前采购价/申报价为测算假设，且均按“上架销售单位”计算：6只装、12件套、壶杯套装都按整套计，不按单只杯子计。若到俄运费留空为 0，则当前结果不包含中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用；需待工厂 EXW/FOB 正式报价、装箱尺寸、毛重和货代报价确认后替换。经营净利 = 商品销售回款 - 已填写的采购/贴标/物流成本 - 仓储管理 - 破损 - 税，不含一次性启动费；
     项目净利 = 经营净利 - 一次性启动费；
     期末现金 = 项目净利再叠加首批备货、补货节奏和现金回收时间。三者口径不同，不能混读。
   </div>
@@ -3378,7 +3378,7 @@ const GLOSSARY = {
   zh: [
     { section: "📊 总览仪表盘", items: [
       { term: "总营收", desc: "所有商品卖出后，平台打给你的总金额（售价 − 平台佣金）。", example: "商品售价 1249₽，平台费 652₽ → 单件回款 597₽。30件 → 总营收 = 597 × 30 × 97%（扣货损）= 17,373₽" },
-      { term: "总投资", desc: "测算口径下需要占用的资金：预估采购成本 + 到俄运费 + 一次性费用。采购成本按上架销售单位填写，正式报价后必须替换。", example: "6只装预估采购价18¥/套 × 汇率12.8 = 230.4₽，运费+贴标142₽ → 每套成本372.4₽。100套 → 投资 = 37,240₽" },
+      { term: "总投资", desc: "测算口径下需要占用的资金：预估采购成本 + 已填写的到俄物流费用 + 贴标/本地化处理费 + 一次性费用。德力当前版本到俄运费可留 0，等工厂和货代报价后再重算。采购成本按上架销售单位填写，正式报价后必须替换。", example: "6只装预估采购价18¥/套 × 汇率12.8 = 230.4₽，贴标12₽、到俄运费留空0₽ → 每套成本242.4₽。100套 → 投资 = 24,240₽" },
       { term: "现金净利", desc: "按每个SKU单独算税后汇总的利润。= 总营收 − 总投资 − 仓储 − 管理费 − 税。", example: "营收 17,373₽ − 投资 9,354₽ − 仓 2,970₽ − 管理 1,080₽ − 税 580₽ = 净利 3,389₽" },
       { term: "期末现金", desc: "经过N个月销售排期后，你账上实际还剩多少钱。按月度累计计算。", example: "M0投入 -108万₽ → M1回款+15万 → M2回款+20万 → ... → M8累计 = +57.5万₽" },
       { term: "⚠️ 现金净利 vs 期末现金", desc: "两个数不一样是正常的！现金净利是按每个SKU单独算税再汇总；期末现金是按月合算税。月合算时税额可能更低，所以期末现金通常略高。", example: "38个SKU单独算税各交一点最低税 → 总税高；按月合在一起算 → 利润合并后不触发最低税 → 总税低 → 到手多" },
@@ -3386,7 +3386,7 @@ const GLOSSARY = {
       { term: "净利率", desc: "每赚100块营收里有多少是纯利润。= 净利润 ÷ 总营收 × 100%", example: "营收21万₽，净利4.7万₽ → 净利率 = 22.3%。每100₽营收中22.3₽是纯利" },
     ]},
     { section: "📈 投资人关注", items: [
-      { term: "初始投入", desc: "M0（第零个月）你要一次性掏出的全部钱：所有商品的采购+运费+一次性费用+进项VAT（如果是OSN）。", example: "38个SKU总采购运费108万₽ → 初始投入 = -108万₽" },
+      { term: "初始投入", desc: "M0（第零个月）你要一次性掏出的全部钱：所有商品的采购、已填写的运费/贴标、一次性费用和进项VAT（如果是OSN）。如果运费留空，就代表当前模型暂不含到俄头程物流。", example: "38个SKU采购与贴标合计108万₽、到俄运费待报价 → 初始投入先按 -108万₽ 测算，报价后重跑" },
       { term: "最大资金压力（回撤）", desc: "整个预测期内，你账上最缺钱的那一刻。通常就是M0刚付完货款的时候。", example: "M0付完108万₽，账上 -108万₽ → 这就是最大回撤" },
       { term: "回本月份", desc: "累计现金从负变正的那个月。之前都是亏的，从这个月开始你把本钱赚回来了。", example: "M5累计 -5万₽，M6累计 +2万₽ → 第6个月回本" },
       { term: "平均月回款", desc: "总营收 ÷ 预测月数。代表平均每个月能收回多少钱。", example: "总营收230万₽ ÷ 8个月 = 平均每月28.7万₽" },
@@ -3414,7 +3414,7 @@ const GLOSSARY = {
   en: [
     { section: "📊 Dashboard Overview", items: [
       { term: "Total Revenue", desc: "Total platform payout for all products sold (List Price − Platform Fees).", example: "List 1249₽, Fee 652₽ → Payout 597₽/pc. 30pcs → Revenue = 597×30×97% = 17,373₽" },
-      { term: "Total Investment", desc: "All money you put in: procurement + shipping + one-time costs.", example: "Cost 17.65¥ × rate 12 = 211.8₽, shipping 100₽ → Unit 311.8₽. 30pcs → 9,354₽" },
+      { term: "Total Investment", desc: "All money you put in: procurement + filled shipping/logistics fields + labeling + one-time costs. If shipping is left at 0, Russia head freight/customs/inbound is excluded.", example: "Cost 17.65¥ × rate 12 = 211.8₽, labeling 12₽, shipping 0₽ → Unit 223.8₽. 30pcs → 6,714₽" },
       { term: "Net Profit (Cash)", desc: "Profit after tax, calculated per-SKU then summed. = Revenue − Investment − Warehouse − Mgmt − Tax.", example: "Revenue 17,373₽ − Invest 9,354₽ − WH 2,970₽ − Mgmt 1,080₽ − Tax 580₽ = 3,389₽" },
       { term: "Final Cash", desc: "Actual cash balance after N months of sales. Calculated monthly.", example: "M0: −1.08M₽ → M1: +150K → ... → M8: +575K₽" },
       { term: "⚠️ Net Profit vs Final Cash", desc: "They differ because tax is calculated differently: per-SKU vs per-month aggregation. Monthly aggregation usually results in lower tax.", example: "Per-SKU: each triggers minimum 1% tax. Monthly: combined profit avoids minimum → less tax → more cash" },
@@ -3422,7 +3422,7 @@ const GLOSSARY = {
       { term: "Net Margin", desc: "Profit per 100₽ of revenue. = Net Profit ÷ Revenue × 100%", example: "Revenue 210K₽, profit 47K₽ → Margin = 22.3%" },
     ]},
     { section: "📈 Investor Metrics", items: [
-      { term: "Initial Outflow", desc: "Total upfront payment at M0: all procurement + shipping + one-time + import VAT (if OSN).", example: "38 SKUs total cost 1.08M₽ → Initial = −1.08M₽" },
+      { term: "Initial Outflow", desc: "Total upfront payment at M0: all procurement + filled shipping/logistics fields + labeling + one-time + import VAT (if OSN). If shipping is 0, RU logistics are pending quote.", example: "38 SKUs procurement/labeling 1.08M₽ and RU freight pending → Initial = −1.08M₽ before freight quote" },
       { term: "Max Drawdown", desc: "Deepest negative cash point during the forecast. Usually at M0 right after paying.", example: "M0 paid 1.08M₽, balance −1.08M₽ → max drawdown" },
       { term: "Break-even Month", desc: "Month when cumulative cash turns positive. Before this you're still in the red.", example: "M5: −50K₽, M6: +20K₽ → Break-even at month 6" },
       { term: "Avg Monthly Revenue", desc: "Total Revenue ÷ forecast months.", example: "2.3M₽ ÷ 8 months = 287K₽/month" },

@@ -2903,7 +2903,7 @@ footer {
         <div class="section-num">SECTION 07 / 单品利润模型</div>
         <h2>可以反算。不只是算成本，而是算<em>可承受供货价</em>。</h2>
       </div>
-      <p class="lede">用现有三平台定价表，可以把售价、佣金、物流、仓储、税费、破损和管理费先固定，再反推在 8% / 12% 净利率目标下，供货成本最多能到多少。A/B/C 损益模型的差异主要是备货量、补货节奏和一次性启动费；单 SKU 的采购价、售价、平台费口径一致。当前卡片展示 B 标准模型的基准上架价，月度低价启动和后期涨价在计算器的价格排期里体现。</p>
+      <p class="lede">用现有三平台定价表，可以把售价、佣金、贴标/本地化、仓储、税费、破损和管理费先固定，再反推在 8% / 12% 净利率目标下，供货成本最多能到多少。当前版本不含中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用。A/B/C 损益模型的差异主要是备货量、补货节奏和一次性启动费；单 SKU 的采购价、售价、平台费口径一致。当前卡片展示 B 标准模型的基准上架价，月度低价启动和后期涨价在计算器的价格排期里体现。</p>
     </div>
     <div class="method" style="margin-bottom:28px;">
       <div>
@@ -2911,10 +2911,13 @@ footer {
         <p style="margin:0;color:var(--paper-2);font-size:14px;">这里按“上架销售单位”计算：6 只装就是一套 6 只，L12 就是一套 12 件，TR502/L7 就是一套 1 壶 6 杯。采购价、售价、平台费、仓费、管理费全部按同一个销售单位入模，不是单只杯子的成本。</p>
       </div>
       <div class="formula">
-        <div>B 模型单销售单位成本 = 预估采购价 × 汇率 + 到俄运费 + 贴标</div>
-        <div>单销售单位利润 = 售价 - 货值成本 - 平台费 - 到俄运费 - 贴标 - 仓费 - 管理费 - 税费 - 破损</div>
+        <div>B 模型单销售单位成本 = 预估采购价 × 汇率 + 贴标/本地化处理费（到俄运费暂为 0，待报价）</div>
+        <div>单销售单位利润 = 售价 - 货值成本 - 平台费 - 贴标/本地化处理费 - 仓费 - 管理费 - 税费 - 破损（不含到俄头程/清关/保险/俄罗斯入仓）</div>
         <div>可承受采购价 RMB = [售价 × (1 - 目标净利率) - 非货成本] / 汇率</div>
       </div>
+    </div>
+    <div class="evidence-note" style="margin-bottom:26px;">
+      当前单品利润为“不含到俄运费版本”：未包含中国至俄罗斯头程、出口报关、俄罗斯清关、保险、尾程派送、平台仓预约和俄罗斯入仓费用。到俄物流需要工厂提供装箱尺寸、毛重、每箱套数和交货条件，并由货代给出路线报价后重算。
     </div>
     <div class="profit-grid">
       
@@ -2928,19 +2931,20 @@ footer {
       <div class="unit-basis">计价单位：1 套 = 6 只。18 RMB 是整套预估采购价，不是单只杯价。</div>
       <div class="profit-price"><span>基准上架价</span><strong>116 RMB <span class="money-sub">原始 1,490 ₽</span></strong></div>
       <div class="profit-line"><span>预估采购价</span><b>18.0 RMB <span class="money-sub">原始 230 ₽</span></b></div>
-      <div class="profit-line"><span>到俄运费 + 贴标</span><b>11.1 RMB <span class="money-sub">原始 142 ₽</span></b></div>
+      <div class="profit-line"><span>到俄运费</span><b>未计入 · 待货代报价</b></div>
+      <div class="profit-line"><span>贴标/本地化处理</span><b>0.9 RMB <span class="money-sub">原始 12 ₽</span></b></div>
       <div class="profit-line"><span>平台费</span><b>46.6 RMB · 40.0% <span class="money-sub">原始 596 ₽</span></b></div>
       <div class="profit-line"><span>仓费 + 管理</span><b>11.3 RMB <span class="money-sub">原始 144 ₽</span></b></div>
-      <div class="profit-line"><span>税费</span><b>8.4 RMB <span class="money-sub">原始 107 ₽</span></b></div>
+      <div class="profit-line"><span>税费</span><b>9.9 RMB <span class="money-sub">原始 127 ₽</span></b></div>
       <div class="profit-line"><span>破损赔付</span><b>3.5 RMB · 5.0% <span class="money-sub">原始 45 ₽</span></b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>80.8 RMB <span class="money-sub">原始 1,034 ₽</span></b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>72.1 RMB <span class="money-sub">原始 923 ₽</span></b></div>
       <div class="profit-result">
-        <strong>17.6 RMB <span class="money-sub">原始 226 ₽</span></strong>
-        <span>B 标准模型 · 净利率 15.9% · ROI 60.6%</span>
+        <strong>26.3 RMB <span class="money-sub">原始 336 ₽</span></strong>
+        <span>B 标准模型 · 不含到俄物流 · 净利率 23.7% · ROI 138.7%</span>
       </div>
       <div class="cost-ceiling">
-        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>26.3 RMB / 套</b></div>
-        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>21.7 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>35.0 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>30.3 RMB / 套</b></div>
       </div>
       <div class="profit-note">基础透明杯不打极限低价，花色版才是利润延展。</div>
     </article>
@@ -2954,19 +2958,20 @@ footer {
       <div class="unit-basis">计价单位：1 套 = 4 只。22 RMB 是整套预估采购价。</div>
       <div class="profit-price"><span>基准上架价</span><strong>140 RMB <span class="money-sub">原始 1,790 ₽</span></strong></div>
       <div class="profit-line"><span>预估采购价</span><b>22.0 RMB <span class="money-sub">原始 282 ₽</span></b></div>
-      <div class="profit-line"><span>到俄运费 + 贴标</span><b>11.1 RMB <span class="money-sub">原始 142 ₽</span></b></div>
+      <div class="profit-line"><span>到俄运费</span><b>未计入 · 待货代报价</b></div>
+      <div class="profit-line"><span>贴标/本地化处理</span><b>0.9 RMB <span class="money-sub">原始 12 ₽</span></b></div>
       <div class="profit-line"><span>平台费</span><b>55.9 RMB · 40.0% <span class="money-sub">原始 716 ₽</span></b></div>
       <div class="profit-line"><span>仓费 + 管理</span><b>13.1 RMB <span class="money-sub">原始 168 ₽</span></b></div>
-      <div class="profit-line"><span>税费</span><b>10.4 RMB <span class="money-sub">原始 133 ₽</span></b></div>
+      <div class="profit-line"><span>税费</span><b>11.9 RMB <span class="money-sub">原始 153 ₽</span></b></div>
       <div class="profit-line"><span>破损赔付</span><b>4.2 RMB · 5.0% <span class="money-sub">原始 54 ₽</span></b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>94.8 RMB <span class="money-sub">原始 1,213 ₽</span></b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>86.1 RMB <span class="money-sub">原始 1,102 ₽</span></b></div>
       <div class="profit-result">
-        <strong>23.1 RMB <span class="money-sub">原始 296 ₽</span></strong>
-        <span>B 标准模型 · 净利率 17.4% · ROI 69.8%</span>
+        <strong>31.7 RMB <span class="money-sub">原始 406 ₽</span></strong>
+        <span>B 标准模型 · 不含到俄物流 · 净利率 23.9% · ROI 138.3%</span>
       </div>
       <div class="cost-ceiling">
-        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>33.9 RMB / 套</b></div>
-        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>28.3 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>42.5 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>36.9 RMB / 套</b></div>
       </div>
       <div class="profit-note">400ml 以上更看重重量和仓配费，报价后需重算。</div>
     </article>
@@ -2980,19 +2985,20 @@ footer {
       <div class="unit-basis">计价单位：1 套 = 2 只。16 RMB 是整套预估采购价。</div>
       <div class="profit-price"><span>基准上架价</span><strong>116 RMB <span class="money-sub">原始 1,490 ₽</span></strong></div>
       <div class="profit-line"><span>预估采购价</span><b>16.0 RMB <span class="money-sub">原始 205 ₽</span></b></div>
-      <div class="profit-line"><span>到俄运费 + 贴标</span><b>11.1 RMB <span class="money-sub">原始 142 ₽</span></b></div>
+      <div class="profit-line"><span>到俄运费</span><b>未计入 · 待货代报价</b></div>
+      <div class="profit-line"><span>贴标/本地化处理</span><b>0.9 RMB <span class="money-sub">原始 12 ₽</span></b></div>
       <div class="profit-line"><span>平台费</span><b>44.2 RMB · 38.0% <span class="money-sub">原始 566 ₽</span></b></div>
       <div class="profit-line"><span>仓费 + 管理</span><b>11.0 RMB <span class="money-sub">原始 141 ₽</span></b></div>
-      <div class="profit-line"><span>税费</span><b>9.1 RMB <span class="money-sub">原始 116 ₽</span></b></div>
+      <div class="profit-line"><span>税费</span><b>10.6 RMB <span class="money-sub">原始 135 ₽</span></b></div>
       <div class="profit-line"><span>破损赔付</span><b>3.6 RMB · 5.0% <span class="money-sub">原始 46 ₽</span></b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>79.0 RMB <span class="money-sub">原始 1,011 ₽</span></b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>70.4 RMB <span class="money-sub">原始 900 ₽</span></b></div>
       <div class="profit-result">
-        <strong>21.4 RMB <span class="money-sub">原始 274 ₽</span></strong>
-        <span>B 标准模型 · 净利率 19.4% · ROI 79.1%</span>
+        <strong>30.1 RMB <span class="money-sub">原始 385 ₽</span></strong>
+        <span>B 标准模型 · 不含到俄物流 · 净利率 27.2% · ROI 177.4%</span>
       </div>
       <div class="cost-ceiling">
-        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>28.1 RMB / 套</b></div>
-        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>23.5 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>36.7 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>32.1 RMB / 套</b></div>
       </div>
       <div class="profit-note">适合复制 Ozon 验证款，不建议 WB 盲铺新款。</div>
     </article>
@@ -3006,19 +3012,20 @@ footer {
       <div class="unit-basis">计价单位：1 套 = 12 件。95 RMB 是整套预估采购价。</div>
       <div class="profit-price"><span>基准上架价</span><strong>437 RMB <span class="money-sub">原始 5,590 ₽</span></strong></div>
       <div class="profit-line"><span>预估采购价</span><b>95.0 RMB <span class="money-sub">原始 1,216 ₽</span></b></div>
-      <div class="profit-line"><span>到俄运费 + 贴标</span><b>11.1 RMB <span class="money-sub">原始 142 ₽</span></b></div>
+      <div class="profit-line"><span>到俄运费</span><b>未计入 · 待货代报价</b></div>
+      <div class="profit-line"><span>贴标/本地化处理</span><b>0.9 RMB <span class="money-sub">原始 12 ₽</span></b></div>
       <div class="profit-line"><span>平台费</span><b>174.7 RMB · 40.0% <span class="money-sub">原始 2,236 ₽</span></b></div>
       <div class="profit-line"><span>仓费 + 管理</span><b>31.3 RMB <span class="money-sub">原始 400 ₽</span></b></div>
-      <div class="profit-line"><span>税费</span><b>33.5 RMB <span class="money-sub">原始 429 ₽</span></b></div>
+      <div class="profit-line"><span>税费</span><b>35.1 RMB <span class="money-sub">原始 449 ₽</span></b></div>
       <div class="profit-line"><span>破损赔付</span><b>13.1 RMB · 5.0% <span class="money-sub">原始 168 ₽</span></b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>263.7 RMB <span class="money-sub">原始 3,375 ₽</span></b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>255.0 RMB <span class="money-sub">原始 3,264 ₽</span></b></div>
       <div class="profit-result">
-        <strong>78.1 RMB <span class="money-sub">原始 999 ₽</span></strong>
-        <span>B 标准模型 · 净利率 18.8% · ROI 73.6%</span>
+        <strong>86.7 RMB <span class="money-sub">原始 1,110 ₽</span></strong>
+        <span>B 标准模型 · 不含到俄物流 · 净利率 20.9% · ROI 90.4%</span>
       </div>
       <div class="cost-ceiling">
-        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>138.1 RMB / 套</b></div>
-        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>120.6 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>146.8 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>129.3 RMB / 套</b></div>
       </div>
       <div class="profit-note">高客单能摊薄履约成本，但内托和跌落测试必须先过。</div>
     </article>
@@ -3032,25 +3039,26 @@ footer {
       <div class="unit-basis">计价单位：1 套 = 1 壶 6 杯。82 RMB 是整套预估采购价。</div>
       <div class="profit-price"><span>基准上架价</span><strong>366 RMB <span class="money-sub">原始 4,690 ₽</span></strong></div>
       <div class="profit-line"><span>预估采购价</span><b>82.0 RMB <span class="money-sub">原始 1,050 ₽</span></b></div>
-      <div class="profit-line"><span>到俄运费 + 贴标</span><b>11.1 RMB <span class="money-sub">原始 142 ₽</span></b></div>
+      <div class="profit-line"><span>到俄运费</span><b>未计入 · 待货代报价</b></div>
+      <div class="profit-line"><span>贴标/本地化处理</span><b>0.9 RMB <span class="money-sub">原始 12 ₽</span></b></div>
       <div class="profit-line"><span>平台费</span><b>146.6 RMB · 40.0% <span class="money-sub">原始 1,876 ₽</span></b></div>
       <div class="profit-line"><span>仓费 + 管理</span><b>31.1 RMB <span class="money-sub">原始 398 ₽</span></b></div>
-      <div class="profit-line"><span>税费</span><b>26.8 RMB <span class="money-sub">原始 343 ₽</span></b></div>
+      <div class="profit-line"><span>税费</span><b>28.3 RMB <span class="money-sub">原始 362 ₽</span></b></div>
       <div class="profit-line"><span>破损赔付</span><b>11.0 RMB · 5.0% <span class="money-sub">原始 141 ₽</span></b></div>
-      <div class="profit-line"><span>非货成本合计</span><b>226.6 RMB <span class="money-sub">原始 2,900 ₽</span></b></div>
+      <div class="profit-line"><span>非货成本合计</span><b>217.9 RMB <span class="money-sub">原始 2,789 ₽</span></b></div>
       <div class="profit-result">
-        <strong>57.9 RMB <span class="money-sub">原始 741 ₽</span></strong>
-        <span>B 标准模型 · 净利率 16.6% · ROI 62.2%</span>
+        <strong>66.5 RMB <span class="money-sub">原始 851 ₽</span></strong>
+        <span>B 标准模型 · 不含到俄物流 · 净利率 19.1% · ROI 80.2%</span>
       </div>
       <div class="cost-ceiling">
-        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>110.6 RMB / 套</b></div>
-        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>95.9 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 8% 净利率，采购价上限</span><b>119.2 RMB / 套</b></div>
+        <div class="ceiling-row"><span>保 12% 净利率，采购价上限</span><b>104.5 RMB / 套</b></div>
       </div>
       <div class="profit-note">Yandex 费率压力高，只适合成熟礼品款补充曝光。</div>
     </article>
     </div>
     <div class="evidence-note" style="margin-top:26px;">
-      这些数与 A/B/C 损益模型保持同口径：每个 SKU 的采购价、售价、平台费、仓费和管理费都按“上架销售单位”计算。也就是说，6 只装按整套算，L12 按整套 12 件算，壶杯套装按整套算。正式版本要替换真实工厂报价、外箱尺寸、毛重、平台仓费、破损率和税务主体方案。
+      这些数与 A/B/C 损益模型保持同口径：每个 SKU 的采购价、售价、平台费、仓费和管理费都按“上架销售单位”计算。也就是说，6 只装按整套算，L12 按整套 12 件算，壶杯套装按整套算。当前版本不含中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用；正式版本要替换真实工厂报价、外箱尺寸、毛重、货代报价、平台仓费、破损率和税务主体方案。
     </div>
   </div>
 </section>
@@ -3070,38 +3078,38 @@ footer {
       <div class="investment-tag">Scenario A · 保守试水</div>
       <div class="investment-name">Conservative</div>
       <div class="investment-amount">78-141 万 RMB</div>
-      <div class="investment-line"><span>样品 / 包装 / 跌落测试</span><b>5-8 万</b></div><div class="investment-line"><span>俄文内容 / 拍摄素材</span><b>5-8 万</b></div><div class="investment-line"><span>认证 / 标签 / 合规</span><b>8-15 万</b></div><div class="investment-line"><span>首批库存采购</span><b>25-45 万</b></div><div class="investment-line"><span>头程清关入仓</span><b>15-25 万</b></div><div class="investment-line"><span>广告测款预算</span><b>10-20 万</b></div><div class="investment-line"><span>破损与现金流储备</span><b>10-20 万</b></div>
-      <div class="investment-foot"><b>500-800 万 RMB</b><span>第一年销售目标 · 以 Ozon 测款为主，不追求当年完整回本，目标是跑出 8-12 个稳定 SKU。</span></div>
+      <div class="investment-line"><span>样品 / 包装 / 跌落测试</span><b>5-8 万</b></div><div class="investment-line"><span>俄文内容 / 拍摄素材</span><b>5-8 万</b></div><div class="investment-line"><span>认证 / 标签 / 合规</span><b>8-15 万</b></div><div class="investment-line"><span>首批库存采购</span><b>25-45 万</b></div><div class="investment-line"><span>头程清关入仓（待报价，非SKU利润内置成本）</span><b>15-25 万</b></div><div class="investment-line"><span>广告测款预算</span><b>10-20 万</b></div><div class="investment-line"><span>破损与现金流储备</span><b>10-20 万</b></div>
+      <div class="investment-foot"><b>500-800 万 RMB</b><span>第一年销售目标 · 以 Ozon 测款为主，不追求当年完整回本，目标是跑出 8-12 个稳定 SKU；当前不含到俄运费。</span></div>
       <a class="model-entry" href="../?project=deli-glass-russia-22sku-conservative-project.json" target="_blank" rel="noopener">打开 A 模型 →</a>
     </article>
     <article class="investment-card featured">
       <div class="investment-tag">Scenario B · 标准启动 · 推荐</div>
       <div class="investment-name">Standard</div>
       <div class="investment-amount">171-312 万 RMB</div>
-      <div class="investment-line"><span>样品 / 包装 / 跌落测试</span><b>8-15 万</b></div><div class="investment-line"><span>俄文内容 / 拍摄素材</span><b>8-12 万</b></div><div class="investment-line"><span>认证 / 标签 / 合规</span><b>15-25 万</b></div><div class="investment-line"><span>首批库存采购</span><b>60-100 万</b></div><div class="investment-line"><span>头程清关入仓</span><b>30-60 万</b></div><div class="investment-line"><span>广告测款预算</span><b>25-50 万</b></div><div class="investment-line"><span>破损与现金流储备</span><b>25-50 万</b></div>
-      <div class="investment-foot"><b>1,500-2,500 万 RMB</b><span>第一年销售目标 · Ozon 跑通后 WB 跟进，贡献利润率按 8%-12% 做场景测算。</span></div>
+      <div class="investment-line"><span>样品 / 包装 / 跌落测试</span><b>8-15 万</b></div><div class="investment-line"><span>俄文内容 / 拍摄素材</span><b>8-12 万</b></div><div class="investment-line"><span>认证 / 标签 / 合规</span><b>15-25 万</b></div><div class="investment-line"><span>首批库存采购</span><b>60-100 万</b></div><div class="investment-line"><span>头程清关入仓（待报价，非SKU利润内置成本）</span><b>30-60 万</b></div><div class="investment-line"><span>广告测款预算</span><b>25-50 万</b></div><div class="investment-line"><span>破损与现金流储备</span><b>25-50 万</b></div>
+      <div class="investment-foot"><b>1,500-2,500 万 RMB</b><span>第一年销售目标 · Ozon 跑通后 WB 跟进，贡献利润率按 8%-12% 做场景测算，暂不含到俄运费。</span></div>
       <a class="model-entry" href="../?project=deli-glass-russia-22sku-standard-project.json" target="_blank" rel="noopener">打开 B 模型 →</a>
     </article>
     <article class="investment-card">
       <div class="investment-tag">Scenario C · 进取放量</div>
       <div class="investment-name">Aggressive</div>
       <div class="investment-amount">442-755 万 RMB</div>
-      <div class="investment-line"><span>样品 / 包装 / 跌落测试</span><b>15-25 万</b></div><div class="investment-line"><span>俄文内容 / 拍摄素材</span><b>12-20 万</b></div><div class="investment-line"><span>认证 / 标签 / 合规</span><b>25-40 万</b></div><div class="investment-line"><span>首批库存采购</span><b>150-250 万</b></div><div class="investment-line"><span>头程清关入仓</span><b>80-150 万</b></div><div class="investment-line"><span>广告测款预算</span><b>80-150 万</b></div><div class="investment-line"><span>破损与现金流储备</span><b>80-120 万</b></div>
-      <div class="investment-foot"><b>4,000-6,000 万 RMB</b><span>第一年销售目标 · 需要稳定供应、包装升级、广告预算和多平台放量，要求工厂提供更深合作支持。</span></div>
+      <div class="investment-line"><span>样品 / 包装 / 跌落测试</span><b>15-25 万</b></div><div class="investment-line"><span>俄文内容 / 拍摄素材</span><b>12-20 万</b></div><div class="investment-line"><span>认证 / 标签 / 合规</span><b>25-40 万</b></div><div class="investment-line"><span>首批库存采购</span><b>150-250 万</b></div><div class="investment-line"><span>头程清关入仓（待报价，非SKU利润内置成本）</span><b>80-150 万</b></div><div class="investment-line"><span>广告测款预算</span><b>80-150 万</b></div><div class="investment-line"><span>破损与现金流储备</span><b>80-120 万</b></div>
+      <div class="investment-foot"><b>4,000-6,000 万 RMB</b><span>第一年销售目标 · 需要稳定供应、包装升级、广告预算和多平台放量，要求工厂提供更深合作支持；当前不含到俄运费。</span></div>
       <a class="model-entry" href="../?project=deli-glass-russia-22sku-aggressive-project.json" target="_blank" rel="noopener">打开 C 模型 →</a>
     </article>
     </div>
     <div class="model-grid">
       <div class="model-panel">
         <h3>三套损益模型入口</h3>
-        <p>方案页的三档投资不是概念卡片，已同步成可打开的 A / B / C 损益表。模型里包含 22 SKU 建档验证、分层补货、月度售价排期、平台费随售价联动，以及 one-time 启动费用扣减。</p>
+        <p>方案页的三档投资不是概念卡片，已同步成可打开的 A / B / C 损益表。模型里包含 22 SKU 建档验证、分层补货、月度售价排期、平台费随售价联动，以及 one-time 启动费用扣减；当前版本不含到俄头程/清关/入仓费用。</p>
       </div>
       <div class="model-list">
-        <a href="../?project=deli-glass-russia-22sku-conservative-project.json" target="_blank" rel="noopener"><strong>Scenario A · 保守试水</strong><span>以 Ozon 测款为主，不追求当年完整回本，目标是跑出 8-12 个稳定 SKU。</span><b>打开 A 模型</b></a><a href="../?project=deli-glass-russia-22sku-standard-project.json" target="_blank" rel="noopener"><strong>Scenario B · 标准启动</strong><span>Ozon 跑通后 WB 跟进，贡献利润率按 8%-12% 做场景测算。</span><b>打开 B 模型</b></a><a href="../?project=deli-glass-russia-22sku-aggressive-project.json" target="_blank" rel="noopener"><strong>Scenario C · 进取放量</strong><span>需要稳定供应、包装升级、广告预算和多平台放量，要求工厂提供更深合作支持。</span><b>打开 C 模型</b></a>
+        <a href="../?project=deli-glass-russia-22sku-conservative-project.json" target="_blank" rel="noopener"><strong>Scenario A · 保守试水</strong><span>以 Ozon 测款为主，不追求当年完整回本，目标是跑出 8-12 个稳定 SKU；当前不含到俄运费。</span><b>打开 A 模型</b></a><a href="../?project=deli-glass-russia-22sku-standard-project.json" target="_blank" rel="noopener"><strong>Scenario B · 标准启动</strong><span>Ozon 跑通后 WB 跟进，贡献利润率按 8%-12% 做场景测算，暂不含到俄运费。</span><b>打开 B 模型</b></a><a href="../?project=deli-glass-russia-22sku-aggressive-project.json" target="_blank" rel="noopener"><strong>Scenario C · 进取放量</strong><span>需要稳定供应、包装升级、广告预算和多平台放量，要求工厂提供更深合作支持；当前不含到俄运费。</span><b>打开 C 模型</b></a>
       </div>
     </div>
     <div class="evidence-note" style="margin-top:26px;">
-      标准启动 171-312 万中，库存、头程和现金流储备属于滚动占用资金，不是一次性亏损；样品、内容、认证和广告属于启动消耗。若工厂支持样品、包装开发、破损补偿、账期或返利，现金投入可下降。
+      标准启动 171-312 万中，库存和现金流储备属于滚动占用资金，不是一次性亏损；头程清关入仓为待报价预算项，不进入当前 SKU 利润模型；样品、内容、认证和广告属于启动消耗。若工厂支持样品、包装开发、破损补偿、账期或返利，现金投入可下降。
     </div>
   </div>
 </section>

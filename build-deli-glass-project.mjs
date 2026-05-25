@@ -155,7 +155,7 @@ const project = {
     exchangeRate,
     usdRate: 95,
     damageRate: 0.05,
-    shippingPerUnit: 130,
+    shippingPerUnit: 0,
     labelingPerUnit: 12,
     grayShipPrice: 0,
     whiteShipPrice: 0,
@@ -183,13 +183,16 @@ const project = {
     "竞品买家价约 500 RUB 时，卖家标价可按约 714-999 RUB 反推。",
     "platformFee 为平台佣金、履约、促销和广告折让的综合扣减项；本版按 38%-42% 测款口径。",
     "本版已加入月度售价排期：M1-M2 冷启动低价获取点击和评价，M3-M4 逐步恢复，M5-M8 回到正常卖家价，M9-M12 结合旺季和评价资产小幅提价；平台费随售价联动。",
+    "当前 A/B/C 模型为不含到俄运费版本：未计入中国至俄罗斯头程、出口报关、俄罗斯清关、保险、尾程派送和平台仓入仓费用；待工厂与货代报价后重算。",
+    "labelingPerUnit 仅代表贴标/本地化处理费，仍单独保留；shippingPerUnit 当前故意留空为 0，不参与利润测算。",
     "经营净利不含 oneTimeCosts；项目净利和现金流已扣除 oneTimeCosts。",
     "本版采用建档验证 + 二次备货口径：scale SKU 多次补货，watch SKU 只允许一次小补货，validate SKU 只做最低 MOQ/样品验证，不默认补货。",
     "validate SKU 不是预测卖不了，而是用于验证搜索需求、破损风险、价格天花板和是否值得进入第二批。",
     "本版备货量等于 12 个月计划销售量，不额外压尾货；5% 破损率在收入端扣减。",
     "首批投测按标准启动情景：Ozon 测款，形成 8-12 个稳定 SKU 后复制到 WB。",
     standardDef.note,
-    "未取得工厂正式报价、装箱尺寸、毛重与跌落测试前，本项目为测算版。",
+    "计算到俄物流前，需取得每个销售单位毛重、销售单位包装尺寸、外箱尺寸、外箱毛重、每箱套数、交货条件（EXW/FOB/FCA）、运输路线、清关/VAT/保险/尾程/平台仓预约是否包含、入仓城市和运输破损责任规则。",
+    "未取得工厂正式报价、装箱尺寸、毛重、货代报价与跌落测试前，本项目为测算版。",
   ],
 };
 
@@ -264,6 +267,7 @@ p{line-height:1.7;color:#5d5145}
 <main>
 <h1>德力玻璃俄罗斯电商 · 三种损益模型</h1>
 <p>三套模型都已加入月度售价排期和平台费联动：前期低价获取点击和评价，中期恢复正常价，后期结合旺季与评价资产小幅提价。</p>
+<p><strong>当前为不含到俄运费版本：</strong>未计入中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用；仅保留贴标/本地化处理费。到俄物流需等工厂装箱参数和货代报价后重算。</p>
 ${scenarioDefinitions.map((definition) => `<section class="card"><h2>${definition.scenarioLabel}</h2><p>${definition.note}</p><a href="${makeProjectUrl(definition)}">打开 ${definition.scenarioLabel} 损益表</a></section>`).join("\n")}
 </main>
 </html>`;
