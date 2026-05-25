@@ -25,16 +25,16 @@ RUB_PER_RMB = 12.8
 
 
 CATEGORY_LABELS = [
-    ("Стакан", "水杯 / 玻璃杯", "核心竞品"),
-    ("Бокал", "高脚杯 / 酒杯", "核心竞品"),
+    ("Стакан", "水杯 / 玻璃杯", "透明玻璃款"),
+    ("Бокал", "高脚杯 / 酒杯", "透明玻璃款"),
     ("Крышка для кружки, чашки, стакана", "杯盖 / 配件", "配件误差"),
     ("Посуда для чайных церемоний", "茶道器具", "参考观察"),
-    ("Чайник заварочный", "玻璃茶壶", "核心竞品"),
+    ("Чайник заварочный", "玻璃茶壶", "透明玻璃款"),
     ("Кувшин", "水壶 / 冷水壶", "重点观察"),
-    ("Сахарница", "糖罐 / 调料罐", "核心竞品"),
+    ("Сахарница", "糖罐 / 调料罐", "透明玻璃款"),
     ("Пепельница", "烟缸", "边界测试"),
     ("Аэратор для вина", "葡萄酒醒酒配件", "参考观察"),
-    ("Графин", "分酒器 / 水壶", "核心竞品"),
+    ("Графин", "分酒器 / 水壶", "透明玻璃款"),
     ("Чашка", "杯 / 咖啡茶杯", "部分相关"),
     ("Декантер", "醒酒器", "重点观察"),
 ]
@@ -146,9 +146,9 @@ def product_focus(title: str, category: str, status_class: str) -> tuple[str, st
     if category in SIDE_OBSERVATION_CATEGORIES:
         return "side", "旁类观察"
     if status_class == "direct" and category in CORE_GLASS_CATEGORIES:
-        return "core", "透明玻璃竞品"
+        return "core", "透明玻璃款"
     if "стекл" in text and category in CORE_GLASS_CATEGORIES:
-        return "core", "透明玻璃竞品"
+        return "core", "透明玻璃款"
     if status_class == "direct":
         return "adjacent", "玻璃相关"
     return "side", "旁类观察"
@@ -322,7 +322,7 @@ def render(sections: list[dict]) -> str:
         for section in sections
     )
     nav_html = (
-        f'<button class="nav-pill active" data-category="core"><b>透明玻璃核心</b>'
+        f'<button class="nav-pill active" data-category="core"><b>透明玻璃款</b>'
         f'<span>{len(core_items)} 款</span></button>'
         + nav_html
     )
@@ -330,8 +330,8 @@ def render(sections: list[dict]) -> str:
         <section class="cat-section core-wall" id="core-glass" data-section-kind="core" data-category="core">
           <div class="cat-head">
             <div>
-              <div class="eyebrow">MAIN COMPETITORS · 只看德力最相关的透明玻璃</div>
-              <h2>透明玻璃核心竞品</h2>
+              <div class="eyebrow">MAIN GLASS ITEMS · 只看德力最相关的透明玻璃款</div>
+              <h2>透明玻璃款</h2>
               <p>这里不再平均展示所有类目，而是把水杯、高脚杯、玻璃茶壶、水壶、分酒器、醒酒器、糖罐等与德力产品线直接相关的透明玻璃款集中放前面。杯盖、烟缸、硅胶、金属、陶瓷茶具只放到后面的旁类观察。</p>
             </div>
             <div class="cat-stats">
@@ -393,10 +393,10 @@ header{{padding:34px 0 28px;border-bottom:1px solid var(--line);position:sticky;
   <div class="wrap hero">
     <h1>先看透明玻璃，<br>再看旁类趋势。</h1>
     <p class="lead">这个页面专门承接 Ozon 竞品。默认只展示和德力最相关的透明玻璃商品；热卖商品价格按买家价 / 活动价口径展示，反推平台标价按“买家价 ÷ 0.7 到 ÷ 0.5”估算。没有核准到商品 ID 的图片不使用替图，只保留 Ozon 链接和数据。</p>
-    <div class="summary"><div><b>{len(core_items)}</b><span>款透明玻璃核心竞品</span></div><div><b>{len(all_items)}</b><span>款全量热卖样本</span></div><div><b>{verified_images}</b><span>张已核准主图</span></div><div><b>{side_count}</b><span>款旁类观察样本</span></div></div>
-    <div class="notice"><b>展示逻辑已经收窄</b><ul><li><b>核心竞品</b>：水杯、高脚杯、玻璃茶壶、水壶、分酒器、醒酒器、糖罐、透明玻璃杯。</li><li><b>旁类观察</b>：杯盖、烟缸、硅胶、金属、陶瓷茶具等只用来观察平台内容与价格打法，不作为德力透明玻璃的直接竞品。</li><li><b>数据缺口</b>：当前 Excel 未提供真正的马克杯 28 天热卖榜；现有“Кружки28天热卖”实际是杯盖配件。</li></ul></div>
+    <div class="summary"><div><b>{len(core_items)}</b><span>个透明玻璃款样本</span></div><div><b>{len(all_items)}</b><span>款全量热卖样本</span></div><div><b>{verified_images}</b><span>张已核准主图</span></div><div><b>{side_count}</b><span>款旁类观察样本</span></div></div>
+    <div class="notice"><b>展示逻辑已经收窄</b><ul><li><b>透明玻璃款</b>：水杯、高脚杯、玻璃茶壶、水壶、分酒器、醒酒器、糖罐、透明玻璃杯。</li><li><b>旁类观察</b>：杯盖、烟缸、硅胶、金属、陶瓷茶具等只用来观察平台内容与价格打法，不作为德力透明玻璃款的直接对标样本。</li><li><b>数据缺口</b>：当前 Excel 未提供真正的马克杯 28 天热卖榜；现有“Кружки28天热卖”实际是杯盖配件。</li></ul></div>
   </div>
-  <div class="toolbar"><div class="wrap"><div class="tools"><input id="q" placeholder="搜索商品、品牌、卖家，例如 Pasabahce / ThermoGlass / 玻璃茶壶"><div class="filters"><button class="active" data-filter="core">透明玻璃核心</button><button data-filter="all">全部类目</button><button data-filter="side">旁类观察</button><button data-filter="direct">直接玻璃</button><button data-filter="img">已有主图</button></div></div><nav class="nav">{nav_html}</nav></div></div>
+  <div class="toolbar"><div class="wrap"><div class="tools"><input id="q" placeholder="搜索商品、品牌、卖家，例如 Pasabahce / ThermoGlass / 玻璃茶壶"><div class="filters"><button class="active" data-filter="core">透明玻璃款</button><button data-filter="all">全部类目</button><button data-filter="side">旁类观察</button><button data-filter="direct">直接玻璃</button><button data-filter="img">已有主图</button></div></div><nav class="nav">{nav_html}</nav></div></div>
   <div class="wrap">{core_html}{section_html}</div>
 </main>
 <footer><div class="wrap">数据来源：重庆得力玻璃类目趋势.xlsx · Ozon 28 天热卖商品榜 · 人民币折算按 1 RMB = 12.8 RUB。图片口径：只展示本地已按 Ozon 商品 ID 命名并与链接匹配的素材。</div></footer>
