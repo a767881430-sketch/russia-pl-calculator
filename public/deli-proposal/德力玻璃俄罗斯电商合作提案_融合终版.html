@@ -498,6 +498,23 @@ h2 {
   color: var(--paper);
   background: rgba(227, 167, 111, .12);
 }
+.section-jump a.link-out {
+  color: var(--ink);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--copper-2), var(--copper));
+  font-weight: 700;
+  box-shadow: 0 12px 30px rgba(201, 131, 66, .22);
+}
+.section-jump a.link-out::after {
+  content: "↗";
+  margin-left: 8px;
+  font-family: var(--font-mono);
+}
+.section-jump a.link-out:hover {
+  color: var(--ink);
+  background: linear-gradient(135deg, #ffd1a1, var(--copper-2));
+  transform: translateY(-1px);
+}
 .scatter-wrap {
   margin: 0 0 36px;
   border: 1px solid var(--line);
@@ -998,20 +1015,27 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
+  width: 100%;
+  min-height: 42px;
   margin: 0 0 12px;
-  padding: 9px 12px;
-  border: 1px solid rgba(227, 167, 111, 0.36);
-  color: var(--copper-2);
+  padding: 11px 14px;
+  border: 0;
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--copper-2), var(--copper));
   text-decoration: none;
   font-family: var(--font-mono);
   font-size: 10px;
+  font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
+  box-shadow: 0 10px 26px rgba(201, 131, 66, .18);
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
 }
 .ozon-link:hover {
-  background: rgba(227, 167, 111, 0.08);
-  color: var(--paper);
+  background: linear-gradient(135deg, #ffd1a1, var(--copper-2));
+  color: var(--ink);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(201, 131, 66, .28);
 }
 .price-note {
   margin-top: 14px;
@@ -1552,21 +1576,32 @@ h2 {
 }
 .model-entry {
   margin-top: 16px;
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  border: 1px solid rgba(201, 131, 66, .58);
-  padding: 10px 12px;
-  color: var(--copper-2);
+  min-height: 46px;
+  border: 0;
+  padding: 12px 16px;
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--copper-2), var(--copper));
   text-decoration: none;
   font-family: var(--font-mono);
   font-size: 10px;
+  font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
+  box-shadow: 0 14px 32px rgba(201, 131, 66, .22);
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
 }
 .model-entry:hover {
-  background: rgba(201, 131, 66, .12);
-  color: var(--paper);
+  background: linear-gradient(135deg, #ffd1a1, var(--copper-2));
+  color: var(--ink);
+  transform: translateY(-1px);
+  box-shadow: 0 18px 42px rgba(201, 131, 66, .34);
+}
+.investment-card.featured .model-entry {
+  box-shadow: 0 18px 46px rgba(227, 167, 111, .34);
 }
 .model-grid {
   display: grid;
@@ -1591,19 +1626,32 @@ h2 {
 }
 .model-list {
   background: var(--ink-1);
-  padding: 14px 24px;
+  padding: 18px 22px;
 }
 .model-list a {
   display: grid;
   grid-template-columns: 150px 1fr auto;
   gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 12px;
+  padding: 16px;
+  border: 1px solid rgba(227, 167, 111, .22);
+  background: rgba(255,255,255,.025);
   text-decoration: none;
   color: var(--paper-2);
   align-items: center;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
 }
-.model-list a:last-child { border-bottom: 0; }
+.model-list a:last-child { margin-bottom: 0; }
+.model-list a:hover {
+  transform: translateY(-1px);
+  border-color: rgba(227, 167, 111, .6);
+  background: linear-gradient(135deg, rgba(201, 131, 66, .16), rgba(255,255,255,.03));
+  box-shadow: 0 16px 36px rgba(0,0,0,.18);
+}
+.model-list a.primary-model {
+  border-color: rgba(227, 167, 111, .62);
+  background: linear-gradient(135deg, rgba(201, 131, 66, .22), rgba(21, 18, 15, .88));
+}
 .model-list strong {
   color: var(--paper);
   font-family: var(--font-serif);
@@ -1613,12 +1661,19 @@ h2 {
   font-size: 12px;
 }
 .model-list b {
-  color: var(--copper-2);
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--copper-2), var(--copper));
   font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .terms-grid,
 .roadmap-grid {
@@ -2703,7 +2758,7 @@ footer {
       <a href="#competitor-reference">参考主图样本</a>
       <a href="#seller-read">卖家和品牌总结</a>
       <a href="#profit">单品利润模型</a>
-      <a href="ozon-competitors.html" target="_blank" rel="noopener noreferrer">透明玻璃款样本库</a>
+      <a class="link-out" href="ozon-competitors.html" target="_blank" rel="noopener noreferrer">打开透明玻璃款样本库</a>
     </div>
     <div class="evidence-note" style="margin-bottom:26px;">
       主提案页只保留图片与 Ozon 商品 ID、商品链接三者能对上的透明玻璃款；更多水杯、高脚杯、玻璃茶壶、水壶、分酒器和醒酒器样本请打开透明玻璃款样本库。杯盖、烟缸、硅胶、金属、陶瓷茶具只作为旁类观察，不作为德力透明玻璃款的直接对标样本。
@@ -2722,7 +2777,7 @@ footer {
           <div><b>39 RMB</b><span>买家价 / 原始 501 ₽</span></div>
           <div><b>Pasabahce</b><span>品牌</span></div>
         </div>
-        <a class="ozon-link" href="https://www.ozon.ru/product/nabor-stakanov-pasabahce-valse-dlya-vody-soka-kokteyley-290-ml-steklo-6-sht-144052235/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <a class="ozon-link" href="https://www.ozon.ru/product/nabor-stakanov-pasabahce-valse-dlya-vody-soka-kokteyley-290-ml-steklo-6-sht-144052235/" target="_blank" rel="noopener noreferrer">查看 Ozon 原页面 ↗</a>
         <div class="price-note">反推平台标价：56-78 RMB（原始 716-1,002 ₽）。用于选品和利润模型时，以类目价格区间或正常平台标价为准，不直接用买家价。</div>
         <div class="competitor-note">页面出现约 0.08 RMB 的极低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：Ozon</div>
       </div>
@@ -2740,7 +2795,7 @@ footer {
           <div><b>16 RMB</b><span>买家价 / 原始 211 ₽</span></div>
           <div><b>без бренда</b><span>品牌</span></div>
         </div>
-        <a class="ozon-link" href="https://www.ozon.ru/product/pivnaya-kruzhka-sssr-obem-500-ml-nostalgiya-726322189/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <a class="ozon-link" href="https://www.ozon.ru/product/pivnaya-kruzhka-sssr-obem-500-ml-nostalgiya-726322189/" target="_blank" rel="noopener noreferrer">查看 Ozon 原页面 ↗</a>
         <div class="price-note">反推平台标价：24-33 RMB（原始 301-422 ₽）。用于选品和利润模型时，以类目价格区间或正常平台标价为准，不直接用买家价。</div>
         <div class="competitor-note">客单价高，但破损敏感，必须靠包装和跌落测试兜底。<br>卖家：Сима-Ленд - Посуда и Хозтовары</div>
       </div>
@@ -2758,7 +2813,7 @@ footer {
           <div><b>18 RMB</b><span>买家价 / 原始 228 ₽</span></div>
           <div><b>THERMOGLASS</b><span>品牌</span></div>
         </div>
-        <a class="ozon-link" href="https://www.ozon.ru/product/chaynik-steklyannyy-zavarochnyy-bochonok-900-ml-thermoglass-s-bambukovoy-kryshkoy-3215661470/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <a class="ozon-link" href="https://www.ozon.ru/product/chaynik-steklyannyy-zavarochnyy-bochonok-900-ml-thermoglass-s-bambukovoy-kryshkoy-3215661470/" target="_blank" rel="noopener noreferrer">查看 Ozon 原页面 ↗</a>
         <div class="price-note">反推平台标价：25-36 RMB（原始 326-456 ₽）。用于选品和利润模型时，以类目价格区间或正常平台标价为准，不直接用买家价。</div>
         <div class="competitor-note">页面出现约 0.08 RMB 的极低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：ThermoGlass</div>
       </div>
@@ -2776,7 +2831,7 @@ footer {
           <div><b>20 RMB</b><span>买家价 / 原始 251 ₽</span></div>
           <div><b>без бренда</b><span>品牌</span></div>
         </div>
-        <a class="ozon-link" href="https://www.ozon.ru/product/kuvshin-3-5-l-2236851079/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <a class="ozon-link" href="https://www.ozon.ru/product/kuvshin-3-5-l-2236851079/" target="_blank" rel="noopener noreferrer">查看 Ozon 原页面 ↗</a>
         <div class="price-note">反推平台标价：28-39 RMB（原始 359-502 ₽）。用于选品和利润模型时，以类目价格区间或正常平台标价为准，不直接用买家价。</div>
         <div class="competitor-note">大件高客单，核心变量是壶嘴破损和外箱体积。<br>卖家：Восход Гранд Универмаг</div>
       </div>
@@ -2794,7 +2849,7 @@ footer {
           <div><b>18 RMB</b><span>买家价 / 原始 232 ₽</span></div>
           <div><b>VOSC</b><span>品牌</span></div>
         </div>
-        <a class="ozon-link" href="https://www.ozon.ru/product/saharnitsa-s-kryshkoy-i-lozhkoy-iz-bambuka-steklyannaya-banochka-dlya-spetsiy-i-drugih-1633412490/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <a class="ozon-link" href="https://www.ozon.ru/product/saharnitsa-s-kryshkoy-i-lozhkoy-iz-bambuka-steklyannaya-banochka-dlya-spetsiy-i-drugih-1633412490/" target="_blank" rel="noopener noreferrer">查看 Ozon 原页面 ↗</a>
         <div class="price-note">反推平台标价：26-36 RMB（原始 331-464 ₽）。用于选品和利润模型时，以类目价格区间或正常平台标价为准，不直接用买家价。</div>
         <div class="competitor-note">页面出现约 0.08 RMB 的极低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：VOSC</div>
       </div>
@@ -2812,7 +2867,7 @@ footer {
           <div><b>75 RMB</b><span>买家价 / 原始 958 ₽</span></div>
           <div><b>DELISOGA</b><span>品牌</span></div>
         </div>
-        <a class="ozon-link" href="https://www.ozon.ru/product/grafin-dlya-vody-2-6-l-steklyannyy-kuvshin-dlya-vody-s-filtrom-chaynik-zavarochnyy-steklyannyy-1659045634/" target="_blank" rel="noopener noreferrer">打开 Ozon 页面 ↗</a>
+        <a class="ozon-link" href="https://www.ozon.ru/product/grafin-dlya-vody-2-6-l-steklyannyy-kuvshin-dlya-vody-s-filtrom-chaynik-zavarochnyy-steklyannyy-1659045634/" target="_blank" rel="noopener noreferrer">查看 Ozon 原页面 ↗</a>
         <div class="price-note">反推平台标价：107-150 RMB（原始 1,369-1,916 ₽）。用于选品和利润模型时，以类目价格区间或正常平台标价为准，不直接用买家价。</div>
         <div class="competitor-note">页面出现约 0.08 RMB 的极低价，按活动价或页面展示价处理，不进入正常利润基准。<br>卖家：Регент Рус</div>
       </div>
@@ -3369,7 +3424,7 @@ footer {
         <p>方案页的三档投资不是概念卡片，已整理成可打开的 A / B / C 损益模型入口。模型里包含 22 个产品建档试卖、分层补货、月度售价排期、淡旺季销量曲线、平台综合成本随售价联动，以及一次性启动费用扣减；当前版本不含到俄头程/清关/入仓和贴标/本地化费用。</p>
       </div>
       <div class="model-list">
-        <a href="ABC利润模型/ABC模型入口.html#model-a" target="_blank" rel="noopener"><strong>A 模型 · 保守试水</strong><span>以 Ozon 测款为主，不追求当年完整回本，目标是跑出 8-12 个稳定款；当前不含到俄运费。</span><b>打开 A 模型</b></a><a href="ABC利润模型/ABC模型入口.html#model-b" target="_blank" rel="noopener"><strong>B 模型 · 标准启动</strong><span>Ozon 跑通后 WB 跟进，贡献利润率按 8%-12% 做场景测算，暂不含到俄运费。</span><b>打开 B 模型</b></a><a href="ABC利润模型/ABC模型入口.html#model-c" target="_blank" rel="noopener"><strong>C 模型 · 进取放量</strong><span>需要稳定供应、包装升级、广告预算和多平台放量，要求工厂提供更深合作支持；当前不含到俄运费。</span><b>打开 C 模型</b></a>
+        <a href="ABC利润模型/ABC模型入口.html#model-a" target="_blank" rel="noopener"><strong>A 模型 · 保守试水</strong><span>以 Ozon 测款为主，不追求当年完整回本，目标是跑出 8-12 个稳定款；当前不含到俄运费。</span><b>打开 A 模型</b></a><a class="primary-model" href="ABC利润模型/ABC模型入口.html#model-b" target="_blank" rel="noopener"><strong>B 模型 · 标准启动</strong><span>Ozon 跑通后 WB 跟进，贡献利润率按 8%-12% 做场景测算，暂不含到俄运费。</span><b>打开推荐模型</b></a><a href="ABC利润模型/ABC模型入口.html#model-c" target="_blank" rel="noopener"><strong>C 模型 · 进取放量</strong><span>需要稳定供应、包装升级、广告预算和多平台放量，要求工厂提供更深合作支持；当前不含到俄运费。</span><b>打开 C 模型</b></a>
       </div>
     </div>
     <div class="evidence-note" style="margin-top:26px;">
