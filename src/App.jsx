@@ -233,9 +233,31 @@ const distributeEvenly = (total, n) => {
   return Array.from({ length: n }, (_, i) => base + (i < rem ? 1 : 0));
 };
 
+const seasonalWeightsFor = (n) => {
+  const annual = [0.03, 0.04, 0.05, 0.06, 0.06, 0.07, 0.08, 0.08, 0.10, 0.13, 0.16, 0.14];
+  if (n <= 0) return [];
+  if (n === annual.length) return annual;
+  if (n < annual.length) return annual.slice(annual.length - n);
+  return Array.from({ length: n }, (_, i) => annual[i % annual.length]);
+};
+
+const distributeSeasonally = (total, n) => {
+  if (n <= 0 || total <= 0) return Array(Math.max(0, n)).fill(0);
+  const weights = seasonalWeightsFor(n);
+  const sum = weights.reduce((a, b) => a + b, 0) || 1;
+  const raw = weights.map(w => total * w / sum);
+  const arr = raw.map(v => Math.floor(v));
+  let diff = total - arr.reduce((a, b) => a + b, 0);
+  const order = raw
+    .map((v, i) => ({ i, rest: v - Math.floor(v) }))
+    .sort((a, b) => b.rest - a.rest);
+  for (let k = 0; k < diff; k++) arr[order[k % order.length].i] += 1;
+  return arr;
+};
+
 const getSchedule = (id, qty, n, store) => {
   const s = store[id];
-  if (!Array.isArray(s)) return distributeEvenly(qty, n);
+  if (!Array.isArray(s)) return distributeSeasonally(qty, n);
   if (s.length === n) return s;
   if (s.length > n) return s.slice(0, n); // 截断多余月份
   return [...s, ...Array(n - s.length).fill(0)]; // 补零
@@ -1100,7 +1122,7 @@ function AppContent({ lang, setLang }) {
 
   const updateSchedule = (productId, monthIdx, val) => {
     setScheduleStore(s => {
-      const arr = [...(s[productId] || distributeEvenly(products.find(p => p.id === productId)?.qty || 0, projection.monthsHorizon))];
+      const arr = [...(s[productId] || distributeSeasonally(products.find(p => p.id === productId)?.qty || 0, projection.monthsHorizon))];
       while (arr.length < projection.monthsHorizon) arr.push(0);
       arr[monthIdx] = Math.max(0, val);
       return { ...s, [productId]: arr };
@@ -1119,14 +1141,19 @@ function AppContent({ lang, setLang }) {
   };
 
   const applyScheduleCurve = (curveType) => {
-    if (curveType === "reset") { setScheduleStore({}); return; }
+    if (curveType === "reset") {
+      const n = projection.monthsHorizon;
+      setScheduleStore(Object.fromEntries(products.map(p => [p.id, Array(n).fill(0)])));
+      return;
+    }
     const next = {};
     for (const p of products) {
       const rSched = getRestockSchedule(p.id, p.qty || 0, projection.monthsHorizon, restockStore);
       const total = rSched.reduce((a, b) => a + (b || 0), 0) || (p.qty || 0);
       const n = projection.monthsHorizon;
       let arr;
-      if (curveType === "linear") arr = distributeEvenly(total, n);
+      if (curveType === "seasonal") arr = distributeSeasonally(total, n);
+      else if (curveType === "linear") arr = distributeEvenly(total, n);
       else if (curveType === "frontload") {
         const w = Array.from({ length: n }, (_, i) => Math.pow(0.78, i));
         const s = w.reduce((a, b) => a + b, 0);
@@ -1147,7 +1174,7 @@ function AppContent({ lang, setLang }) {
   };
 
   const exportCSV = () => {
-    const headers = ["产品ID","采购¥/销售单位","申报¥/销售单位","销售单位数量","售价₽/销售单位","平台费","仓费","管理费","总投资","总营收","进项VAT","销项VAT","税额","现金净利","账面净利","净利率","ROI"];
+    const headers = ["产品ID","采购¥/销售单位","申报¥/销售单位","销售单位数量","售价₽/销售单位","平台综合成本","海外仓费","管理费","总投资","总营收","进项VAT","销项VAT","税额","现金净利","账面净利","净利","投入产出"];
     const lines = [headers.join(",")];
     calcs.forEach(r => lines.push([
       r.id, r.priceCNY, r.declaredCNY ?? r.priceCNY, r.qty,
@@ -1317,9 +1344,9 @@ function AppContent({ lang, setLang }) {
 
     // Cost structure bar
     const costParts = [
-      { label: lang === 'zh' ? '预估采购/贴标成本' : 'COGS', val: totals.totalInvestment, clr: '#5C1A1B' },
+      { label: lang === 'zh' ? '预估采购成本' : 'COGS', val: totals.totalInvestment, clr: '#5C1A1B' },
       { label: lang === 'zh' ? '一次性启动费' : 'Setup', val: setupCost, clr: '#5C544A' },
-      { label: lang === 'zh' ? '平台费' : 'Platform', val: calcs.reduce((s, r) => s + (r.platformFee || 0) * (r.qty || 0), 0), clr: '#7A2A2C' },
+      { label: lang === 'zh' ? '平台综合' : 'Platform', val: calcs.reduce((s, r) => s + (r.platformFee || 0) * (r.qty || 0), 0), clr: '#7A2A2C' },
       { label: lang === 'zh' ? '仓储' : 'Warehouse', val: calcs.reduce((s, r) => s + (r.warehouse || 0) * (r.qty || 0), 0), clr: '#B8860B' },
       { label: lang === 'zh' ? '管理费' : 'Mgmt', val: calcs.reduce((s, r) => s + (r.mgmt || 0) * (r.qty || 0), 0), clr: '#D4A93A' },
       { label: lang === 'zh' ? '税' : 'Tax', val: totals.tax, clr: '#A4193D' },
@@ -1341,17 +1368,17 @@ function AppContent({ lang, setLang }) {
     const inventoryInvestment = totals.totalInvestment;
     const projectNetAfterSetup = totals.netProfit;
     const summaryText = lang === 'zh'
-      ? `本批次共 <strong>${calcs.length} 个 SKU</strong>，总备货 <strong>${totals.qty} 个上架销售单位</strong>。商品 <strong>list 为卖家标价</strong>，竞品买家活动价需反推至卖家标价后再进入模型；采购价、申报价、售价、平台费、仓费和管理费都按同一个上架销售单位填写，例如 6 只装按整套，L12 按整套 12 件，壶杯套装按整套。platformFee 为平台佣金、履约、促销和广告折让的综合扣减项。当前采购价与申报价为 <strong>测算假设</strong>，不是德力正式报价。经营口径下，预计 ${projection.monthsHorizon} 个月产生营收 <strong>${fR(totals.totalRevenue)}</strong>，经营净利 <strong>${fR(totals.operatingNetProfit)}</strong>，经营 ROI <strong>${fP(totals.operatingRoi)}</strong>。项目口径再扣除一次性启动费 <strong>${fR(setupCost)}</strong> 后，项目净利为 <strong>${fR(projectNetAfterSetup)}</strong>。现金流口径包含首批备货与补货支出，${beText}。`
+      ? `本批次共 <strong>${calcs.length} 个产品</strong>，总备货 <strong>${totals.qty} 个上架销售单位</strong>。商品 <strong>list 为卖家标价</strong>，竞品买家活动价需反推至卖家标价后再进入模型；采购价、申报价、售价、平台综合成本、海外仓费和管理费都按同一个上架销售单位填写，例如 6 只装按整套，L12 按整套 12 件，壶杯套装按整套。platformFee 字段在本模型里代表平台综合成本，包含佣金、支付/收单、平台配送、退货逆向、广告促销预留等，不是单一佣金。当前采购价与申报价为 <strong>测算假设</strong>，不是德力正式报价；到俄运费与贴标/本地化当前均为 0，拿到工厂和货代报价后再替换。经营口径下，预计 ${projection.monthsHorizon} 个月产生营收 <strong>${fR(totals.totalRevenue)}</strong>，经营净利 <strong>${fR(totals.operatingNetProfit)}</strong>，经营投入产出 <strong>${fP(totals.operatingRoi)}</strong>。项目口径再扣除一次性启动费 <strong>${fR(setupCost)}</strong> 后，项目净利为 <strong>${fR(projectNetAfterSetup)}</strong>。现金流口径包含首批备货与补货支出，${beText}。`
       : lang === 'ru'
       ? `В партии <strong>${calcs.length} SKU</strong>, всего <strong>${totals.qty} шт.</strong> Операционная прибыль без стартовых расходов: <strong>${fR(totals.operatingNetProfit)}</strong>, ROI <strong>${fP(totals.operatingRoi)}</strong>. После стартовых расходов <strong>${fR(setupCost)}</strong> проектная прибыль: <strong>${fR(projectNetAfterSetup)}</strong>. ${beText}.`
       : `This batch contains <strong>${calcs.length} SKUs</strong> totaling <strong>${totals.qty} units</strong>. Operating net profit before setup costs is <strong>${fR(totals.operatingNetProfit)}</strong> with operating ROI <strong>${fP(totals.operatingRoi)}</strong>. After one-time setup costs of <strong>${fR(setupCost)}</strong>, project net profit is <strong>${fR(projectNetAfterSetup)}</strong>. Cash flow includes initial inventory and restocking. ${beText}.`;
 
     // Glossary tips
     const glossaryItems = lang === 'zh' ? [
-      { t: '总营收', d: '所有商品卖出后平台打给你的总金额（已扣平台佣金）' },
+      { t: '总营收', d: '所有商品卖出后平台打给你的总金额（已扣平台综合成本）' },
       { t: '现金净利', d: '按单品逐个算税后汇总的利润' },
       { t: '期末现金', d: '按月累计计算的实际账上余额（税按月合算，通常略高于净利）' },
-      { t: 'ROI', d: '投资回报率 = 净利 ÷ 投资 × 100%' },
+      { t: '投入产出', d: '每投入 1 元预计能赚回多少钱，内部公式为净利 ÷ 投资 × 100%' },
       { t: '回本月份', d: '累计现金从负变正的月份' },
       { t: '最大回撤', d: '预测期内账上最缺钱的时刻（通常在M0）' },
     ] : lang === 'ru' ? [
@@ -1500,7 +1527,7 @@ function AppContent({ lang, setLang }) {
     ${summaryText}
   </div>
   <div class="logic-note">
-    <strong>计算口径说明：</strong>当前采购价/申报价为测算假设，且均按“上架销售单位”计算：6只装、12件套、壶杯套装都按整套计，不按单只杯子计。若到俄运费留空为 0，则当前结果不包含中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用；需待工厂 EXW/FOB 正式报价、装箱尺寸、毛重和货代报价确认后替换。经营净利 = 商品销售回款 - 已填写的采购/贴标/物流成本 - 仓储管理 - 破损 - 税，不含一次性启动费；
+    <strong>计算口径说明：</strong>当前采购价/申报价为测算假设，且均按“上架销售单位”计算：6只装、12件套、壶杯套装都按整套计，不按单只杯子计。若到俄运费留空为 0，则当前结果不包含中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用；贴标/本地化当前也设为 0，不进入利润测算。需待工厂 EXW/FOB 正式报价、装箱尺寸、毛重和货代报价确认后替换。经营净利 = 商品销售回款 - 已填写的采购/物流成本 - 海外仓费用 - 管理费 - 破损 - 税，不含一次性启动费；
     项目净利 = 经营净利 - 一次性启动费；
     期末现金 = 项目净利再叠加首批备货、补货节奏和现金回收时间。三者口径不同，不能混读。
   </div>
@@ -1529,7 +1556,7 @@ function AppContent({ lang, setLang }) {
     <div class="card">
       <div class="label">项目净利</div>
       <div class="value ${totals.netProfit >= 0 ? 'pos' : 'neg'}">${fR(totals.netProfit)}</div>
-      <div class="sub">扣启动费后 · ROI ${fP(totals.roi)}</div>
+      <div class="sub">扣启动费后 · ${lang === 'zh' ? '投入产出' : 'ROI'} ${fP(totals.roi)}</div>
     </div>
   </div>
 
@@ -1582,21 +1609,21 @@ function AppContent({ lang, setLang }) {
 
   <!-- TOP / BOTTOM SKU -->
   <div class="section">
-    <div class="kicker">SKU RANKING</div>
+    <div class="kicker">${lang === 'zh' ? 'PRODUCT RANKING' : 'SKU RANKING'}</div>
     <h2>${lang === 'zh' ? '商品排名' : lang === 'ru' ? 'Рейтинг товаров' : 'Product Ranking'}</h2>
   </div>
   <div class="rank-grid">
     <div class="rank-box">
       <h3 style="color:#1F4F2E">🏆 TOP ${topN} ${lang === 'zh' ? '最赚钱' : lang === 'ru' ? 'Лучшие' : 'Best Performers'}</h3>
       <table>
-        <thead><tr><th>#</th><th>SKU</th><th class="r">${lang === 'zh' ? '净利' : 'Profit'}</th><th class="r">ROI</th></tr></thead>
+        <thead><tr><th>#</th><th>${lang === 'zh' ? '产品型号' : 'SKU'}</th><th class="r">${lang === 'zh' ? '净利' : 'Profit'}</th><th class="r">${lang === 'zh' ? '投入产出' : 'ROI'}</th></tr></thead>
         <tbody>${topRows}</tbody>
       </table>
     </div>
     <div class="rank-box">
       <h3 style="color:#A4193D">⚠️ ${lang === 'zh' ? '需关注（低利润/亏损）' : lang === 'ru' ? 'Требуют внимания' : 'Needs Attention'}</h3>
       <table>
-        <thead><tr><th>#</th><th>SKU</th><th class="r">${lang === 'zh' ? '净利' : 'Profit'}</th><th class="r">ROI</th></tr></thead>
+        <thead><tr><th>#</th><th>${lang === 'zh' ? '产品型号' : 'SKU'}</th><th class="r">${lang === 'zh' ? '净利' : 'Profit'}</th><th class="r">${lang === 'zh' ? '投入产出' : 'ROI'}</th></tr></thead>
         <tbody>${bottomRows}</tbody>
       </table>
     </div>
@@ -1605,7 +1632,7 @@ function AppContent({ lang, setLang }) {
   <!-- Full Product Table -->
   <div class="section page-break">
     <div class="kicker">${t("htmlProductDetail")}</div>
-    <h2>${t("productsTitle")} · ${calcs.length} SKUs</h2>
+    <h2>${t("productsTitle")} · ${calcs.length} ${lang === 'zh' ? '个产品' : 'SKUs'}</h2>
   </div>
   <div style="overflow-x:auto">
     <table>
@@ -1619,7 +1646,7 @@ function AppContent({ lang, setLang }) {
         <th class="r">${t("revenue")}</th>
         <th class="r">${t("tax")}</th>
         <th class="r">${t("netProfitCol")}</th>
-        <th class="r">ROI</th>
+        <th class="r">${lang === 'zh' ? '投入产出' : 'ROI'}</th>
       </tr></thead>
       <tbody>
         ${prodRows}
@@ -1990,6 +2017,9 @@ function AppContent({ lang, setLang }) {
 const Dashboard = ({ totals, params, calcs, proj, projection, t, lang, fmt }) => {
   const showBookDiff = params.taxScheme === "osn" && Math.abs(totals.netProfit - totals.bookNetProfit) > 1;
   const F = fmt.fmtPrimary, Fs = fmt.fmtSecondary;
+  const peakMonth = proj.months
+    .filter(m => !m.isInitial)
+    .reduce((best, m) => (m.revenue || 0) > (best.revenue || 0) ? m : best, { month: 0, revenue: 0 });
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
@@ -2002,11 +2032,11 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang, fmt }) =>
         <div className="p-4 sm:p-5 card-hover rounded-sm border-2" style={{ borderColor: totals.operatingNetProfit >= 0 ? COLORS.emerald : COLORS.crimson, background: "rgba(255,255,255,0.7)" }}>
           <Metric label="经营净利"
             value={F(totals.operatingNetProfit)}
-            sub={`不含启动费 · ROI ${fmtPct(totals.operatingRoi)}`}
+            sub={`不含启动费 · 投入产出 ${fmtPct(totals.operatingRoi)}`}
             color={totals.operatingNetProfit >= 0 ? COLORS.emerald : COLORS.crimson} big />
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
-          <Metric label="项目净利" value={F(totals.netProfit)} sub={`含启动费 · ROI ${fmtPct(totals.roi)}`} color={totals.netProfit >= 0 ? COLORS.emerald : COLORS.gold} big />
+          <Metric label="项目净利" value={F(totals.netProfit)} sub={`含启动费 · 投入产出 ${fmtPct(totals.roi)}`} color={totals.netProfit >= 0 ? COLORS.emerald : COLORS.gold} big />
         </div>
       </div>
 
@@ -2034,8 +2064,8 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang, fmt }) =>
             <Metric label={t("finalCash")} value={F(proj.finalCash)}
               sub={Fs(proj.finalCash)}
               color={proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson} />
-            <Metric label={t("avgMonthly")} value={F(proj.totalRevenue / projection.monthsHorizon)}
-              sub={Fs(proj.totalRevenue / projection.monthsHorizon)} color={COLORS.gold} />
+            <Metric label={t("peakMonthly")} value={F(peakMonth.revenue)}
+              sub={`${t("monthLabel")}${peakMonth.month} · ${Fs(peakMonth.revenue)}`} color={COLORS.gold} />
           </div>
         </Card>
       </div>
@@ -2455,7 +2485,11 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
             </>
           )}
           <div style={{ color: COLORS.inkSoft }}>{t("calcShipping")}</div><div className="text-right">{Ff(calcShipping(product, params))}</div>
-          <div style={{ color: COLORS.inkSoft }}>{t("calcLabeling")}</div><div className="text-right">{Ff(params.labelingPerUnit)}</div>
+          {(params.labelingPerUnit || 0) > 0 && (
+            <>
+              <div style={{ color: COLORS.inkSoft }}>{t("calcLabeling")}</div><div className="text-right">{Ff(params.labelingPerUnit)}</div>
+            </>
+          )}
           <div className="border-t pt-1" style={{ borderColor: COLORS.line }}>{t("calcUnitCost")}</div>
           <div className="text-right border-t pt-1" style={{ borderColor: COLORS.line }}>{Ff(calc.unitCost, 2)}</div>
           <div style={{ color: COLORS.inkSoft }}>{t("calcUnitPayout")}</div><div className="text-right">{Ff(calc.unitPayout)}</div>
@@ -2475,7 +2509,7 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
         </div>
         <div className="text-[11px] flex flex-wrap gap-2">
           <Tag color={COLORS.emerald}>{t("tagMargin")} {fmtPct(calc.profitMargin)}</Tag>
-          <Tag color={COLORS.gold}>ROI {fmtPct(calc.roi)}</Tag>
+          <Tag color={COLORS.gold}>{t("roi")} {fmtPct(calc.roi)}</Tag>
           <Tag>{t("tagEffQty")} {calc.effectiveQty.toFixed(1)}</Tag>
         </div>
       </div>
@@ -2484,7 +2518,7 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
 };
 
 // ============================================================
-// 销售排期 Tab（含售价/平台费排期）
+// 销售排期 Tab（含售价/平台综合成本排期）
 // ============================================================
 const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updateSchedule, applyCurve,
   priceScheduleStore, setPriceScheduleStore, restockStore, updateRestock, setRestockStore,
@@ -2504,7 +2538,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
     });
   };
 
-  // 更新某SKU某月的平台费
+  // 更新某SKU某月的平台综合成本
   const updateFee = (productId, monthIdx, val) => {
     setPriceScheduleStore(s => {
       const entry = { ...(s[productId] || {}) };
@@ -2527,7 +2561,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
     });
   };
 
-  // 重置所有平台费排期
+  // 重置所有平台综合成本排期
   const resetFees = () => {
     setPriceScheduleStore(s => {
       const next = { ...s };
@@ -2574,6 +2608,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
       {/* 销量分配快捷按钮 */}
       <div className="flex flex-wrap gap-2 items-center text-xs" style={{ color: COLORS.inkSoft }}>
         <Sparkles size={12} />
+        <button onClick={() => applyCurve("seasonal")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>{t("seasonalCurve")}</button>
         <button onClick={() => applyCurve("linear")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>{t("linearDist")}</button>
         <button onClick={() => applyCurve("frontload")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>{t("frontload")}</button>
         <button onClick={() => applyCurve("bell")} className="px-2 py-1 border" style={{ borderColor: COLORS.line, background: "white" }}>{t("bellCurve")}</button>
@@ -2598,7 +2633,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
               const stored = scheduleStore[p.id];
               const rSched = restockStore[p.id] || [p.qty || 0];
               const totalPurchased = rSched.reduce((a, b) => a + (b || 0), 0) || (p.qty || 0);
-              const sched = (Array.isArray(stored) && stored.length === months) ? stored : distributeEvenly(totalPurchased, months);
+              const sched = getSchedule(p.id, totalPurchased, months, scheduleStore);
               const allocated = sched.reduce((a, b) => a + (b || 0), 0);
               const matches = allocated === totalPurchased;
               return (
@@ -2629,8 +2664,9 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
               </td>
               {Array.from({ length: months }, (_, i) => {
                 const sum = products.reduce((acc, p) => {
-                  const stored = scheduleStore[p.id];
-                  const sched = (Array.isArray(stored) && stored.length === months) ? stored : distributeEvenly(p.qty || 0, months);
+                  const rSched = restockStore[p.id] || [p.qty || 0];
+                  const totalPurchased = rSched.reduce((a, b) => a + (b || 0), 0) || (p.qty || 0);
+                  const sched = getSchedule(p.id, totalPurchased, months, scheduleStore);
                   return acc + (sched[i] || 0);
                 }, 0);
                 return <td key={i} className="p-2 text-center font-mono">{sum}</td>;
@@ -2792,7 +2828,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
         )}
       </div>
 
-      {/* ===== 平台费排期表格（可折叠） ===== */}
+      {/* ===== 平台综合成本排期表格（可折叠） ===== */}
       <div className="border" style={{ borderColor: COLORS.line, background: "white" }}>
         <button
           onClick={() => setShowFeeSchedule(!showFeeSchedule)}
@@ -3277,7 +3313,6 @@ const ParamsPanel = ({ params, setParams, t }) => {
     { label: t("paramExchangeRate"), k: "exchangeRate", suffix: "₽/¥", step: 0.1 },
     { label: t("paramUsdRate"), k: "usdRate", suffix: "₽/$", step: 0.5 },
     { label: t("paramDamageRate"), k: "damageRate", suffix: "%", step: 0.5, multiplier: 100 },
-    { label: t("paramLabeling"), k: "labelingPerUnit", suffix: "₽" },
     { label: t("paramOneTime"), k: "oneTimeCosts", suffix: "₽", step: 100 },
   ];
   return (
@@ -3377,26 +3412,26 @@ const HelpPanel = ({ t }) => (
 const GLOSSARY = {
   zh: [
     { section: "📊 总览仪表盘", items: [
-      { term: "总营收", desc: "所有商品卖出后，平台打给你的总金额（售价 − 平台佣金）。", example: "商品售价 1249₽，平台费 652₽ → 单件回款 597₽。30件 → 总营收 = 597 × 30 × 97%（扣货损）= 17,373₽" },
-      { term: "总投资", desc: "测算口径下需要占用的资金：预估采购成本 + 已填写的到俄物流费用 + 贴标/本地化处理费 + 一次性费用。德力当前版本到俄运费可留 0，等工厂和货代报价后再重算。采购成本按上架销售单位填写，正式报价后必须替换。", example: "6只装预估采购价18¥/套 × 汇率12.8 = 230.4₽，贴标12₽、到俄运费留空0₽ → 每套成本242.4₽。100套 → 投资 = 24,240₽" },
-      { term: "现金净利", desc: "按每个SKU单独算税后汇总的利润。= 总营收 − 总投资 − 仓储 − 管理费 − 税。", example: "营收 17,373₽ − 投资 9,354₽ − 仓 2,970₽ − 管理 1,080₽ − 税 580₽ = 净利 3,389₽" },
+      { term: "总营收", desc: "所有商品卖出后，平台打给你的总金额（售价 − 平台综合成本）。", example: "商品售价 1249₽，平台综合成本 652₽ → 单件回款 597₽。30件 → 总营收 = 597 × 30 × 97%（扣货损）= 17,373₽" },
+      { term: "总投资", desc: "测算口径下需要占用的资金：预估采购成本 + 已填写的到俄物流费用 + 一次性费用。德力当前版本到俄运费和贴标/本地化都为 0，等工厂和货代报价后再重算。采购成本按上架销售单位填写，正式报价后必须替换。", example: "6只装预估采购价18¥/套 × 汇率12.8 = 230.4₽，到俄运费和贴标暂不计 → 每套成本230.4₽。100套 → 投资 = 23,040₽" },
+      { term: "现金净利", desc: "按每个产品单独算税后汇总的利润。= 总营收 − 总投资 − 仓储 − 管理费 − 税。", example: "营收 17,373₽ − 投资 9,354₽ − 仓 2,970₽ − 管理 1,080₽ − 税 580₽ = 净利 3,389₽" },
       { term: "期末现金", desc: "经过N个月销售排期后，你账上实际还剩多少钱。按月度累计计算。", example: "M0投入 -108万₽ → M1回款+15万 → M2回款+20万 → ... → M8累计 = +57.5万₽" },
-      { term: "⚠️ 现金净利 vs 期末现金", desc: "两个数不一样是正常的！现金净利是按每个SKU单独算税再汇总；期末现金是按月合算税。月合算时税额可能更低，所以期末现金通常略高。", example: "38个SKU单独算税各交一点最低税 → 总税高；按月合在一起算 → 利润合并后不触发最低税 → 总税低 → 到手多" },
-      { term: "ROI（投资回报率）", desc: "每投入1块钱能赚回多少。= 净利润 ÷ 总投资 × 100%", example: "投资10万₽，净赚4.7万₽ → ROI = 47%。意思是每投1卢布赚回0.47卢布" },
-      { term: "净利率", desc: "每赚100块营收里有多少是纯利润。= 净利润 ÷ 总营收 × 100%", example: "营收21万₽，净利4.7万₽ → 净利率 = 22.3%。每100₽营收中22.3₽是纯利" },
+      { term: "⚠️ 现金净利 vs 期末现金", desc: "两个数不一样是正常的！现金净利是按每个产品单独算税再汇总；期末现金是按月合算税。月合算时税额可能更低，所以期末现金通常略高。", example: "多个产品单独算税各交一点最低税 → 总税高；按月合在一起算 → 利润合并后不触发最低税 → 总税低 → 到手多" },
+      { term: "投入产出", desc: "每投入1块钱能赚回多少。= 净利润 ÷ 总投资 × 100%", example: "投资10万₽，净赚4.7万₽ → 投入产出 = 47%。意思是每投1卢布赚回0.47卢布" },
+      { term: "净利", desc: "每赚100块营收里有多少是纯利润。= 净利润 ÷ 总营收 × 100%", example: "营收21万₽，净利4.7万₽ → 净利 = 22.3%。每100₽营收中22.3₽是纯利" },
     ]},
     { section: "📈 投资人关注", items: [
-      { term: "初始投入", desc: "M0（第零个月）你要一次性掏出的全部钱：所有商品的采购、已填写的运费/贴标、一次性费用和进项VAT（如果是OSN）。如果运费留空，就代表当前模型暂不含到俄头程物流。", example: "38个SKU采购与贴标合计108万₽、到俄运费待报价 → 初始投入先按 -108万₽ 测算，报价后重跑" },
+      { term: "初始投入", desc: "M0（第零个月）你要一次性掏出的全部钱：所有商品的采购、已填写的运费、一次性费用和进项VAT（如果是OSN）。如果运费留空，就代表当前模型暂不含到俄头程物流。", example: "产品采购合计108万₽、到俄运费和贴标待报价 → 初始投入先按 -108万₽ 测算，报价后重跑" },
       { term: "最大资金压力（回撤）", desc: "整个预测期内，你账上最缺钱的那一刻。通常就是M0刚付完货款的时候。", example: "M0付完108万₽，账上 -108万₽ → 这就是最大回撤" },
       { term: "回本月份", desc: "累计现金从负变正的那个月。之前都是亏的，从这个月开始你把本钱赚回来了。", example: "M5累计 -5万₽，M6累计 +2万₽ → 第6个月回本" },
-      { term: "平均月回款", desc: "总营收 ÷ 预测月数。代表平均每个月能收回多少钱。", example: "总营收230万₽ ÷ 8个月 = 平均每月28.7万₽" },
+      { term: "旺季峰值回款", desc: "销售排期里回款最高的月份。玻璃餐厨品类淡旺季明显，比平均月回款更适合判断旺季资金压力。", example: "M10-M12销量更高，若M11回款最高为45万₽，就按45万₽观察峰值库存和现金流。" },
     ]},
     { section: "🏷️ 商品明细", items: [
       { term: "预估采购价 vs 申报价", desc: "当前采购价/申报价是测算假设，不是德力正式报价。字段按上架销售单位填写，不按单只杯子：6只装按整套，L12按12件套整套，壶杯套装按整套。拿到工厂 EXW/FOB、MOQ、装箱和毛重后，需要替换并重跑模型。OSN税制下，进项VAT按申报价算。", example: "TY1628 6只装预估采购18¥/套，申报15¥/套 → 进项VAT按15¥/套算；若工厂报价按单只给，需要先乘以套内数量再填入模型" },
-      { term: "平台费", desc: "Ozon/WB等平台从每笔订单中扣取的佣金（含物流费、广告费等）。", example: "售价1249₽，平台费652₽ → 你实际到手 597₽" },
-      { term: "仓费 + 管理费", desc: "仓费 = 海外仓存储费/件。管理费 = 代运营/标签/客服等费用/件。", example: "仓费99₽/件 + 管理费36₽/件 = 每件额外成本135₽" },
+      { term: "平台综合成本", desc: "Ozon/WB/Yandex 每笔订单的综合扣减，不只是佣金，还包括支付、平台配送/退货、广告促销预留等。", example: "售价1249₽，平台综合成本652₽ → 你实际到手 597₽" },
+      { term: "海外仓费用、管理费", desc: "海外仓费用 = 俄罗斯本地仓储/处理费用。管理费 = 代运营、客服、售后处理等管理成本。两项在模型里分开填写、分开查看。", example: "例：海外仓费用99₽/销售单位，管理费36₽/销售单位，两项分别进入成本表。" },
       { term: "有效件数", desc: "考虑货损率后的实际可售数量。默认货损3%。", example: "备货100件 × (1-3%) = 有效97件。3件在运输中损坏不能卖" },
-      { term: "单位回款", desc: "每卖出1件，平台实际打给你的钱。= 售价 − 平台费", example: "售价1249₽ − 平台费652₽ = 单位回款597₽" },
+      { term: "单位回款", desc: "每卖出1件，平台实际打给你的钱。= 售价 − 平台综合成本", example: "售价1249₽ − 平台综合成本652₽ = 单位回款597₽" },
     ]},
     { section: "💰 现金流预测", items: [
       { term: "当月净利 vs 现金流", desc: "净利 = 营收 − 成本 − 仓管 − 税（会计视角，含销货成本）。现金流 = 营收 − 仓管 − 税 − 合伙人分成（现金视角，M0已付全部货款，月度不重复扣）。", example: "M3营收30万₽，货物成本15万₽，仓管5万₽，税2万₽\n→ 净利 = 30-15-5-2 = 8万₽\n→ 现金流 = 30-5-2 = 23万₽（因为15万货款M0就付了）" },

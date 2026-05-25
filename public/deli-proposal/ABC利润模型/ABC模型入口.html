@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>德力玻璃俄罗斯电商 · A/B/C 投入测算模型</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:system-ui,"Noto Sans SC",sans-serif;background:#f6f0e6;color:#1c1813;margin:0;padding:36px}
+main{max-width:1040px;margin:auto}
+h1{font-family:Georgia,"Noto Serif SC",serif;font-weight:500;font-size:clamp(34px,5vw,58px);line-height:1.08;margin:0 0 18px}
+h2{font-family:Georgia,"Noto Serif SC",serif;font-weight:500;margin:0 0 8px;font-size:26px}
+p{line-height:1.75;color:#5d5145;margin:0 0 14px}
+.lead{font-size:18px;color:#3c3128;max-width:860px}
+.notice{background:#fff8ea;border:1px solid #dac7a4;border-left:4px solid #b66a2a;padding:18px 20px;margin:26px 0;color:#4e3d2f;line-height:1.75}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+.card{background:white;border:1px solid #d8cab6;padding:24px;min-height:420px;display:flex;flex-direction:column}
+.tag{font-size:12px;letter-spacing:.12em;color:#9a6032;text-transform:uppercase;margin-bottom:12px}
+.amount{font-size:24px;font-weight:700;margin:12px 0;color:#1c1813}
+.rows{border-top:1px solid #eadfce;margin:16px 0 18px}
+.row{display:flex;justify-content:space-between;gap:18px;border-bottom:1px solid #eadfce;padding:10px 0;font-size:14px}
+.row span{color:#6b5f4f}
+.row b{white-space:nowrap}
+.actions{margin-top:auto;display:grid;gap:10px}
+a{color:#8a3f16;font-weight:700;text-decoration:none}
+.button{display:block;border:1px solid #b66a2a;background:#8a3f16;color:#fff;text-align:center;padding:11px 14px}
+.ghost{background:#fff;color:#8a3f16}
+.small{font-size:13px;color:#75685a}
+@media (max-width:900px){body{padding:22px}.grid{grid-template-columns:1fr}.card{min-height:0}}
+</style>
+</head>
+<body>
+<main>
+<h1>德力玻璃俄罗斯电商 · A/B/C 投入测算模型</h1>
+<p class="lead">三套模型对应三种启动力度：保守试水、标准启动、进取放量。它们不是三套不同价格口径，也不是工厂报价单，而是同一批产品在不同备货量、补货节奏、广告预算和启动费用下的资金准备测算。</p>
+<div class="notice"><strong>这些金额不是市场价，也不是已确认成本。</strong>首批库存采购按当前模型里的预估供货价测算；样品、包装、跌落测试、合规资料、到俄物流、清关、保险和入仓都需要工厂或货代报价后替换。广告、破损赔付和现金流储备属于周转缓冲，不是一次性花光。</div>
+<div class="notice"><strong>当前为“不含到俄运费版本”。</strong>模型暂未计入中国至俄罗斯头程、出口报关、俄罗斯清关、保险、尾程派送、平台仓预约和俄罗斯入仓费用；贴标/本地化也暂不计入。到俄物流和本地化处理需要等工厂提供装箱尺寸、毛重、每箱套数、交货条件和包装方案，并由货代/工厂报价后重算。</div>
+
+<div class="grid">
+  <section class="card" id="model-a">
+    <div class="tag">Model A · 保守试水</div>
+    <h2>A 模型 · 保守试水</h2>
+    <p>适合第一次合作时控制现金占用。重点不是马上放量，而是验证俄罗斯平台是否愿意买、破损是否能控、价格是否站得住。</p>
+    <div class="amount">资金准备测算：78-141 万 RMB</div>
+    <div class="rows">
+      <div class="row"><span>首批策略</span><b>小批试卖</b></div>
+      <div class="row"><span>产品处理</span><b>跑量款优先</b></div>
+      <div class="row"><span>补货节奏</span><b>达标后补</b></div>
+      <div class="row"><span>金额性质</span><b>测算，不是报价</b></div>
+      <div class="row"><span>费用口径</span><b>不含到俄物流</b></div>
+    </div>
+    <p class="small">验证款以样品、目录现货或最低起订量为主，只在核心款出现稳定转化后补货。</p>
+    <div class="actions">
+      <a class="button" href="https://a767881430-sketch.github.io/russia-pl-calculator/?project=deli-glass-russia-22sku-conservative-project.json" target="_blank" rel="noopener">打开线上损益表</a>
+      <a class="button ghost" href="deli-glass-russia-22sku-conservative-project.json" target="_blank" rel="noopener">查看本地模型数据</a>
+    </div>
+  </section>
+
+  <section class="card" id="model-b">
+    <div class="tag">Model B · 标准启动</div>
+    <h2>B 模型 · 标准启动</h2>
+    <p>推荐作为对外展示的基准模型。22 个产品先建档，跑量款负责订单和评价，利润款负责毛利，高利润潜力款小批验证礼品场景。</p>
+    <div class="amount">资金准备测算：171-312 万 RMB</div>
+    <div class="rows">
+      <div class="row"><span>首批策略</span><b>22 款建档</b></div>
+      <div class="row"><span>产品处理</span><b>分层补货</b></div>
+      <div class="row"><span>补货节奏</span><b>主推款多次补</b></div>
+      <div class="row"><span>金额性质</span><b>测算，不是报价</b></div>
+      <div class="row"><span>费用口径</span><b>不含到俄物流</b></div>
+    </div>
+    <p class="small">模型内含月度售价排期：前期低价拿点击和评价，中期恢复正常价，后期结合旺季与评价资产小幅提价。</p>
+    <div class="actions">
+      <a class="button" href="https://a767881430-sketch.github.io/russia-pl-calculator/?project=deli-glass-russia-22sku-standard-project.json" target="_blank" rel="noopener">打开线上损益表</a>
+      <a class="button ghost" href="deli-glass-russia-22sku-standard-project.json" target="_blank" rel="noopener">查看本地模型数据</a>
+    </div>
+  </section>
+
+  <section class="card" id="model-c">
+    <div class="tag">Model C · 进取放量</div>
+    <h2>C 模型 · 进取放量</h2>
+    <p>适合工厂愿意配合稳定供货、包装升级、账期或返利时使用。核心款按 Ozon 与 WB 同步放量准备，现金占用明显更高。</p>
+    <div class="amount">资金准备测算：442-755 万 RMB</div>
+    <div class="rows">
+      <div class="row"><span>首批策略</span><b>多平台准备</b></div>
+      <div class="row"><span>产品处理</span><b>核心款放量</b></div>
+      <div class="row"><span>补货节奏</span><b>旺季前置</b></div>
+      <div class="row"><span>金额性质</span><b>测算，不是报价</b></div>
+      <div class="row"><span>费用口径</span><b>不含到俄物流</b></div>
+    </div>
+    <p class="small">测品款仍不作为默认补货款；只有转化、破损和利润都达标，才进入二次备货。</p>
+    <div class="actions">
+      <a class="button" href="https://a767881430-sketch.github.io/russia-pl-calculator/?project=deli-glass-russia-22sku-aggressive-project.json" target="_blank" rel="noopener">打开线上损益表</a>
+      <a class="button ghost" href="deli-glass-russia-22sku-aggressive-project.json" target="_blank" rel="noopener">查看本地模型数据</a>
+    </div>
+  </section>
+</div>
+</main>
+</body>
+</html>
