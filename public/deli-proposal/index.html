@@ -480,40 +480,69 @@ h2 {
 .section-jump {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: -24px 0 30px;
+  gap: 12px;
+  margin: -14px 0 30px;
+  padding: 18px;
+  border: 1px solid rgba(227, 167, 111, .34);
+  background: linear-gradient(135deg, rgba(201, 131, 66, .16), rgba(21, 18, 15, .9));
+  box-shadow: inset 0 1px 0 rgba(250,246,236,.04), 0 16px 46px rgba(0,0,0,.18);
 }
 .section-jump a {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  padding: 8px 12px;
-  border: 1px solid rgba(227, 167, 111, .34);
-  color: var(--paper-2);
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid rgba(227, 167, 111, .46);
+  color: var(--paper);
   text-decoration: none;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
   background: rgba(21, 18, 15, .72);
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.section-jump a::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: rgba(227, 167, 111, .5);
 }
 .section-jump a:hover {
   color: var(--paper);
-  background: rgba(227, 167, 111, .12);
+  border-color: rgba(227, 167, 111, .72);
+  background: rgba(227, 167, 111, .16);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.20);
 }
 .section-jump a.link-out {
   color: var(--ink);
   border-color: transparent;
-  background: linear-gradient(135deg, var(--copper-2), var(--copper));
+  background: linear-gradient(135deg, #ffd6a5, var(--copper-2) 54%, var(--copper));
   font-weight: 700;
-  box-shadow: 0 12px 30px rgba(201, 131, 66, .22);
+  box-shadow: 0 16px 38px rgba(201, 131, 66, .34);
 }
 .section-jump a.link-out::after {
   content: "↗";
   margin-left: 8px;
   font-family: var(--font-mono);
 }
+.section-jump a.link-out::before {
+  background: var(--ink);
+}
 .section-jump a.link-out:hover {
   color: var(--ink);
-  background: linear-gradient(135deg, #ffd1a1, var(--copper-2));
+  background: linear-gradient(135deg, #ffe0bb, #e6a76d);
   transform: translateY(-1px);
+}
+.section-jump a.jump-primary {
+  border-color: rgba(227, 167, 111, .72);
+  background: rgba(201, 131, 66, .24);
+  box-shadow: 0 12px 32px rgba(201, 131, 66, .16);
+}
+.section-jump a.jump-primary::before {
+  background: var(--copper-2);
 }
 .scatter-wrap {
   margin: 0 0 36px;
@@ -1520,10 +1549,25 @@ h2 {
   border: 1px solid var(--line);
   background: var(--ink-1);
   padding: 26px;
+  position: relative;
 }
 .investment-card.featured {
   border-color: var(--copper);
   background: linear-gradient(145deg, rgba(201, 131, 66, .13), var(--ink-1) 62%);
+}
+.investment-card.featured::before {
+  content: "推荐展示模型";
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  padding: 5px 8px;
+  border: 1px solid rgba(227, 167, 111, .56);
+  color: var(--ink);
+  background: linear-gradient(135deg, #ffd6a5, var(--copper-2));
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
 }
 .investment-tag {
   color: var(--paper-3);
@@ -1540,7 +1584,47 @@ h2 {
   font-family: var(--font-serif);
   font-size: 34px;
   color: var(--paper);
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  padding: 16px;
+  border: 1px solid rgba(227, 167, 111, .38);
+  background: rgba(227, 167, 111, .10);
+}
+.investment-amount::before {
+  content: "一次性扣减";
+  display: block;
+  margin-bottom: 5px;
+  color: var(--copper-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.capital-range {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px dashed rgba(227, 167, 111, .34);
+  background: rgba(13, 11, 9, .28);
+}
+.capital-range b {
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 300;
+}
+.capital-range b::before {
+  content: "资金池，不是一次性费用：";
+  color: var(--copper-2);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+}
+.capital-range span {
+  color: var(--paper-3);
+  font-size: 12px;
+  line-height: 1.55;
 }
 .investment-line {
   display: grid;
@@ -1580,22 +1664,29 @@ h2 {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 46px;
+  min-height: 54px;
   border: 0;
-  padding: 12px 16px;
+  padding: 14px 18px;
   color: var(--ink);
-  background: linear-gradient(135deg, var(--copper-2), var(--copper));
+  background: linear-gradient(135deg, #ffd6a5, var(--copper-2) 54%, var(--copper));
   text-decoration: none;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
-  box-shadow: 0 14px 32px rgba(201, 131, 66, .22);
+  box-shadow: 0 18px 42px rgba(201, 131, 66, .34);
   transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
 }
+.model-entry::before {
+  content: "可打开";
+  padding: 3px 6px;
+  border: 1px solid rgba(21, 18, 15, .35);
+  font-size: 9px;
+  letter-spacing: .08em;
+}
 .model-entry:hover {
-  background: linear-gradient(135deg, #ffd1a1, var(--copper-2));
+  background: linear-gradient(135deg, #ffe0bb, #e6a76d);
   color: var(--ink);
   transform: translateY(-1px);
   box-shadow: 0 18px 42px rgba(201, 131, 66, .34);
@@ -1651,6 +1742,7 @@ h2 {
 .model-list a.primary-model {
   border-color: rgba(227, 167, 111, .62);
   background: linear-gradient(135deg, rgba(201, 131, 66, .22), rgba(21, 18, 15, .88));
+  box-shadow: 0 14px 32px rgba(201, 131, 66, .16);
 }
 .model-list strong {
   color: var(--paper);
@@ -1667,7 +1759,7 @@ h2 {
   justify-content: center;
   padding: 8px 10px;
   color: var(--ink);
-  background: linear-gradient(135deg, var(--copper-2), var(--copper));
+  background: linear-gradient(135deg, #ffd6a5, var(--copper-2));
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
@@ -1930,7 +2022,7 @@ footer {
         <div class="hero-metric"><small>01</small><span>Ozon 10 个重点相关类目年市场盘子</span><strong>16.26 亿 RMB<span class="money-sub">原始 208.1 亿 ₽</span></strong></div>
         <div class="hero-metric"><small>02</small><span>最大单类目，马克杯</span><strong>5.68 亿 RMB<span class="money-sub">原始 72.7 亿 ₽</span></strong></div>
         <div class="hero-metric"><small>03</small><span>建议首批建档验证产品数量</span><strong>22 款</strong></div>
-        <div class="hero-metric"><small>04</small><span>标准启动资金准备测算</span><strong>171-312 万<span class="money-sub">库存 + 内容 + 广告 + 周转</span></strong></div>
+        <div class="hero-metric"><small>04</small><span>标准启动费，不含库存物流</span><strong>25 万<span class="money-sub">样品 + 包装 + 拍摄 + 合规</span></strong></div>
       </aside>
     </div>
     <div class="hero-foot">
@@ -2754,8 +2846,8 @@ footer {
       <p class="lede">主图必须完整展示，才能判断俄罗斯平台上真正有效的卖点：几只装、容量表达、白底构图、道具使用、品牌感和是否靠低价冲量。热卖榜商品价格按买家到手价 / 活动价处理，类目价格区间才是正常卖家价口径。</p>
     </div>
     <div class="section-jump" aria-label="竞品分析快速跳转">
-      <a href="#competitor-real">真实热卖单品</a>
-      <a href="#competitor-reference">参考主图样本</a>
+      <a class="jump-primary" href="#competitor-real">真实热卖单品</a>
+      <a class="link-out" href="ozon-competitors.html" target="_blank" rel="noopener noreferrer">参考主图样本库</a>
       <a href="#seller-read">卖家和品牌总结</a>
       <a href="#profit">单品利润模型</a>
       <a class="link-out" href="ozon-competitors.html" target="_blank" rel="noopener noreferrer">打开透明玻璃款样本库</a>
@@ -3381,11 +3473,12 @@ footer {
         <div class="section-num">SECTION 08 / 投资测算</div>
         <h2>三档情景，先看<em>资金准备</em>。</h2>
       </div>
-      <p class="lede">下面不是市场价，也不是工厂已经确认的成本报价，而是按 A/B/C 三种启动力度先做“资金准备测算”。它把首批库存采购、内容、合规、广告、破损赔付、现金流缓冲和待报价物流资金位放在一起看；拿到工厂报价、装箱参数和货代报价后必须替换重算。</p>
+      <p class="lede">这里把“一次性启动费”和“资金准备池”分开看：真正一次性花掉的是样品、包装打样、拍摄和合规资料整理；库存采购、广告测款、破损赔付、现金流缓冲、到俄物流占位都属于滚动资金或待报价项。拿到工厂报价、装箱参数和货代报价后必须替换重算。</p>
     </div>
     <div class="quote-basis">
       <h3>这些不是市场价，为什么仍然要留预算？</h3>
       <div class="quote-grid">
+        <div><b>一次性启动费</b><span>只放样品、包装打样、拍摄内容和合规资料整理。A/B/C 目前分别按 12 / 25 / 50 万人民币进入损益模型。</span></div>
         <div><b>模型假设部分</b><span>首批库存采购按当前模型里的预估供货价和备货量测算，目的是判断资金压力；不是德力正式报价。</span></div>
         <div><b>待报价部分</b><span>样品费、包装打样、跌落测试、合规资料、头程、清关、保险和入仓都需要工厂或货代报价后替换。</span></div>
         <div><b>周转缓冲部分</b><span>广告测款、破损赔付和现金流储备是项目周转资金，不是一次性花光的成本，也不是产品市场价。</span></div>
@@ -3396,7 +3489,8 @@ footer {
     <article class="investment-card">
       <div class="investment-tag">A 模型 · 保守试水</div>
       <div class="investment-name">Conservative</div>
-      <div class="investment-amount">资金准备测算：78-141 万 RMB</div>
+      <div class="investment-amount">首批启动费：12 万 RMB</div>
+      <div class="capital-range"><b>资金准备池：78-141 万 RMB</b><span>含模型库存、广告测款、破损赔付、现金周转和到俄物流占位；不是一次性花光，也不是德力报价。</span></div>
       <div class="investment-line"><span>样品 / 包装 / 跌落测试（待报价）</span><b>5-8 万</b><small>按 20-30 款中筛 30-50 套样品、3-5 个基础包装/内托打样、1-2 轮跌落测试预留；不是市场价，以工厂样品费和第三方测试报价替换。</small></div><div class="investment-line"><span>俄文内容 / 拍摄素材（服务预算）</span><b>5-8 万</b><small>按 12-15 个主推链接做俄文标题、主图、详情图和短视频素材；约 0.3-0.5 万/款，先轻内容测款。</small></div><div class="investment-line"><span>认证 / 合规资料（待确认）</span><b>8-15 万</b><small>用于 EAC/食品接触资料整理、俄文说明、条码和平台预审；不含正式认证官费、商标官费、贴标和到俄物流。</small></div><div class="investment-line"><span>首批库存采购（模型假设）</span><b>25-45 万</b><small>按 8-12 个跑量款/利润款小批备货 + 测品款最低起订量估算；采购价来自当前模型假设，不是德力正式报价。</small></div><div class="investment-line"><span>头程清关入仓（资金占位）</span><b>暂留 15-25 万</b><small>不是运费报价，也不进入当前单品利润；需外箱尺寸、毛重、每箱套数、路线和平台仓预约报价确认。</small></div><div class="investment-line"><span>广告测款预算（可调）</span><b>10-20 万</b><small>按 Ozon 首发 1-3 个月关键词广告、低价冷启动和少量达人素材预留；可根据现金压力下调。</small></div><div class="investment-line"><span>破损与现金流储备（周转缓冲）</span><b>10-20 万</b><small>按玻璃 5% 破损赔付、平台回款周期和二次小补货预留；不是一次性花光的费用。</small></div>
       <div class="investment-foot"><b>500-800 万 RMB</b><span>第一年销售目标 · 以 Ozon 测款为主，不追求当年完整回本，目标是跑出 8-12 个稳定款；当前不含到俄运费。</span></div>
       <a class="model-entry" href="ABC利润模型/ABC模型入口.html#model-a" target="_blank" rel="noopener">打开 A 模型 →</a>
@@ -3404,7 +3498,8 @@ footer {
     <article class="investment-card featured">
       <div class="investment-tag">B 模型 · 标准启动 · 推荐</div>
       <div class="investment-name">Standard</div>
-      <div class="investment-amount">资金准备测算：171-312 万 RMB</div>
+      <div class="investment-amount">首批启动费：25 万 RMB</div>
+      <div class="capital-range"><b>资金准备池：171-312 万 RMB</b><span>含 22 款建档库存、广告、周转和物流占位；损益模型只把 25 万作为一次性启动费扣减。</span></div>
       <div class="investment-line"><span>样品 / 包装 / 跌落测试（待报价）</span><b>8-15 万</b><small>按 22 个建档产品样品、5-8 个主推包装结构、核心套装 2-3 轮跌落测试预留；套装款包装验证比单杯更贵，需报价替换。</small></div><div class="investment-line"><span>俄文内容 / 拍摄素材（服务预算）</span><b>8-12 万</b><small>按 22 款建档、12-15 款重点做主图/详情/视频；约 0.4-0.6 万/主推款，测品款只做基础内容。</small></div><div class="investment-line"><span>认证 / 合规资料（待确认）</span><b>15-25 万</b><small>食品接触/EAC资料整理、俄文说明、条码、平台合规预审和可能的资料补办；不含到俄物流、正式商标官费和贴标。</small></div><div class="investment-line"><span>首批库存采购（模型假设）</span><b>60-100 万</b><small>按模型 22 款分层备货：跑量款和利润款承担首轮库存，高利润潜力款小批验证；不是德力正式成本报价。</small></div><div class="investment-line"><span>头程清关入仓（资金占位）</span><b>暂留 30-60 万</b><small>只作资金池预留，不代表真实运费，不进入当前单品利润；需要外箱、毛重、每箱套数和货代路线报价确认。</small></div><div class="investment-line"><span>广告测款预算（可调）</span><b>25-50 万</b><small>按 Ozon 冷启动、搜索广告、评价沉淀和 8-12 个胜出产品集中投放估算；约为首轮目标销售额 5%-10%。</small></div><div class="investment-line"><span>破损与现金流储备（周转缓冲）</span><b>25-50 万</b><small>覆盖 5% 破损赔付、退货周期、平台回款延迟和二次补货资金；属于周转缓冲，不是固定成本。</small></div>
       <div class="investment-foot"><b>1,500-2,500 万 RMB</b><span>第一年销售目标 · Ozon 跑通后 WB 跟进，贡献利润率按 8%-12% 做场景测算，暂不含到俄运费。</span></div>
       <a class="model-entry" href="ABC利润模型/ABC模型入口.html#model-b" target="_blank" rel="noopener">打开 B 模型 →</a>
@@ -3412,7 +3507,8 @@ footer {
     <article class="investment-card">
       <div class="investment-tag">C 模型 · 进取放量</div>
       <div class="investment-name">Aggressive</div>
-      <div class="investment-amount">资金准备测算：442-755 万 RMB</div>
+      <div class="investment-amount">首批启动费：50 万 RMB</div>
+      <div class="capital-range"><b>资金准备池：442-755 万 RMB</b><span>含多平台库存、广告、周转和物流占位；适合工厂愿意共担供应、账期和包装升级时再启用。</span></div>
       <div class="investment-line"><span>样品 / 包装 / 跌落测试（待报价）</span><b>15-25 万</b><small>按多平台素材样品、礼盒/内托多轮打样、高客单套装专项跌落测试估算；适合工厂愿意共担包装开发时使用。</small></div><div class="investment-line"><span>俄文内容 / 拍摄素材（服务预算）</span><b>12-20 万</b><small>按 Ozon/WB/Yandex 三平台主图、短视频、达人素材、系列化品牌内容和礼品场景扩展；重点款内容密度更高。</small></div><div class="investment-line"><span>认证 / 合规资料（待确认）</span><b>25-40 万</b><small>多产品资料整理、俄文包装规范、平台审核、商标/主体前期费用预留；不含到俄头程、正式认证最终官费和贴标。</small></div><div class="investment-line"><span>首批库存采购（模型假设）</span><b>150-250 万</b><small>按 Ozon + WB 同步准备、核心款旺季前置备货估算；不是正式采购报价，对工厂产能、账期、返利和破损补偿要求更高。</small></div><div class="investment-line"><span>头程清关入仓（资金占位）</span><b>暂留 80-150 万</b><small>进取模式体量大，物流资金只保留预算池；必须拿外箱、毛重、路线、清关/VAT、保险、尾程和入仓报价后替换。</small></div><div class="investment-line"><span>广告测款预算（可调）</span><b>80-150 万</b><small>按多平台广告、旺季前置投放、达人评测和主推款稳定销售准备；约为阶段销售目标 5%-10% 的测试投放。</small></div><div class="investment-line"><span>破损与现金流储备（周转缓冲）</span><b>80-120 万</b><small>覆盖更大的库存周转、破损赔付、平台回款周期和补货波动；体量越大，现金缓冲越重要。</small></div>
       <div class="investment-foot"><b>4,000-6,000 万 RMB</b><span>第一年销售目标 · 需要稳定供应、包装升级、广告预算和多平台放量，要求工厂提供更深合作支持；当前不含到俄运费。</span></div>
       <a class="model-entry" href="ABC利润模型/ABC模型入口.html#model-c" target="_blank" rel="noopener">打开 C 模型 →</a>
@@ -3421,14 +3517,14 @@ footer {
     <div class="model-grid">
       <div class="model-panel">
         <h3>三套损益模型入口</h3>
-        <p>方案页的三档投资不是概念卡片，已整理成可打开的 A / B / C 损益模型入口。模型里包含 22 个产品建档试卖、分层补货、月度售价排期、淡旺季销量曲线、平台综合成本随售价联动，以及一次性启动费用扣减；当前版本不含到俄头程/清关/入仓和贴标/本地化费用。</p>
+        <p>方案页的三档投资不是概念卡片，已整理成可打开的 A / B / C 损益模型入口。模型里包含 22 个产品建档试卖、分层补货、月度售价排期、淡旺季销量曲线、平台综合成本随售价联动，以及 12 / 25 / 50 万人民币首批启动费扣减；当前版本不含到俄头程/清关/入仓和贴标/本地化费用。</p>
       </div>
       <div class="model-list">
         <a href="ABC利润模型/ABC模型入口.html#model-a" target="_blank" rel="noopener"><strong>A 模型 · 保守试水</strong><span>以 Ozon 测款为主，不追求当年完整回本，目标是跑出 8-12 个稳定款；当前不含到俄运费。</span><b>打开 A 模型</b></a><a class="primary-model" href="ABC利润模型/ABC模型入口.html#model-b" target="_blank" rel="noopener"><strong>B 模型 · 标准启动</strong><span>Ozon 跑通后 WB 跟进，贡献利润率按 8%-12% 做场景测算，暂不含到俄运费。</span><b>打开推荐模型</b></a><a href="ABC利润模型/ABC模型入口.html#model-c" target="_blank" rel="noopener"><strong>C 模型 · 进取放量</strong><span>需要稳定供应、包装升级、广告预算和多平台放量，要求工厂提供更深合作支持；当前不含到俄运费。</span><b>打开 C 模型</b></a>
       </div>
     </div>
     <div class="evidence-note" style="margin-top:26px;">
-      标准启动 171-312 万是“资金准备测算”，不是市场价、不是德力报价，也不是确定成本。里面只有首批库存采购按模型假设供货价估算；样品、包装、检测、合规、头程清关入仓都需要报价替换；库存、广告、破损和现金流储备属于滚动资金，贴标/本地化暂不计入。
+      标准启动的 25 万是当前损益模型里扣减的一次性启动费；171-312 万是资金准备池，不是市场价、不是德力报价，也不是确定成本。里面只有首批库存采购按模型假设供货价估算；样品、包装、检测、合规、头程清关入仓都需要报价替换；库存、广告、破损和现金流储备属于滚动资金，贴标/本地化暂不计入。
     </div>
   </div>
 </section>

@@ -203,7 +203,7 @@ const DICT = {
   calcShippingCost: { zh: "运费", en: "Shipping", ru: "Доставка" },
   grayNoVatNote: { zh: "⚠ 灰关无进项VAT发票，OSN下不可抵扣", en: "⚠ Gray customs: no import VAT invoice, non-deductible under OSN", ru: "⚠ Серая: нет вх. НДС, не вычитается при ОСН" },
   labelingCost: { zh: "贴标/本地化（暂不计）", en: "Labeling / Localization (excluded)", ru: "Маркировка (не учт.)" },
-  oneTimeCosts: { zh: "首批一次性费用（设计/拍照/合规）", en: "One-time Setup Costs", ru: "Разовые расходы" },
+  oneTimeCosts: { zh: "首批启动费（不含库存/广告/物流）", en: "One-time Setup Costs", ru: "Разовые расходы" },
   incomeBasis: { zh: "收入确认基础", en: "Income Recognition", ru: "Признание дохода" },
   incomeBasisKicker: { zh: "Income Recognition", en: "Income Recognition", ru: "Признание дохода" },
   basisPayout: { zh: "平台到手金额（M × 售价 − 平台综合成本）", en: "Platform Payout (M × Price − Fees)", ru: "Выплата площадки" },
@@ -375,7 +375,7 @@ const DICT = {
   paramDamageRate: { zh: "货损率", en: "Damage Rate", ru: "Процент потерь" },
   paramShipping: { zh: "到俄罗斯单件运费", en: "Shipping per Unit to Russia", ru: "Доставка за ед. в Россию" },
   paramLabeling: { zh: "贴标/本地化（暂不计）", en: "Labeling / Localization (excluded)", ru: "Маркировка (не учт.)" },
-  paramOneTime: { zh: "首批一次性费用 (设计/拍照/合规)", en: "One-time Costs (design/photo/compliance)", ru: "Разовые расходы (дизайн/фото/серт.)" },
+  paramOneTime: { zh: "首批启动费（样品/包装/拍摄/合规）", en: "One-time Costs (design/photo/compliance)", ru: "Разовые расходы (дизайн/фото/серт.)" },
 
   // === Price Schedule ===
   priceScheduleTitle: { zh: "售价排期 · 按月调价", en: "Price Schedule · Monthly Pricing", ru: "График цен · Помесячно" },

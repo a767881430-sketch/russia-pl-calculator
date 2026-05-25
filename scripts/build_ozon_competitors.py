@@ -235,25 +235,30 @@ def read_sections() -> list[dict]:
     return sections
 
 
-def sort_core_items(items: list[dict]) -> list[dict]:
-    category_priority = {
-        "Стакан": 0,
-        "Бокал": 1,
-        "Чайник заварочный": 2,
-        "Кувшин": 3,
-        "Графин": 4,
-        "Декантер": 5,
-        "Сахарница": 6,
-        "Чашка": 7,
-    }
+def sort_by_sales(items: list[dict]) -> list[dict]:
     return sorted(
         items,
         key=lambda item: (
-            category_priority.get(item["category"], 99),
+            -item["sales_rub"],
+            -item["orders"],
+            item["rank"],
+        ),
+    )
+
+
+def sort_by_orders(items: list[dict]) -> list[dict]:
+    return sorted(
+        items,
+        key=lambda item: (
+            -item["orders"],
             -item["sales_rub"],
             item["rank"],
         ),
     )
+
+
+def with_display_rank(items: list[dict]) -> list[dict]:
+    return [{**item, "display_rank": index} for index, item in enumerate(items, 1)]
 
 
 def product_card(item: dict) -> str:
@@ -280,12 +285,14 @@ def product_card(item: dict) -> str:
     )
     search_text = f'{item["title"]} {item["seller"]} {item["brand"]}'.lower()
 
+    rank = item.get("display_rank", item["rank"])
+
     return f"""
-      <article class="product-card" data-status="{item['status_class']}" data-focus="{item['focus']}" data-has-img="{'1' if item['image'] else '0'}" data-search="{escape(search_text)}">
+      <article class="product-card" data-status="{item['status_class']}" data-focus="{item['focus']}" data-has-img="{'1' if item['image'] else '0'}" data-sales="{int(round(item['sales_rub']))}" data-orders="{int(round(item['orders']))}" data-search="{escape(search_text)}">
         <a class="thumb" href="{escape(item['link'])}" target="_blank" rel="noopener noreferrer">{image_html}</a>
         <div class="body">
           <div class="topline">
-            <span class="rank">#{item['rank']:02d}</span>
+            <span class="rank">#{rank:02d}</span>
             <span class="badge {item['focus']}">{escape(item['focus_label'])}</span>
           </div>
           <h3>{escape(item['title'])}</h3>
@@ -309,7 +316,7 @@ def product_card(item: dict) -> str:
 
 def render(sections: list[dict]) -> str:
     all_items = [item for section in sections for item in section["rows"]]
-    core_items = sort_core_items([item for item in all_items if item["focus"] == "core"])
+    core_items = with_display_rank(sort_by_orders([item for item in all_items if item["focus"] == "core"]))
     verified_images = sum(1 for item in all_items if item["image"])
     core_images = sum(1 for item in core_items if item["image"])
     side_count = sum(1 for item in all_items if item["focus"] != "core")
@@ -346,14 +353,14 @@ def render(sections: list[dict]) -> str:
         """
     section_html = ""
     for section in sections:
-        rows = section["rows"]
+        rows = with_display_rank(sort_by_orders(section["rows"]))
         section_html += f"""
         <section class="cat-section" id="{escape(section['key'])}" data-section-kind="category" data-category="{escape(section['key'])}">
           <div class="cat-head">
             <div>
               <div class="eyebrow">{escape(section['role'])} · {escape(section['key'])}</div>
               <h2>{escape(section['cn'])}</h2>
-              <p>本类目展示 Excel 热卖商品榜前 10。图片只放已核准 Ozon 商品 ID 的本地素材；缺图商品保留链接和数据，不用替图。</p>
+              <p>本类目默认按 28 天销量从高到低展示 Excel 热卖商品榜前 10，也可以切换为销售额排序。图片只放已核准 Ozon 商品 ID 的本地素材；缺图商品保留链接和数据，不用替图。</p>
             </div>
             <div class="cat-stats">
               <div><b>{format_rmb_from_rub(sum(item['sales_rub'] for item in rows))}</b><span>前10合计销售额</span></div>
@@ -379,7 +386,8 @@ def render(sections: list[dict]) -> str:
 *{{box-sizing:border-box}}html{{scroll-behavior:smooth}}body{{margin:0;background:var(--bg);color:var(--paper);font-family:Inter,"Noto Sans SC",sans-serif;line-height:1.6}}a{{color:inherit}}.wrap{{max-width:1480px;margin:auto;padding:0 clamp(18px,4vw,56px)}}
 header{{padding:34px 0 28px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(17,16,14,.92);backdrop-filter:blur(14px);z-index:20}}.top{{display:flex;justify-content:space-between;gap:20px;align-items:center}}.brand{{font-family:Fraunces,serif;font-size:22px}}.back{{text-decoration:none;border:1px solid var(--line);padding:9px 13px;color:var(--muted);font-size:13px}}.back:hover{{border-color:var(--copper);color:var(--paper)}}
 .hero{{padding:56px 0 36px}}h1{{font-family:Fraunces,"Noto Sans SC",serif;font-weight:300;font-size:clamp(42px,7vw,96px);line-height:.98;margin:0 0 22px}}.lead{{max-width:900px;color:var(--muted);font-size:17px}}.summary{{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:30px}}.summary div,.cat-stats div{{border:1px solid var(--line);background:var(--panel);padding:18px}}.summary b{{display:block;font-family:Fraunces,serif;font-size:32px;font-weight:300}}.summary span,.cat-stats span{{color:var(--muted);font-size:13px}}
-.toolbar{{position:sticky;top:97px;z-index:15;background:rgba(17,16,14,.95);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}}.tools{{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}}input{{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--paper);padding:12px 14px;font-size:14px}}.filters{{display:flex;gap:8px;flex-wrap:wrap}}button{{background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:10px 12px;cursor:pointer}}button.active,button:hover{{border-color:var(--copper);color:var(--paper)}}.nav{{display:flex;gap:8px;overflow:auto;padding:14px 0 0;scrollbar-width:none;-ms-overflow-style:none}}.nav::-webkit-scrollbar{{display:none}}.nav-pill{{min-width:150px;text-align:left;text-decoration:none;border:1px solid var(--line);background:var(--panel);padding:10px 12px}}.nav-pill.active{{border-color:var(--copper);color:var(--paper);background:rgba(213,138,69,.08)}}.nav b{{display:block;font-size:13px}}.nav span{{color:var(--soft);font-size:12px}}
+.toolbar{{position:sticky;top:97px;z-index:15;background:rgba(17,16,14,.95);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}}.tools{{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}}input{{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--paper);padding:12px 14px;font-size:14px}}.filters{{display:flex;gap:8px;flex-wrap:wrap}}button{{background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:10px 12px;cursor:pointer}}button.active,button:hover{{border-color:var(--copper);color:var(--paper)}}button.active{{background:linear-gradient(135deg,rgba(213,138,69,.26),rgba(25,22,18,.96));box-shadow:0 10px 28px rgba(213,138,69,.18)}}.nav{{display:flex;gap:8px;overflow:auto;padding:14px 0 0;scrollbar-width:none;-ms-overflow-style:none}}.nav::-webkit-scrollbar{{display:none}}.nav-pill{{min-width:150px;text-align:left;text-decoration:none;border:1px solid var(--line);background:var(--panel);padding:10px 12px}}.nav-pill.active{{border-color:var(--copper);color:var(--paper);background:rgba(213,138,69,.08)}}.nav b{{display:block;font-size:13px}}.nav span{{color:var(--soft);font-size:12px}}
+.sort-note{{margin-top:10px;color:var(--muted);font-size:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}}.sort-note b{{color:var(--paper);font-weight:600}}.sort-state{{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border:1px solid rgba(213,138,69,.42);background:rgba(213,138,69,.08);color:var(--paper);font-weight:600}}
 .notice{{margin:28px 0 10px;border:1px solid rgba(213,138,69,.35);background:rgba(213,138,69,.08);padding:18px;color:var(--muted)}}.notice b{{color:var(--paper)}}.notice ul{{margin:8px 0 0 20px}}
 .cat-section{{padding:64px 0;border-bottom:1px solid var(--line)}}.cat-head{{display:grid;grid-template-columns:1fr auto;gap:30px;align-items:end;margin-bottom:22px}}.eyebrow{{color:var(--copper);font-size:12px;letter-spacing:.12em;text-transform:uppercase}}h2{{font-family:Fraunces,"Noto Sans SC",serif;font-size:44px;font-weight:300;margin:8px 0}}.cat-head p{{margin:0;color:var(--muted)}}.cat-stats{{display:grid;grid-template-columns:repeat(3,150px);gap:10px}}.cat-stats b{{display:block;font-size:18px}}
 .cards{{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}}.product-card{{background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column;min-height:620px}}.thumb{{display:grid;place-items:center;aspect-ratio:1/1;background:#f8f4ec;border-bottom:1px solid var(--line);text-decoration:none;position:relative;overflow:hidden}}.thumb img{{width:100%;height:100%;object-fit:contain;padding:14px;cursor:zoom-in}}.no-img{{color:#6d6253;text-align:center;padding:20px}}.no-img b{{display:block;color:#332b22}}.no-img span,.no-img small{{display:block;margin-top:6px}}.body{{padding:16px;display:flex;flex-direction:column;gap:12px;flex:1}}.topline{{display:flex;justify-content:space-between;gap:8px}}.rank{{font-family:Fraunces,serif;color:var(--copper);font-size:22px}}.badge{{font-size:11px;border:1px solid currentColor;padding:4px 7px;height:max-content}}.badge.core{{color:var(--green)}}.badge.side{{color:var(--blue)}}.badge.direct{{color:var(--green)}}.badge.warn{{color:var(--red)}}.badge.ref{{color:var(--blue)}}h3{{font-size:15px;line-height:1.45;margin:0;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}}.meta{{color:var(--muted);font-size:12px;display:grid;gap:3px}}.meta b{{color:var(--paper);font-weight:500}}.metrics{{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto}}.metrics div{{border:1px solid var(--line);background:rgba(255,255,255,.025);padding:9px}}.metrics b{{display:block;font-size:14px}}.metrics span,.note{{color:var(--muted);font-size:11px}}.open{{display:block;text-align:center;text-decoration:none;border:1px solid var(--line);padding:10px;color:var(--copper);font-size:13px}}.open:hover{{background:rgba(213,138,69,.08)}}
@@ -392,11 +400,11 @@ header{{padding:34px 0 28px;border-bottom:1px solid var(--line);position:sticky;
 <main>
   <div class="wrap hero">
     <h1>先看透明玻璃，<br>再看旁类趋势。</h1>
-    <p class="lead">这个页面专门承接 Ozon 竞品。默认只展示和德力最相关的透明玻璃商品；热卖商品价格按买家价 / 活动价口径展示，反推平台标价按“买家价 ÷ 0.7 到 ÷ 0.5”估算。没有核准到商品 ID 的图片不使用替图，只保留 Ozon 链接和数据。</p>
+    <p class="lead">这个页面专门承接 Ozon 竞品。默认只展示和德力最相关的透明玻璃商品，并按 28 天销量从高到低排，方便先看谁真正卖得动；热卖商品价格按买家价 / 活动价口径展示，反推平台标价按“买家价 ÷ 0.7 到 ÷ 0.5”估算。没有核准到商品 ID 的图片不使用替图，只保留 Ozon 链接和数据。</p>
     <div class="summary"><div><b>{len(core_items)}</b><span>个透明玻璃款样本</span></div><div><b>{len(all_items)}</b><span>款全量热卖样本</span></div><div><b>{verified_images}</b><span>张已核准主图</span></div><div><b>{side_count}</b><span>款旁类观察样本</span></div></div>
     <div class="notice"><b>展示逻辑已经收窄</b><ul><li><b>透明玻璃款</b>：水杯、高脚杯、玻璃茶壶、水壶、分酒器、醒酒器、糖罐、透明玻璃杯。</li><li><b>旁类观察</b>：杯盖、烟缸、硅胶、金属、陶瓷茶具等只用来观察平台内容与价格打法，不作为德力透明玻璃款的直接对标样本。</li><li><b>数据缺口</b>：当前 Excel 未提供真正的马克杯 28 天热卖榜；现有“Кружки28天热卖”实际是杯盖配件。</li></ul></div>
   </div>
-  <div class="toolbar"><div class="wrap"><div class="tools"><input id="q" placeholder="搜索商品、品牌、卖家，例如 Pasabahce / ThermoGlass / 玻璃茶壶"><div class="filters"><button class="active" data-filter="core">透明玻璃款</button><button data-filter="all">全部类目</button><button data-filter="side">旁类观察</button><button data-filter="direct">直接玻璃</button><button data-filter="img">已有主图</button></div></div><nav class="nav">{nav_html}</nav></div></div>
+  <div class="toolbar"><div class="wrap"><div class="tools"><input id="q" placeholder="搜索商品、品牌、卖家，例如 Pasabahce / ThermoGlass / 玻璃茶壶"><div class="filters"><button class="active" data-filter="core" data-sort="orders">透明玻璃款</button><button data-filter="top-orders" data-sort="orders">按销量排序</button><button data-filter="top-sales" data-sort="sales">按销售额排序</button><button data-filter="all">全部类目</button><button data-filter="side">旁类观察</button><button data-filter="direct">直接玻璃</button><button data-filter="img">已有主图</button></div></div><div class="sort-note"><b>排序口径：</b><span id="sort-state" class="sort-state">当前：按 28 天销量从高到低</span><span>切换类目、筛选或搜索后仍保持当前排序。</span></div><nav class="nav">{nav_html}</nav></div></div>
   <div class="wrap">{core_html}{section_html}</div>
 </main>
 <footer><div class="wrap">数据来源：重庆得力玻璃类目趋势.xlsx · Ozon 28 天热卖商品榜 · 人民币折算按 1 RMB = 12.8 RUB。图片口径：只展示本地已按 Ozon 商品 ID 命名并与链接匹配的素材。</div></footer>
@@ -409,13 +417,33 @@ const sections=[...document.querySelectorAll('.cat-section')];
 const navPills=[...document.querySelectorAll('.nav-pill')];
 let filter='core';
 let category='core';
+let sortMode='orders';
+function sortCards(){{
+  sections.forEach(section=>{{
+    section.querySelectorAll('.cards').forEach(holder=>{{
+      [...holder.querySelectorAll('.product-card')]
+        .sort((a,b)=>{{
+          const primary=sortMode==='sales'?'sales':'orders';
+          const secondary=sortMode==='sales'?'orders':'sales';
+          return (Number(b.dataset[primary])||0)-(Number(a.dataset[primary])||0)||((Number(b.dataset[secondary])||0)-(Number(a.dataset[secondary])||0));
+        }})
+        .forEach(card=>holder.appendChild(card));
+      [...holder.querySelectorAll('.product-card')].forEach((card,index)=>{{
+        const rank=card.querySelector('.rank');
+        if(rank) rank.textContent=`#${{String(index+1).padStart(2,'0')}}`;
+      }});
+    }});
+  }});
+}}
 function apply(){{
+  sortCards();
+  document.getElementById('sort-state').textContent=sortMode==='sales'?'当前：按 28 天销售额从高到低':'当前：按 28 天销量从高到低';
   const term=q.value.trim().toLowerCase();
   cards.forEach(card=>{{
     let ok=!term||card.dataset.search.includes(term);
     if(category==='core') ok=ok&&card.dataset.focus==='core';
     else if(category!=='all') ok=ok&&card.closest('.cat-section')?.dataset.category===category;
-    if(filter==='core') ok=ok&&card.dataset.focus==='core';
+    if(filter==='core'||filter==='top-orders'||filter==='top-sales') ok=ok&&card.dataset.focus==='core';
     if(filter==='side') ok=ok&&card.dataset.focus!=='core';
     if(filter==='direct') ok=ok&&card.dataset.status==='direct';
     if(filter==='img') ok=ok&&card.dataset.hasImg==='1';
@@ -429,7 +457,7 @@ function apply(){{
   }});
 }}
 q.addEventListener('input',apply);
-buttons.forEach(button=>button.addEventListener('click',()=>{{buttons.forEach(item=>item.classList.remove('active'));button.classList.add('active');filter=button.dataset.filter;category=filter==='core'?'core':'all';navPills.forEach(item=>item.classList.toggle('active',item.dataset.category===category));apply();}}));
+buttons.forEach(button=>button.addEventListener('click',()=>{{buttons.forEach(item=>item.classList.remove('active'));button.classList.add('active');filter=button.dataset.filter;if(button.dataset.sort) sortMode=button.dataset.sort;category=(filter==='core'||filter==='top-orders'||filter==='top-sales')?'core':'all';navPills.forEach(item=>item.classList.toggle('active',item.dataset.category===category));apply();}}));
 navPills.forEach(button=>button.addEventListener('click',()=>{{navPills.forEach(item=>item.classList.remove('active'));button.classList.add('active');category=button.dataset.category;filter=category==='core'?'core':'all';buttons.forEach(item=>item.classList.toggle('active',item.dataset.filter===filter));apply();const target=document.querySelector(`.cat-section[data-category="${{CSS.escape(category)}}"]`);target?.scrollIntoView({{behavior:'smooth',block:'start'}});}}));
 const lb=document.getElementById('lightbox'),lbImg=lb.querySelector('img'),cap=lb.querySelector('.cap');
 document.addEventListener('click',event=>{{const img=event.target.closest('.thumb img');if(!img)return;event.preventDefault();lbImg.src=img.src;cap.textContent=img.dataset.lightboxCaption||img.alt;lb.classList.add('open');}});

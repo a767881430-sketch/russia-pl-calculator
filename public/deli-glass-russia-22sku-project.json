@@ -13,7 +13,7 @@
     "profitTaxRate": 0.25,
     "customTaxRate": 0.15,
     "incomeBasis": "payout",
-    "oneTimeCosts": 9728000
+    "oneTimeCosts": 3200000
   },
   "products": [
     {

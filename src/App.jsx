@@ -3323,6 +3323,11 @@ const ParamsPanel = ({ params, setParams, t }) => {
           <NumInput value={it.multiplier ? params[it.k] * it.multiplier : params[it.k]}
             onChange={(v) => setParams(p => ({ ...p, [it.k]: it.multiplier ? v / it.multiplier : v }))}
             suffix={it.suffix} step={it.step || 1} className="mt-1" />
+          {it.k === "oneTimeCosts" && (
+            <div className="mt-1 text-xs leading-relaxed" style={{ color: COLORS.inkSoft }}>
+              约 {fmtCnyShort((params.oneTimeCosts || 0) / (params.exchangeRate || 12.8))}。这里只放首批启动费：样品、包装打样、拍摄内容、合规资料整理；不含库存采购、广告测款、现金周转、到俄头程/清关/入仓。
+            </div>
+          )}
         </div>
       ))}
       {/* Shipping section */}

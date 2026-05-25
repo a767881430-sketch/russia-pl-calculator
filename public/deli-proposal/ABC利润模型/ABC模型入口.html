@@ -13,17 +13,25 @@ h2{font-family:Georgia,"Noto Serif SC",serif;font-weight:500;margin:0 0 8px;font
 p{line-height:1.75;color:#5d5145;margin:0 0 14px}
 .lead{font-size:18px;color:#3c3128;max-width:860px}
 .notice{background:#fff8ea;border:1px solid #dac7a4;border-left:4px solid #b66a2a;padding:18px 20px;margin:26px 0;color:#4e3d2f;line-height:1.75}
+.notice.strong{background:#fff2d6;border-color:#c99058;border-left-color:#8a3f16}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
-.card{background:white;border:1px solid #d8cab6;padding:24px;min-height:420px;display:flex;flex-direction:column}
+.card{background:white;border:1px solid #d8cab6;padding:24px;min-height:420px;display:flex;flex-direction:column;position:relative}
+.card:nth-child(2){border-color:#b66a2a;box-shadow:0 18px 42px rgba(138,63,22,.10)}
+.card:nth-child(2)::before{content:"推荐展示模型";position:absolute;top:16px;right:16px;background:#8a3f16;color:white;padding:5px 8px;font-size:11px;font-weight:700}
 .tag{font-size:12px;letter-spacing:.12em;color:#9a6032;text-transform:uppercase;margin-bottom:12px}
-.amount{font-size:24px;font-weight:700;margin:12px 0;color:#1c1813}
+.amount{font-size:24px;font-weight:700;margin:12px 0 8px;color:#1c1813;border:1px solid #c99058;background:#fff3dc;padding:13px 14px}
+.amount::before{content:"一次性扣减";display:block;color:#8a3f16;font-size:12px;letter-spacing:.12em;margin-bottom:4px}
+.capital{border:1px dashed #d6b98d;background:#fffdf7;padding:12px 14px;margin:0 0 14px}
+.capital b{display:block;color:#1c1813;font-size:18px;margin-bottom:4px}
+.capital b::before{content:"资金池，不是一次性费用：";color:#8a3f16}
+.capital span{display:block;color:#75685a;font-size:13px;line-height:1.6}
 .rows{border-top:1px solid #eadfce;margin:16px 0 18px}
 .row{display:flex;justify-content:space-between;gap:18px;border-bottom:1px solid #eadfce;padding:10px 0;font-size:14px}
 .row span{color:#6b5f4f}
 .row b{white-space:nowrap}
 .actions{margin-top:auto;display:grid;gap:10px}
 a{color:#8a3f16;font-weight:700;text-decoration:none}
-.button{display:block;border:1px solid #b66a2a;background:#8a3f16;color:#fff;text-align:center;padding:11px 14px}
+.button{display:block;border:1px solid #b66a2a;background:linear-gradient(135deg,#b66a2a,#8a3f16);color:#fff;text-align:center;padding:13px 14px;box-shadow:0 12px 26px rgba(138,63,22,.16)}
 .ghost{background:#fff;color:#8a3f16}
 .small{font-size:13px;color:#75685a}
 @media (max-width:900px){body{padding:22px}.grid{grid-template-columns:1fr}.card{min-height:0}}
@@ -32,8 +40,9 @@ a{color:#8a3f16;font-weight:700;text-decoration:none}
 <body>
 <main>
 <h1>德力玻璃俄罗斯电商 · A/B/C 投入测算模型</h1>
-<p class="lead">三套模型对应三种启动力度：保守试水、标准启动、进取放量。它们不是三套不同价格口径，也不是工厂报价单，而是同一批产品在不同备货量、补货节奏、广告预算和启动费用下的资金准备测算。</p>
-<div class="notice"><strong>这些金额不是市场价，也不是已确认成本。</strong>首批库存采购按当前模型里的预估供货价测算；样品、包装、跌落测试、合规资料、到俄物流、清关、保险和入仓都需要工厂或货代报价后替换。广告、破损赔付和现金流储备属于周转缓冲，不是一次性花光。</div>
+<p class="lead">三套模型对应三种启动力度：保守试水、标准启动、进取放量。它们不是三套不同价格口径，也不是工厂报价单，而是同一批产品在不同备货量、补货节奏、广告预算和首批启动费下的资金准备测算。</p>
+<div class="notice strong"><strong>先分清两个金额：</strong>“首批启动费”才是当前损益模型里扣掉的一次性费用，主要覆盖样品、包装打样、拍摄和合规资料整理；“资金准备池”包含库存、广告、破损赔付、现金周转和物流占位，不是一次性花光，也不是德力报价。</div>
+<div class="notice"><strong>这些金额不是市场价，也不是已确认成本。</strong>首批库存采购按当前模型里的预估供货价测算；样品、包装、跌落测试、合规资料、到俄物流、清关、保险和入仓都需要工厂或货代报价后替换。广告、破损赔付和现金流储备属于周转缓冲。</div>
 <div class="notice"><strong>当前为“不含到俄运费版本”。</strong>模型暂未计入中国至俄罗斯头程、出口报关、俄罗斯清关、保险、尾程派送、平台仓预约和俄罗斯入仓费用；贴标/本地化也暂不计入。到俄物流和本地化处理需要等工厂提供装箱尺寸、毛重、每箱套数、交货条件和包装方案，并由货代/工厂报价后重算。</div>
 
 <div class="grid">
@@ -41,7 +50,8 @@ a{color:#8a3f16;font-weight:700;text-decoration:none}
     <div class="tag">Model A · 保守试水</div>
     <h2>A 模型 · 保守试水</h2>
     <p>适合第一次合作时控制现金占用。重点不是马上放量，而是验证俄罗斯平台是否愿意买、破损是否能控、价格是否站得住。</p>
-    <div class="amount">资金准备测算：78-141 万 RMB</div>
+    <div class="amount">首批启动费：12 万 RMB</div>
+    <div class="capital"><b>资金准备池：78-141 万 RMB</b><span>含模型库存、广告测款、破损赔付、现金周转和到俄物流占位；不是一次性花光。</span></div>
     <div class="rows">
       <div class="row"><span>首批策略</span><b>小批试卖</b></div>
       <div class="row"><span>产品处理</span><b>跑量款优先</b></div>
@@ -60,7 +70,8 @@ a{color:#8a3f16;font-weight:700;text-decoration:none}
     <div class="tag">Model B · 标准启动</div>
     <h2>B 模型 · 标准启动</h2>
     <p>推荐作为对外展示的基准模型。22 个产品先建档，跑量款负责订单和评价，利润款负责毛利，高利润潜力款小批验证礼品场景。</p>
-    <div class="amount">资金准备测算：171-312 万 RMB</div>
+    <div class="amount">首批启动费：25 万 RMB</div>
+    <div class="capital"><b>资金准备池：171-312 万 RMB</b><span>含 22 款建档库存、广告、周转和物流占位；损益模型只把 25 万作为一次性启动费扣减。</span></div>
     <div class="rows">
       <div class="row"><span>首批策略</span><b>22 款建档</b></div>
       <div class="row"><span>产品处理</span><b>分层补货</b></div>
@@ -79,7 +90,8 @@ a{color:#8a3f16;font-weight:700;text-decoration:none}
     <div class="tag">Model C · 进取放量</div>
     <h2>C 模型 · 进取放量</h2>
     <p>适合工厂愿意配合稳定供货、包装升级、账期或返利时使用。核心款按 Ozon 与 WB 同步放量准备，现金占用明显更高。</p>
-    <div class="amount">资金准备测算：442-755 万 RMB</div>
+    <div class="amount">首批启动费：50 万 RMB</div>
+    <div class="capital"><b>资金准备池：442-755 万 RMB</b><span>含多平台库存、广告、周转和物流占位；适合工厂愿意共担供应、账期和包装升级时再启用。</span></div>
     <div class="rows">
       <div class="row"><span>首批策略</span><b>多平台准备</b></div>
       <div class="row"><span>产品处理</span><b>核心款放量</b></div>
