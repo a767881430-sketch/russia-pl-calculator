@@ -1392,7 +1392,7 @@ function AppContent({ lang, setLang }) {
     const glossaryItems = lang === 'zh' ? [
       { t: '总营收', d: '所有商品卖出后平台打给你的总金额（已扣平台综合成本）' },
       { t: '现金净利', d: '按单品逐个算税后汇总的利润' },
-      { t: '期末现金', d: '按月累计计算的实际账上余额（税按月合算，通常略高于净利）' },
+      { t: '期末账上现金（已扣分润）', d: '按月累计计算的实际账上余额，已扣除月固定费用、补货支出和合伙人分润/提现' },
       { t: '投入产出', d: '每投入 1 元预计能赚回多少钱，内部公式为净利 ÷ 投资 × 100%' },
       { t: '回本月份', d: '累计现金从负变正的月份' },
       { t: '最大回撤', d: '预测期内账上最缺钱的时刻（通常在M0）' },
@@ -1405,7 +1405,7 @@ function AppContent({ lang, setLang }) {
     ] : [
       { t: 'Revenue', d: 'Total platform payouts for all products sold (after fees)' },
       { t: 'Net Profit', d: 'Per-SKU tax-adjusted profit, summed up' },
-      { t: 'Final Cash', d: 'Monthly cumulative cash balance (tax calculated monthly, usually slightly higher)' },
+      { t: 'Final Cash After Partner Payout', d: 'Monthly cash balance after fixed costs, restocking, and partner payout/withdrawal' },
       { t: 'ROI', d: 'Return on Investment = Profit ÷ Investment × 100%' },
       { t: 'Break-even', d: 'Month when cumulative cash turns positive' },
     ];
@@ -1544,7 +1544,7 @@ function AppContent({ lang, setLang }) {
   <div class="logic-note">
     <strong>计算口径说明：</strong>当前采购价/申报价为测算假设，且均按“上架销售单位”计算：6只装、12件套、壶杯套装都按整套计，不按单只杯子计。若到俄运费留空为 0，则当前结果不包含中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用；贴标/本地化当前也设为 0，不进入利润测算。需待工厂 EXW/FOB 正式报价、装箱尺寸、毛重和货代报价确认后替换。经营净利 = 商品销售回款 - 已填写的采购/物流成本 - 海外仓费用 - 管理费 - 破损 - 税，不含一次性启动费；
     项目净利 = 经营净利 - 一次性启动费；
-    期末现金 = 项目净利再叠加首批备货、补货节奏和现金回收时间。三者口径不同，不能混读。
+    期末账上现金（已扣分润） = 项目净利再叠加首批备货、补货节奏、现金回收时间，并扣除合伙人分润/提现后的账上余额。三者口径不同，不能混读。
   </div>
 
   <!-- Summary Cards -->
@@ -3482,8 +3482,8 @@ const GLOSSARY = {
       { term: "总营收", desc: "所有商品卖出后，平台打给你的总金额（售价 − 平台综合成本）。", example: "商品售价 1249₽，平台综合成本 652₽ → 单件回款 597₽。30件 → 总营收 = 597 × 30 × 97%（扣货损）= 17,373₽" },
       { term: "总投资", desc: "测算口径下需要占用的资金：预估采购成本 + 已填写的到俄物流费用 + 一次性费用。德力当前版本到俄运费和贴标/本地化都为 0，等工厂和货代报价后再重算。采购成本按上架销售单位填写，正式报价后必须替换。", example: "6只装预估采购价18¥/套 × 汇率12.8 = 230.4₽，到俄运费和贴标暂不计 → 每套成本230.4₽。100套 → 投资 = 23,040₽" },
       { term: "现金净利", desc: "按每个产品单独算税后汇总的利润。= 总营收 − 总投资 − 仓储 − 管理费 − 税。", example: "营收 17,373₽ − 投资 9,354₽ − 仓 2,970₽ − 管理 1,080₽ − 税 580₽ = 净利 3,389₽" },
-      { term: "期末现金", desc: "经过N个月销售排期后，你账上实际还剩多少钱。按月度累计计算。", example: "M0投入 -108万₽ → M1回款+15万 → M2回款+20万 → ... → M8累计 = +57.5万₽" },
-      { term: "⚠️ 现金净利 vs 期末现金", desc: "两个数不一样是正常的！现金净利是按每个产品单独算税再汇总；期末现金是按月合算税。月合算时税额可能更低，所以期末现金通常略高。", example: "多个产品单独算税各交一点最低税 → 总税高；按月合在一起算 → 利润合并后不触发最低税 → 总税低 → 到手多" },
+      { term: "期末账上现金（已扣分润）", desc: "经过N个月销售排期后，扣除月固定费用、补货支出和合伙人分润/提现后，账上实际还剩多少钱。按月度现金流累计计算。", example: "M0投入 -108万₽ → M1经营回款+15万 → M2补货/分润后+20万 → ... → M8账上余额 = +57.5万₽" },
+      { term: "⚠️ 现金净利 vs 期末账上现金", desc: "两个数不一样是正常的！经营净利/现金净利是利润口径；期末账上现金是现金流口径，会叠加M0备货、补货节奏、月固定费用，以及合伙人分润/提现。", example: "经营净利看这批货赚了多少；期末账上现金看经过备货、补货、固定月租和分润后，账户里实际剩多少" },
       { term: "投入产出", desc: "每投入1块钱能赚回多少。= 净利润 ÷ 总投资 × 100%", example: "投资10万₽，净赚4.7万₽ → 投入产出 = 47%。意思是每投1卢布赚回0.47卢布" },
       { term: "净利", desc: "每赚100块营收里有多少是纯利润。= 净利润 ÷ 总营收 × 100%", example: "营收21万₽，净利4.7万₽ → 净利 = 22.3%。每100₽营收中22.3₽是纯利" },
     ]},
@@ -3518,8 +3518,8 @@ const GLOSSARY = {
       { term: "Total Revenue", desc: "Total platform payout for all products sold (List Price − Platform Fees).", example: "List 1249₽, Fee 652₽ → Payout 597₽/pc. 30pcs → Revenue = 597×30×97% = 17,373₽" },
       { term: "Total Investment", desc: "All money you put in: procurement + filled shipping/logistics fields + labeling + one-time costs. If shipping is left at 0, Russia head freight/customs/inbound is excluded.", example: "Cost 17.65¥ × rate 12 = 211.8₽, labeling 12₽, shipping 0₽ → Unit 223.8₽. 30pcs → 6,714₽" },
       { term: "Net Profit (Cash)", desc: "Profit after tax, calculated per-SKU then summed. = Revenue − Investment − Warehouse − Mgmt − Tax.", example: "Revenue 17,373₽ − Invest 9,354₽ − WH 2,970₽ − Mgmt 1,080₽ − Tax 580₽ = 3,389₽" },
-      { term: "Final Cash", desc: "Actual cash balance after N months of sales. Calculated monthly.", example: "M0: −1.08M₽ → M1: +150K → ... → M8: +575K₽" },
-      { term: "⚠️ Net Profit vs Final Cash", desc: "They differ because tax is calculated differently: per-SKU vs per-month aggregation. Monthly aggregation usually results in lower tax.", example: "Per-SKU: each triggers minimum 1% tax. Monthly: combined profit avoids minimum → less tax → more cash" },
+      { term: "Final Cash After Partner Payout", desc: "Actual cash left after N months of sales, fixed monthly costs, restocking, and partner payout/withdrawal. Calculated as monthly cash flow.", example: "M0: −1.08M₽ → M1: operating cash +150K → ... → M8 ending balance after payout: +575K₽" },
+      { term: "⚠️ Net Profit vs Final Cash", desc: "They differ by design. Net profit is a profit view; final cash is a cash-flow view that includes M0 inventory, restocking timing, fixed monthly costs, and partner payout/withdrawal.", example: "Net profit answers how much the batch earns. Final cash answers how much money remains in the account after inventory, restocking, rent, and payout." },
       { term: "ROI", desc: "Return on Investment. = Net Profit ÷ Total Investment × 100%", example: "Invest 100K₽, profit 47K₽ → ROI = 47%" },
       { term: "Net Margin", desc: "Profit per 100₽ of revenue. = Net Profit ÷ Revenue × 100%", example: "Revenue 210K₽, profit 47K₽ → Margin = 22.3%" },
     ]},
