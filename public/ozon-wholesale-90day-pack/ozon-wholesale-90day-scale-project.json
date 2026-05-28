@@ -1,0 +1,395 @@
+{
+  "projectName": "OZON俄罗斯本地现货供给合作_C放量验证_经营口径",
+  "params": {
+    "exchangeRate": 13,
+    "usdRate": 95,
+    "damageRate": 0.05,
+    "shippingPerUnit": 0,
+    "labelingPerUnit": 0,
+    "grayShipPrice": 0,
+    "whiteShipPrice": 0,
+    "taxScheme": "usn_15_vat5",
+    "vatRate": 0.22,
+    "profitTaxRate": 0.25,
+    "customTaxRate": 0.15,
+    "incomeBasis": "payout",
+    "oneTimeCosts": 0
+  },
+  "products": [
+    {
+      "id": "PLUSH_KEYCHAIN_BUNDLE_毛绒挂件组合装",
+      "priceCNY": 0,
+      "declaredCNY": 0,
+      "qty": 1200,
+      "launchTier": "trial",
+      "weight": 0.12,
+      "list": 999,
+      "feePct": 0.58,
+      "platformFee": 579,
+      "warehouse": 25,
+      "mgmt": 265,
+      "shippingMode": "manual"
+    },
+    {
+      "id": "KEYCHAIN_MULTI_PACK_钥匙扣多件装",
+      "priceCNY": 0,
+      "declaredCNY": 0,
+      "qty": 1600,
+      "launchTier": "trial",
+      "weight": 0.08,
+      "list": 699,
+      "feePct": 0.58,
+      "platformFee": 405,
+      "warehouse": 18,
+      "mgmt": 187,
+      "shippingMode": "manual"
+    },
+    {
+      "id": "CLEANING_BRUSH_SET_洗碗刷清洁刷套装",
+      "priceCNY": 0,
+      "declaredCNY": 0,
+      "qty": 1400,
+      "launchTier": "trial",
+      "weight": 0.18,
+      "list": 799,
+      "feePct": 0.57,
+      "platformFee": 455,
+      "warehouse": 22,
+      "mgmt": 214,
+      "shippingMode": "manual"
+    },
+    {
+      "id": "SINK_FILTER_PACK_水槽过滤网多件装",
+      "priceCNY": 0,
+      "declaredCNY": 0,
+      "qty": 1400,
+      "launchTier": "trial",
+      "weight": 0.12,
+      "list": 699,
+      "feePct": 0.58,
+      "platformFee": 405,
+      "warehouse": 18,
+      "mgmt": 187,
+      "shippingMode": "manual"
+    },
+    {
+      "id": "PEELER_SET_削皮器刨皮刀组合",
+      "priceCNY": 0,
+      "declaredCNY": 0,
+      "qty": 1000,
+      "launchTier": "trial",
+      "weight": 0.12,
+      "list": 799,
+      "feePct": 0.57,
+      "platformFee": 455,
+      "warehouse": 20,
+      "mgmt": 214,
+      "shippingMode": "manual"
+    },
+    {
+      "id": "KITCHEN_TOOL_BUNDLE_果蔬切厨房工具组合",
+      "priceCNY": 0,
+      "declaredCNY": 0,
+      "qty": 720,
+      "launchTier": "trial",
+      "weight": 0.3,
+      "list": 999,
+      "feePct": 0.56,
+      "platformFee": 559,
+      "warehouse": 35,
+      "mgmt": 268,
+      "shippingMode": "manual"
+    },
+    {
+      "id": "EGG_SLICER_SET_鸡蛋切补充款",
+      "priceCNY": 0,
+      "declaredCNY": 0,
+      "qty": 480,
+      "launchTier": "trial",
+      "weight": 0.16,
+      "list": 699,
+      "feePct": 0.57,
+      "platformFee": 398,
+      "warehouse": 20,
+      "mgmt": 187,
+      "shippingMode": "manual"
+    },
+    {
+      "id": "TOILET_BRUSH_TRIAL_马桶刷小批测试",
+      "priceCNY": 0,
+      "declaredCNY": 0,
+      "qty": 320,
+      "launchTier": "trial",
+      "weight": 0.55,
+      "list": 1299,
+      "feePct": 0.56,
+      "platformFee": 727,
+      "warehouse": 60,
+      "mgmt": 389,
+      "shippingMode": "manual"
+    },
+    {
+      "id": "STORAGE_OIL_TRIAL_储物罐油壶谨慎测试",
+      "priceCNY": 0,
+      "declaredCNY": 0,
+      "qty": 240,
+      "launchTier": "trial",
+      "weight": 0.75,
+      "list": 1499,
+      "feePct": 0.56,
+      "platformFee": 839,
+      "warehouse": 75,
+      "mgmt": 450,
+      "shippingMode": "manual"
+    }
+  ],
+  "scheduleStore": {
+    "PLUSH_KEYCHAIN_BUNDLE_毛绒挂件组合装": [
+      240,
+      420,
+      540
+    ],
+    "KEYCHAIN_MULTI_PACK_钥匙扣多件装": [
+      320,
+      560,
+      720
+    ],
+    "CLEANING_BRUSH_SET_洗碗刷清洁刷套装": [
+      280,
+      489,
+      631
+    ],
+    "SINK_FILTER_PACK_水槽过滤网多件装": [
+      280,
+      489,
+      631
+    ],
+    "PEELER_SET_削皮器刨皮刀组合": [
+      200,
+      350,
+      450
+    ],
+    "KITCHEN_TOOL_BUNDLE_果蔬切厨房工具组合": [
+      144,
+      251,
+      325
+    ],
+    "EGG_SLICER_SET_鸡蛋切补充款": [
+      96,
+      168,
+      216
+    ],
+    "TOILET_BRUSH_TRIAL_马桶刷小批测试": [
+      64,
+      112,
+      144
+    ],
+    "STORAGE_OIL_TRIAL_储物罐油壶谨慎测试": [
+      48,
+      84,
+      108
+    ]
+  },
+  "priceScheduleStore": {
+    "PLUSH_KEYCHAIN_BUNDLE_毛绒挂件组合装": {
+      "list": [
+        950,
+        1000,
+        1030
+      ],
+      "fee": [
+        551,
+        580,
+        597
+      ]
+    },
+    "KEYCHAIN_MULTI_PACK_钥匙扣多件装": {
+      "list": [
+        660,
+        700,
+        720
+      ],
+      "fee": [
+        383,
+        406,
+        418
+      ]
+    },
+    "CLEANING_BRUSH_SET_洗碗刷清洁刷套装": {
+      "list": [
+        760,
+        800,
+        820
+      ],
+      "fee": [
+        433,
+        456,
+        467
+      ]
+    },
+    "SINK_FILTER_PACK_水槽过滤网多件装": {
+      "list": [
+        660,
+        700,
+        720
+      ],
+      "fee": [
+        383,
+        406,
+        418
+      ]
+    },
+    "PEELER_SET_削皮器刨皮刀组合": {
+      "list": [
+        760,
+        800,
+        820
+      ],
+      "fee": [
+        433,
+        456,
+        467
+      ]
+    },
+    "KITCHEN_TOOL_BUNDLE_果蔬切厨房工具组合": {
+      "list": [
+        950,
+        1000,
+        1030
+      ],
+      "fee": [
+        532,
+        560,
+        577
+      ]
+    },
+    "EGG_SLICER_SET_鸡蛋切补充款": {
+      "list": [
+        660,
+        700,
+        720
+      ],
+      "fee": [
+        376,
+        399,
+        410
+      ]
+    },
+    "TOILET_BRUSH_TRIAL_马桶刷小批测试": {
+      "list": [
+        1230,
+        1300,
+        1340
+      ],
+      "fee": [
+        689,
+        728,
+        750
+      ]
+    },
+    "STORAGE_OIL_TRIAL_储物罐油壶谨慎测试": {
+      "list": [
+        1420,
+        1500,
+        1540
+      ],
+      "fee": [
+        795,
+        840,
+        862
+      ]
+    }
+  },
+  "restockStore": {
+    "PLUSH_KEYCHAIN_BUNDLE_毛绒挂件组合装": [
+      1200,
+      0,
+      0,
+      0
+    ],
+    "KEYCHAIN_MULTI_PACK_钥匙扣多件装": [
+      1600,
+      0,
+      0,
+      0
+    ],
+    "CLEANING_BRUSH_SET_洗碗刷清洁刷套装": [
+      1400,
+      0,
+      0,
+      0
+    ],
+    "SINK_FILTER_PACK_水槽过滤网多件装": [
+      1400,
+      0,
+      0,
+      0
+    ],
+    "PEELER_SET_削皮器刨皮刀组合": [
+      1000,
+      0,
+      0,
+      0
+    ],
+    "KITCHEN_TOOL_BUNDLE_果蔬切厨房工具组合": [
+      720,
+      0,
+      0,
+      0
+    ],
+    "EGG_SLICER_SET_鸡蛋切补充款": [
+      480,
+      0,
+      0,
+      0
+    ],
+    "TOILET_BRUSH_TRIAL_马桶刷小批测试": [
+      320,
+      0,
+      0,
+      0
+    ],
+    "STORAGE_OIL_TRIAL_储物罐油壶谨慎测试": [
+      240,
+      0,
+      0,
+      0
+    ]
+  },
+  "withdrawalStore": {
+    "amounts": [
+      35058,
+      126052,
+      199409
+    ]
+  },
+  "projection": {
+    "monthsHorizon": 3,
+    "partnerSharePct": 50,
+    "monthlyFixedCost": 39000,
+    "autoVATEscalation": true,
+    "priorYearRevenue": 0
+  },
+  "projectMeta": {
+    "type": "localWholesaleCooperation",
+    "monthlyFixedCostCNY": 3000,
+    "monthlyFixedCostRUB": 39000,
+    "sharePct": 50,
+    "basis": "经营口径：不买断库存，供货结算占位进入单件mgmt；广告预留在平台综合费用里，店铺月租按固定费用进入现金流预测。",
+    "recommendation": "当前不设置大额一次性运营投入；重点看商品经营净利、每月3000 RMB店铺月租后的现金流和供货价替换后的利润敏感性。"
+  },
+  "notes": [
+    "合作口径：俄罗斯当地批发老板供货，运营侧提供OZON上架、俄语内容、广告、客服、销售复盘和扩展策略。",
+    "收益口径：本模型用于测算项目经营净利与权益分配弹性。",
+    "本项目按寄售/联营逻辑建模：priceCNY填0，避免把货主库存误算成运营侧现金采购投入。",
+    "mgmt字段包含供货结算占位价和单件运营处理费；供货结算占位价按卖家标价的25%-28%估算，拿到老板真实供货价后必须替换。",
+    "platformFee为OZON综合平台负担估算，覆盖佣金、平台物流/履约、支付、退货、促销和广告消耗的综合扣减，不等同于单一佣金。",
+    "warehouse字段为本地处理、仓储、打包和尾程相关占位费；真实尺寸重量和OZON物流费出来后要替换。",
+    "买家热卖价通常是卖家标价的60%-70%，且1卢布明星产品不作为正常售价参考。",
+    "低价单件模型不成立，必须优先做组合装、多件装或提高客单价到699-999RUB以上。",
+    "本计算器为经营口径：不设置大额一次性启动费；店铺月租按3,000 RMB/月进入现金流预测。",
+    "阶段化节奏：M1验证流程，M2筛选SKU，M3结合GMV、净利率、补货能力和售后责任评估扩展空间。",
+    "合作资料：需取得供货价、可供数量、尺寸重量、退换货规则和补货周期，用于替换当前占位参数。",
+    "放量版：适用于供货价、补货稳定性、换款机制和售后责任边界更清晰的合作情景。"
+  ]
+}

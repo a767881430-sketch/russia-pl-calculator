@@ -1,0 +1,7 @@
+A 保守试销模型
+
+推荐使用项目文件链接：
+../?project=ozon-wholesale-90day-pack/ozon-wholesale-90day-conservative-project.json
+
+对应项目文件：
+./ozon-wholesale-90day-conservative-project.json

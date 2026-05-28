@@ -646,6 +646,7 @@ function AppContent({ lang, setLang }) {
   const [restockStore, setRestockStore] = useState({});
   const [withdrawalStore, setWithdrawalStore] = useState({ amounts: [] });
   const [projection, setProjection] = useState(DEFAULT_PROJECTION);
+  const [projectMeta, setProjectMeta] = useState({});
   const [tab, setTab] = useState("dashboard");
   const [expandedRow, setExpandedRow] = useState(null);
   const [storageStatus, setStorageStatus] = useState("");
@@ -684,7 +685,7 @@ function AppContent({ lang, setLang }) {
   };
 
   const getCurrentData = () => ({
-    params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection,
+    params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection, projectMeta,
   });
 
   const applyData = (data) => {
@@ -695,14 +696,22 @@ function AppContent({ lang, setLang }) {
     if (data.restockStore) setRestockStore(data.restockStore); else setRestockStore({});
     if (data.withdrawalStore) setWithdrawalStore(data.withdrawalStore); else setWithdrawalStore({ amounts: [] });
     if (data.projection) setProjection({ ...DEFAULT_PROJECTION, ...data.projection });
+    setProjectMeta(data.projectMeta || {});
   };
 
   // --- 启动时加载数据：优先从分享链接 hash，其次 localStorage ---
   useEffect(() => {
     const loadProjectFile = async (projectFile) => {
       try {
-        const safeFile = decodeURIComponent(projectFile || "").trim();
-        if (!safeFile || safeFile.includes("..") || safeFile.includes("/") || safeFile.includes("\\")) {
+        const safeFile = decodeURIComponent(projectFile || "").trim().replace(/^\.\/+/, "");
+        if (
+          !safeFile ||
+          !safeFile.endsWith(".json") ||
+          safeFile.includes("..") ||
+          safeFile.includes("\\") ||
+          safeFile.startsWith("/") ||
+          /^[a-z][a-z0-9+.-]*:/i.test(safeFile)
+        ) {
           throw new Error("Invalid project file");
         }
         const basePath = import.meta.env.BASE_URL || "/";
@@ -717,6 +726,7 @@ function AppContent({ lang, setLang }) {
           restockStore: parsed.rs || parsed.restockStore || {},
           withdrawalStore: parsed.ws || parsed.withdrawalStore || { amounts: [] },
           projection: parsed.pj || parsed.projection || DEFAULT_PROJECTION,
+          projectMeta: parsed.pm || parsed.projectMeta || {},
         };
         applyData(data);
         const loadedName = parsed.projectName || safeFile.replace(/\.json$/i, "");
@@ -751,6 +761,7 @@ function AppContent({ lang, setLang }) {
         if (parsed.ws || parsed.withdrawalStore) setWithdrawalStore(parsed.ws || parsed.withdrawalStore);
         const pj = parsed.pj || parsed.projection;
         if (pj) setProjection({ ...DEFAULT_PROJECTION, ...pj });
+        setProjectMeta(parsed.pm || parsed.projectMeta || {});
         setProjectName(parsed.projectName || t("projectUntitled"));
         setStorageStatus(t("loadedShare"));
         setTimeout(() => setStorageStatus(""), 3000);
@@ -831,7 +842,7 @@ function AppContent({ lang, setLang }) {
       // 同时保留旧 key 兼容
       localStorage.setItem("ru_calc_v2", JSON.stringify(getCurrentData()));
     } catch (e) {}
-  }, [params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection, loaded, projectName]);
+  }, [params, products, scheduleStore, priceScheduleStore, restockStore, withdrawalStore, projection, projectMeta, loaded, projectName]);
 
   // ============================================================
   // 项目管理函数
@@ -922,12 +933,13 @@ function AppContent({ lang, setLang }) {
     setRestockStore({});
     setWithdrawalStore({ amounts: [] });
     setProjection(DEFAULT_PROJECTION);
+    setProjectMeta({});
     setExpandedRow(null);
     setProjectName(trimmed);
     // 立即保存空项目
     const index = getProjectIndex();
     index[trimmed] = {
-      data: { params: DEFAULT_PARAMS, products: [], scheduleStore: {}, priceScheduleStore: {}, restockStore: {}, withdrawalStore: { amounts: [] }, projection: DEFAULT_PROJECTION },
+      data: { params: DEFAULT_PARAMS, products: [], scheduleStore: {}, priceScheduleStore: {}, restockStore: {}, withdrawalStore: { amounts: [] }, projection: DEFAULT_PROJECTION, projectMeta: {} },
       savedAt: new Date().toISOString(),
       skuCount: 0,
     };
@@ -980,6 +992,7 @@ function AppContent({ lang, setLang }) {
           data.restockStore = parsed.rs || parsed.restockStore || {};
           data.withdrawalStore = parsed.ws || parsed.withdrawalStore || { amounts: [] };
           data.projection = parsed.pj || parsed.projection || DEFAULT_PROJECTION;
+          data.projectMeta = parsed.pm || parsed.projectMeta || {};
 
           applyData(data);
           const importName = parsed.projectName || file.name.replace(/\.json$/i, "");
@@ -1027,6 +1040,7 @@ function AppContent({ lang, setLang }) {
       if (Object.keys(priceScheduleStore).length) compact.ps = priceScheduleStore;
       if (Object.keys(restockStore).length) compact.rs = restockStore;
       if (withdrawalStore?.amounts?.some(v => v > 0)) compact.ws = withdrawalStore;
+      if (projectMeta && Object.keys(projectMeta).length) compact.pm = projectMeta;
 
       const data = JSON.stringify(compact);
       const blob = new Blob([data]);
@@ -1117,6 +1131,7 @@ function AppContent({ lang, setLang }) {
     if (confirm(t("confirmReset"))) {
       setProducts(SAMPLE_PRODUCTS); setParams(DEFAULT_PARAMS);
       setProjection(DEFAULT_PROJECTION); setScheduleStore({}); setRestockStore({}); setWithdrawalStore({ amounts: [] });
+      setProjectMeta({});
     }
   };
 
@@ -1868,7 +1883,7 @@ function AppContent({ lang, setLang }) {
 
       <main className="max-w-[1500px] mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div key={tab} className="page-enter">
-        {tab === "dashboard" && <Dashboard totals={totals} params={params} calcs={calcs} proj={proj} projection={projection} t={t} lang={lang} fmt={fmt} />}
+        {tab === "dashboard" && <Dashboard totals={totals} params={params} calcs={calcs} proj={proj} projection={projection} projectMeta={projectMeta} t={t} lang={lang} fmt={fmt} />}
         {tab === "products" && <ProductsTab calcs={calcs} expandedRow={expandedRow} setExpandedRow={setExpandedRow}
           onUpdate={updateProduct} onDelete={deleteProduct} onAdd={addProduct} onClear={clearAllProducts} params={params} t={t} lang={lang} fmt={fmt} />}
         {tab === "schedule" && <ScheduleTab products={products} projection={projection} setProjection={setProjection}
@@ -2014,12 +2029,18 @@ function AppContent({ lang, setLang }) {
 // ============================================================
 // 仪表盘
 // ============================================================
-const Dashboard = ({ totals, params, calcs, proj, projection, t, lang, fmt }) => {
+const Dashboard = ({ totals, params, calcs, proj, projection, projectMeta = {}, t, lang, fmt }) => {
   const showBookDiff = params.taxScheme === "osn" && Math.abs(totals.netProfit - totals.bookNetProfit) > 1;
   const F = fmt.fmtPrimary, Fs = fmt.fmtSecondary;
   const peakMonth = proj.months
     .filter(m => !m.isInitial)
     .reduce((best, m) => (m.revenue || 0) > (best.revenue || 0) ? m : best, { month: 0, revenue: 0 });
+  const operatingInput = Number(projectMeta.operatingInputRUB || 0);
+  const metaMonthlyFixedCost = Number(projectMeta.monthlyFixedCostRUB || projection.monthlyFixedCost || 0);
+  const sharePct = Number(projectMeta.sharePct || projection.partnerSharePct || 0);
+  const projectedShare = proj.totalPartnerPayout || (proj.totalNetProfit * (sharePct / 100));
+  const inputGap = operatingInput > 0 ? projectedShare - operatingInput : 0;
+  const paybackPct = operatingInput > 0 ? projectedShare / operatingInput : 0;
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
@@ -2039,6 +2060,47 @@ const Dashboard = ({ totals, params, calcs, proj, projection, t, lang, fmt }) =>
           <Metric label="项目净利" value={F(totals.netProfit)} sub={`含启动费 · 投入产出 ${fmtPct(totals.roi)}`} color={totals.netProfit >= 0 ? COLORS.emerald : COLORS.gold} big />
         </div>
       </div>
+
+      {operatingInput > 0 && (
+        <Card kicker="Cooperation Decision" title="合作运营投入回收">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
+              <Metric label="合作运营投入" value={F(operatingInput)} sub={Fs(operatingInput)} color={COLORS.oxblood} />
+            </div>
+            <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
+              <Metric label={`${projection.monthsHorizon}个月权益回收`} value={F(projectedShare)} sub={`${sharePct}% 净利分配`} color={COLORS.gold} />
+            </div>
+            <div className="p-4 border rounded-sm" style={{ borderColor: inputGap >= 0 ? COLORS.emerald : COLORS.crimson, background: "white" }}>
+              <Metric label="投入缺口" value={F(inputGap)} sub={`回收率 ${fmtPct(paybackPct)}`} color={inputGap >= 0 ? COLORS.emerald : COLORS.crimson} />
+            </div>
+            <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "rgba(31,79,46,0.06)" }}>
+              <Metric label="建议结构" value="服务费/投流共担" sub="经营净利为正，运营投入需单独约定" color={COLORS.emerald} />
+            </div>
+          </div>
+          <div className="mt-3 text-xs leading-6" style={{ color: COLORS.inkSoft }}>
+            {projectMeta.basis || "经营口径不把运营投入压入项目净利。"} {projectMeta.recommendation || ""}
+          </div>
+        </Card>
+      )}
+
+      {operatingInput <= 0 && metaMonthlyFixedCost > 0 && (
+        <Card kicker="Operating Cost Basis" title="店铺月租口径">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
+              <Metric label="每月店铺月租" value={F(metaMonthlyFixedCost)} sub={Fs(metaMonthlyFixedCost)} color={COLORS.oxblood} />
+            </div>
+            <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
+              <Metric label={`${projection.monthsHorizon}个月店铺月租`} value={F(metaMonthlyFixedCost * projection.monthsHorizon)} sub="单店3000 RMB/月" color={COLORS.gold} />
+            </div>
+            <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "rgba(31,79,46,0.06)" }}>
+              <Metric label="广告口径" value="平台费用已预留" sub="不再重复作为启动投入扣除" color={COLORS.emerald} />
+            </div>
+          </div>
+          <div className="mt-3 text-xs leading-6" style={{ color: COLORS.inkSoft }}>
+            {projectMeta.basis || "不设置大额一次性启动费，店铺月租按月进入现金流预测。"} {projectMeta.recommendation || ""}
+          </div>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card kicker={t("cumCashKicker")} title={t("cumCashTitle")} className="lg:col-span-2">

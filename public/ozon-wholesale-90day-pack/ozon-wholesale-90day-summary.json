@@ -1,0 +1,161 @@
+[
+  {
+    "scenario": "A 保守试销",
+    "projectFile": "ozon-wholesale-90day-conservative-project.json",
+    "monthlyFixedCostCNY": 3000,
+    "monthlyFixedCostRUB": 39000,
+    "operatingBasis": "经营口径：不设置大额一次性启动费；店铺月租按月固定费用进入现金流预测。",
+    "m3GmvRUB": 776901,
+    "m3NetProfitRUB": 25112,
+    "m3OwnerShareRUB": 12556,
+    "m3OwnerShareCNY": 966,
+    "m3NetMarginOnGmv": 0.0323,
+    "monthlyEstimate": [
+      {
+        "month": "M1",
+        "soldQty": 418,
+        "listGmv": 317262,
+        "payout": 142750,
+        "expenses": 100444,
+        "fixedCost": 39000,
+        "tax": 16313,
+        "netProfit": -20144,
+        "partnerShare50": -10072,
+        "partnerShare50CNY": -775,
+        "netMarginOnGmv": -0.0635
+      },
+      {
+        "month": "M2",
+        "soldQty": 729,
+        "listGmv": 584155,
+        "payout": 262822,
+        "expenses": 175168,
+        "fixedCost": 39000,
+        "tax": 30036,
+        "netProfit": 5478,
+        "partnerShare50": 2739,
+        "partnerShare50CNY": 211,
+        "netMarginOnGmv": 0.0094
+      },
+      {
+        "month": "M3",
+        "soldQty": 943,
+        "listGmv": 776901,
+        "payout": 349626,
+        "expenses": 226606,
+        "fixedCost": 39000,
+        "tax": 41427,
+        "netProfit": 25112,
+        "partnerShare50": 12556,
+        "partnerShare50CNY": 966,
+        "netMarginOnGmv": 0.0323
+      }
+    ]
+  },
+  {
+    "scenario": "B 标准启动",
+    "projectFile": "ozon-wholesale-90day-standard-project.json",
+    "monthlyFixedCostCNY": 3000,
+    "monthlyFixedCostRUB": 39000,
+    "operatingBasis": "经营口径：不设置大额一次性启动费；店铺月租按月固定费用进入现金流预测。",
+    "m3GmvRUB": 1476063,
+    "m3NetProfitRUB": 77475,
+    "m3OwnerShareRUB": 38738,
+    "m3OwnerShareCNY": 2980,
+    "m3NetMarginOnGmv": 0.0525,
+    "monthlyEstimate": [
+      {
+        "month": "M1",
+        "soldQty": 792,
+        "listGmv": 600514,
+        "payout": 270171,
+        "expenses": 190040,
+        "fixedCost": 39000,
+        "tax": 30877,
+        "netProfit": -3254,
+        "partnerShare50": -1627,
+        "partnerShare50CNY": -125,
+        "netMarginOnGmv": -0.0054
+      },
+      {
+        "month": "M2",
+        "soldQty": 1388,
+        "listGmv": 1112355,
+        "payout": 500500,
+        "expenses": 333557,
+        "fixedCost": 39000,
+        "tax": 60462,
+        "netProfit": 42456,
+        "partnerShare50": 21228,
+        "partnerShare50CNY": 1633,
+        "netMarginOnGmv": 0.0382
+      },
+      {
+        "month": "M3",
+        "soldQty": 1791,
+        "listGmv": 1476063,
+        "payout": 664265,
+        "expenses": 430616,
+        "fixedCost": 39000,
+        "tax": 83961,
+        "netProfit": 77475,
+        "partnerShare50": 38738,
+        "partnerShare50CNY": 2980,
+        "netMarginOnGmv": 0.0525
+      }
+    ]
+  },
+  {
+    "scenario": "C 放量验证",
+    "projectFile": "ozon-wholesale-90day-scale-project.json",
+    "monthlyFixedCostCNY": 3000,
+    "monthlyFixedCostRUB": 39000,
+    "operatingBasis": "经营口径：不设置大额一次性启动费；店铺月租按月固定费用进入现金流预测。",
+    "m3GmvRUB": 3101646,
+    "m3NetProfitRUB": 199409,
+    "m3OwnerShareRUB": 99705,
+    "m3OwnerShareCNY": 7670,
+    "m3NetMarginOnGmv": 0.0643,
+    "monthlyEstimate": [
+      {
+        "month": "M1",
+        "soldQty": 1672,
+        "listGmv": 1269048,
+        "payout": 571000,
+        "expenses": 401774,
+        "fixedCost": 39000,
+        "tax": 66618,
+        "netProfit": 35058,
+        "partnerShare50": 17529,
+        "partnerShare50CNY": 1348,
+        "netMarginOnGmv": 0.0276
+      },
+      {
+        "month": "M2",
+        "soldQty": 2923,
+        "listGmv": 2342415,
+        "payout": 1053934,
+        "expenses": 702398,
+        "fixedCost": 39000,
+        "tax": 133788,
+        "netProfit": 126052,
+        "partnerShare50": 63026,
+        "partnerShare50CNY": 4848,
+        "netMarginOnGmv": 0.0538
+      },
+      {
+        "month": "M3",
+        "soldQty": 3765,
+        "listGmv": 3101646,
+        "payout": 1395784,
+        "expenses": 904698,
+        "fixedCost": 39000,
+        "tax": 182887,
+        "netProfit": 199409,
+        "partnerShare50": 99705,
+        "partnerShare50CNY": 7670,
+        "netMarginOnGmv": 0.0643
+      }
+    ]
+  }
+]

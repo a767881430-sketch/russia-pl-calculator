@@ -1,0 +1,21 @@
+OZON本地现货供给合作交付包链接
+
+入口页
+./index.html
+
+决策报告
+./ozon-wholesale-90day-decision-summary.html
+
+A 保守试销模型
+../?project=ozon-wholesale-90day-pack/ozon-wholesale-90day-conservative-project.json
+
+B 标准启动模型
+../?project=ozon-wholesale-90day-pack/ozon-wholesale-90day-standard-project.json
+
+C 放量验证模型
+../?project=ozon-wholesale-90day-pack/ozon-wholesale-90day-scale-project.json
+
+补充数据
+./ozon-platform-evidence.json
+./ozon-wholesale-28day-hot-products.json
+./ozon-wholesale-90day-summary.json

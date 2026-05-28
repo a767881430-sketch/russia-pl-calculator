@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OZON本地现货供给合作交付包</title>
+<style>
+  :root {
+    --ink: #151713;
+    --paper: #f3efe5;
+    --panel: #fffaf0;
+    --line: rgba(21, 23, 19, .16);
+    --muted: #666b60;
+    --green: #2f6f4e;
+    --gold: #b78931;
+    --blue: #2a5d86;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    background:
+      linear-gradient(90deg, rgba(21,23,19,.045) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(21,23,19,.045) 1px, transparent 1px),
+      var(--paper);
+    background-size: 36px 36px;
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+  }
+  .shell { max-width: 1180px; margin: 0 auto; padding: 56px 24px; }
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, .72fr);
+    gap: 28px;
+    align-items: end;
+    min-height: 58vh;
+    padding: 34px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(255,250,240,.86);
+    box-shadow: 0 28px 80px rgba(21,23,19,.12);
+  }
+  .eyebrow {
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 950;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 16px 0 18px;
+    font-family: "Songti SC", "STSong", "Noto Serif SC", SimSun, serif;
+    font-size: clamp(42px, 7vw, 86px);
+    line-height: .98;
+    letter-spacing: 0;
+  }
+  p { color: var(--muted); line-height: 1.8; }
+  .actions, .cards { display: grid; gap: 12px; }
+  .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 26px; }
+  a { color: inherit; text-decoration: none; }
+  .btn, .card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255,250,240,.9);
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .btn {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    font-weight: 950;
+  }
+  .btn.primary { background: var(--ink); color: #fffaf0; }
+  .btn:hover, .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(21,23,19,.28);
+    box-shadow: 0 18px 44px rgba(21,23,19,.12);
+  }
+  .cards { margin-top: 22px; }
+  .card { padding: 18px; }
+  .card span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+  }
+  .card b {
+    display: block;
+    margin-top: 8px;
+    font-size: 24px;
+    line-height: 1.15;
+  }
+  .file-list {
+    margin-top: 26px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255,250,240,.78);
+  }
+  .file-list h2 { margin: 0 0 12px; font-size: 18px; }
+  .file-list a {
+    display: inline-flex;
+    margin: 0 8px 8px 0;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 900;
+  }
+  @media (max-width: 860px) {
+    .hero, .actions { grid-template-columns: 1fr; }
+    .hero { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">OZON Local Supply · Delivery Pack</div>
+        <h1>本地现货合作交付包</h1>
+        <p>这里集中放置决策报告、平台数据、28天热卖竞品、现场图片素材，以及三套投资损益模型。报告页可直接打开；模型按钮会跳转到损益计算器并加载对应项目。</p>
+        <div class="actions">
+          <a class="btn primary" href="./ozon-wholesale-90day-decision-summary.html">打开决策报告</a>
+          <a class="btn" href="../?project=ozon-wholesale-90day-pack/ozon-wholesale-90day-standard-project.json">打开标准损益模型</a>
+        </div>
+      </div>
+      <div class="cards">
+        <a class="card" href="../?project=ozon-wholesale-90day-pack/ozon-wholesale-90day-conservative-project.json"><span>A 保守试销</span><b>5.98万 RMB M3 GMV</b></a>
+        <a class="card" href="../?project=ozon-wholesale-90day-pack/ozon-wholesale-90day-standard-project.json"><span>B 标准启动</span><b>11.35万 RMB M3 GMV</b></a>
+        <a class="card" href="../?project=ozon-wholesale-90day-pack/ozon-wholesale-90day-scale-project.json"><span>C 放量验证</span><b>23.86万 RMB M3 GMV</b></a>
+      </div>
+    </section>
+
+    <section class="file-list">
+      <h2>数据与模型文件</h2>
+      <a href="./ozon-platform-evidence.json">平台类目趋势 JSON</a>
+      <a href="./ozon-wholesale-28day-hot-products.json">28天热卖竞品 JSON</a>
+      <a href="./ozon-wholesale-90day-summary.json">项目摘要 JSON</a>
+      <a href="./ozon-wholesale-90day-scenario-links.txt">三套模型链接 TXT</a>
+      <a href="./ozon-assets/">图片素材目录</a>
+    </section>
+  </main>
+</body>
+</html>
