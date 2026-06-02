@@ -36,14 +36,19 @@ const COLORS = {
 // 2026 俄罗斯税制
 // ============================================================
 const TAX_SCHEMES = {
-  usn_6:        { labelKey: "taxUsn6Label", short: "USN 6%",     descKey: "taxUsn6Desc" },
-  usn_15:       { labelKey: "taxUsn15Label", short: "USN 15%",    descKey: "taxUsn15Desc" },
-  usn_6_vat5:   { labelKey: "taxUsn6v5Label", short: "USN 6%+VAT 5%", descKey: "taxUsn6v5Desc" },
-  usn_6_vat7:   { labelKey: "taxUsn6v7Label", short: "USN 6%+VAT 7%", descKey: "taxUsn6v7Desc" },
-  usn_15_vat5:  { labelKey: "taxUsn15v5Label", short: "USN 15%+VAT 5%", descKey: "taxUsn15v5Desc" },
-  usn_15_vat7:  { labelKey: "taxUsn15v7Label", short: "USN 15%+VAT 7%", descKey: "taxUsn15v7Desc" },
-  osn:          { labelKey: "taxOsnLabel", short: "OSN",        descKey: "taxOsnDesc" },
-  custom:       { labelKey: "taxCustomLabel", short: "Custom",   descKey: "taxCustomDesc" },
+  usn_6:        { labelKey: "taxUsn6Label", shortZh: "俄罗斯简化税制 6%", short: "USN 6%",     descKey: "taxUsn6Desc" },
+  usn_15:       { labelKey: "taxUsn15Label", shortZh: "俄罗斯简化税制 15%", short: "USN 15%",    descKey: "taxUsn15Desc" },
+  usn_6_vat5:   { labelKey: "taxUsn6v5Label", shortZh: "简化税制 + 增值税 5%", short: "USN 6%+VAT 5%", descKey: "taxUsn6v5Desc" },
+  usn_6_vat7:   { labelKey: "taxUsn6v7Label", shortZh: "简化税制 + 增值税 7%", short: "USN 6%+VAT 7%", descKey: "taxUsn6v7Desc" },
+  usn_15_vat5:  { labelKey: "taxUsn15v5Label", shortZh: "简化税制 + 增值税 5%", short: "USN 15%+VAT 5%", descKey: "taxUsn15v5Desc" },
+  usn_15_vat7:  { labelKey: "taxUsn15v7Label", shortZh: "简化税制 + 增值税 7%", short: "USN 15%+VAT 7%", descKey: "taxUsn15v7Desc" },
+  osn:          { labelKey: "taxOsnLabel", shortZh: "俄罗斯一般税制", short: "OSN",        descKey: "taxOsnDesc" },
+  custom:       { labelKey: "taxCustomLabel", shortZh: "自定义税制", short: "Custom",   descKey: "taxCustomDesc" },
+};
+
+const taxSchemeShortLabel = (scheme, lang = "zh") => {
+  if (!scheme) return "";
+  return lang === "zh" ? (scheme.shortZh || scheme.short) : scheme.short;
 };
 
 const DEFAULT_PARAMS = {
@@ -277,7 +282,7 @@ const getRestockSchedule = (id, qty, n, restockStore) => {
 // 累计年营收 ≤ 20M ₽: USN无VAT
 // 20M-250M ₽: 触发VAT，可选5%(无进项抵扣)
 // 250M-450M ₽: 7%(无进项抵扣)
-// 450M+ : 强制 OSN
+// 450M+ : 强制俄罗斯一般税制
 const VAT_TIER = (cumRevenue) => {
   if (cumRevenue <= 20_000_000) return { rate: 0, labelKey: "vatLabelNoVat", tier: 0 };
   if (cumRevenue <= 250_000_000) return { rate: 0.05, labelKey: "vatLabelVat5", tier: 1 };
@@ -347,7 +352,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
     restockQty: totalStockEnd, restockCost: totalActual, stockEnd: totalStockEnd, stockWarning: false,
   });
 
-  // 跨月累计营收（动态 VAT 触发用）
+  // 跨月累计营收（动态增值税触发用）
   let cumRevenue = priorYearRevenue || 0;
   let vatTriggered = false;
   let vatTriggerMonth = null;
@@ -550,11 +555,108 @@ const Card = ({ title, kicker, children, className = "" }) => (
 
 const Metric = ({ label, value, sub, color, big }) => (
   <div className="flex flex-col gap-1 count-in">
-    <div className="text-[10px] tracking-[0.18em] uppercase" style={{ color: COLORS.inkSoft }}>{label}</div>
+    <div className="text-[10px] leading-snug break-words uppercase" style={{ color: COLORS.inkSoft, letterSpacing: 0 }}>{label}</div>
     <div className={`font-display ${big ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"} font-bold number-pill metric-value`} style={{ color: color || COLORS.ink }}>{value}</div>
     {sub && <div className="text-[10px] sm:text-xs font-mono break-all" style={{ color: COLORS.inkSoft }}>{sub}</div>}
   </div>
 );
+
+const AudienceQuickGuide = ({ compact = false }) => {
+  const items = [
+    { role: "新老板", text: "先看最后账上还剩现金、回本月份、回报率、最缺钱的时候。" },
+    { role: "供应商", text: "先看销售单位、供应商报价、报关申报价、装箱/重量待补。" },
+    { role: "运营新人", text: "先看销售排期、补货排期、平台综合扣费、本月实际现金进出。" },
+  ];
+  return (
+    <div className="border rounded-sm" style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.72)" }}>
+      <div className={`p-3 grid ${compact ? "grid-cols-1" : "grid-cols-1 md:grid-cols-3"} gap-2 text-xs`}>
+        {items.map(item => (
+          <div key={item.role} className="leading-5">
+            <span className="font-semibold" style={{ color: COLORS.oxblood }}>{item.role}：</span>
+            <span style={{ color: COLORS.inkSoft }}>{item.text}</span>
+          </div>
+        ))}
+      </div>
+      <div className="px-3 pb-3 text-[11px] leading-5" style={{ color: COLORS.inkSoft }}>
+        M0 = 还没开始卖之前先付出去的钱；M1 = 第 1 个月销售。当前 SKU 利润模型不含头程、清关、保险、尾程、平台仓入仓费，这些仍是单独预算项。
+      </div>
+    </div>
+  );
+};
+
+const MetricBasisNote = ({ totals, params, proj, projection, fmt, compact = false }) => {
+  if (!totals || !proj || !fmt) return null;
+  const F = fmt.fmtPrimary;
+  const Fs = fmt.fmtSecondary;
+  const setupCost = Number(params?.oneTimeCosts || 0);
+  const operatingNet = Number(totals.operatingNetProfit || 0);
+  const projectNet = Number(totals.netProfit || 0);
+  const scheduleNet = Number(proj.totalNetProfit || 0);
+  const finalCash = Number(proj.finalCash || 0);
+  const initialOutflow = Number(proj.initialOutflow || 0);
+  const laterCashFlow = (proj.months || []).filter(m => !m.isInitial).reduce((a, b) => a + (b.cashFlow || 0), 0);
+  const scheduleGap = scheduleNet - operatingNet;
+  const cashGap = finalCash - scheduleNet;
+  const partnerPayout = Number(proj.totalPartnerPayout || 0);
+  const totalDistributed = (proj.months || []).reduce((a, b) => a + (b.distributed || 0), 0);
+  const totalRestockAfterM0 = (proj.months || []).filter(m => !m.isInitial).reduce((a, b) => a + (b.restockCost || 0), 0);
+  const totalFixedCost = (proj.months || []).filter(m => !m.isInitial).reduce((a, b) => a + (b.fixedCost || 0), 0);
+  const horizon = projection?.monthsHorizon || ((proj.months || []).length ? (proj.months.length - 1) : 0);
+  const signed = (v) => `${v >= 0 ? "+" : ""}${F(v)}`;
+  const signedRub = (v) => `${v >= 0 ? "+" : ""}${Fs(v)}`;
+  const rowClass = compact ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2";
+
+  return (
+    <div className="border rounded-sm" style={{ borderColor: COLORS.gold + "66", background: "rgba(242,237,227,0.55)" }}>
+      <div className="px-4 py-3 border-b flex items-start gap-2" style={{ borderColor: COLORS.line }}>
+        <Info size={15} style={{ color: COLORS.gold, flexShrink: 0, marginTop: 2 }} />
+        <div>
+          <div className="text-[10px] tracking-[0.2em] uppercase font-body" style={{ color: COLORS.gold }}>Live Metric Guide</div>
+          <div className="font-display text-lg font-semibold" style={{ color: COLORS.ink }}>当前数值口径对照</div>
+          <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>
+            这里会跟着当前项目、销售排期、分润和启动费实时重算。新人只要按这几行看，就能知道红框里的数为什么不会相等。
+          </div>
+        </div>
+      </div>
+      <div className={`p-4 grid ${rowClass} gap-3 text-xs`}>
+        <div className="p-3 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
+          <div className="font-semibold mb-1" style={{ color: COLORS.ink }}>1. 商品经营利润（不含启动费）</div>
+          <div className="leading-6" style={{ color: COLORS.inkSoft }}>
+            所有商品按单品模型算出来的经营利润合计 = <strong style={{ color: COLORS.emerald }}>{F(operatingNet)}</strong>
+            <span className="font-mono ml-1">({Fs(operatingNet)})</span>。它只看商品经营结果，还没有扣一次性启动费。
+          </div>
+        </div>
+        <div className="p-3 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
+          <div className="font-semibold mb-1" style={{ color: COLORS.ink }}>2. 扣启动费后利润</div>
+          <div className="leading-6" style={{ color: COLORS.inkSoft }}>
+            {F(operatingNet)} - 启动费 {F(setupCost)} = <strong style={{ color: projectNet >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(projectNet)}</strong>
+            <span className="font-mono ml-1">({Fs(projectNet)})</span>
+          </div>
+        </div>
+        <div className="p-3 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
+          <div className="font-semibold mb-1" style={{ color: COLORS.ink }}>3. 按销售排期算出的利润合计</div>
+          <div className="leading-6" style={{ color: COLORS.inkSoft }}>
+            M1-M{horizon} 表格底部“本月经营利润”合计 = <strong style={{ color: scheduleNet >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(scheduleNet)}</strong>
+            <span className="font-mono ml-1">({Fs(scheduleNet)})</span>。
+            和商品经营利润差额为 <span className="font-mono" style={{ color: scheduleGap >= 0 ? COLORS.emerald : COLORS.crimson }}>{signed(scheduleGap)} / {signedRub(scheduleGap)}</span>，
+            主要来自销售排期、按月价格、实际卖出数量和固定支出。
+          </div>
+        </div>
+        <div className="p-3 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
+          <div className="font-semibold mb-1" style={{ color: COLORS.ink }}>4. 最后账上还剩现金</div>
+          <div className="leading-6" style={{ color: COLORS.inkSoft }}>
+            M0 先付出去的钱 {F(-initialOutflow)} + 后续每月实际现金进出 {F(laterCashFlow)} = <strong style={{ color: finalCash >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(finalCash)}</strong>
+            <span className="font-mono ml-1">({Fs(finalCash)})</span>。
+            它和按销售排期算出的利润合计差额为 <span className="font-mono" style={{ color: cashGap >= 0 ? COLORS.emerald : COLORS.crimson }}>{signed(cashGap)} / {signedRub(cashGap)}</span>。
+          </div>
+        </div>
+      </div>
+      <div className="px-4 pb-4 text-[11px] leading-5" style={{ color: COLORS.inkSoft }}>
+        本月实际现金进出额外参考：后续补货支出 {F(totalRestockAfterM0)}，固定支出合计 {F(totalFixedCost)}，本月拿出来分的钱 {F(totalDistributed)}，分给合伙人的钱 {F(partnerPayout)}。
+      </div>
+    </div>
+  );
+};
 
 // ============================================================
 // 密码登录门
@@ -1189,7 +1291,7 @@ function AppContent({ lang, setLang }) {
   };
 
   const exportCSV = () => {
-    const headers = ["产品ID","采购¥/销售单位","申报¥/销售单位","销售单位数量","售价₽/销售单位","平台综合成本","海外仓费","管理费","总投资","总营收","进项VAT","销项VAT","税额","现金净利","账面净利","净利","投入产出"];
+    const headers = ["产品ID","供应商报价/预估采购价（¥/销售单位）","报关申报价（¥/销售单位）","销售单位数量（件）","售价（₽/销售单位）","平台综合扣费（₽/销售单位）","海外仓费（₽/销售单位）","管理费（₽/销售单位）","总投资（₽）","总营收（₽）","进口时付的增值税（进项VAT）（₽）","卖出时产生的增值税（销项VAT）（₽）","税额（₽）","商品经营利润（₽）","税务账面利润（₽）","利润率（净利率）%","回报率（ROI/投入产出）%"];
     const lines = [headers.join(",")];
     calcs.forEach(r => lines.push([
       r.id, r.priceCNY, r.declaredCNY ?? r.priceCNY, r.qty,
@@ -1204,7 +1306,8 @@ function AppContent({ lang, setLang }) {
       totals.tax.toFixed(0), totals.netProfit.toFixed(0), totals.bookNetProfit.toFixed(0),
       (totals.profitMargin * 100).toFixed(1) + "%", (totals.roi * 100).toFixed(1) + "%"].join(","));
     lines.push(""); lines.push(["月度现金流"].join(","));
-    lines.push(["月份","销售件数","营收","销货成本","其他费用","税","当月净利","合伙人","累计现金"].join(","));
+    lines.push(["M0=还没开始卖之前先付出去的钱；M1=第1个月销售；当前SKU利润模型不含头程、清关、保险、尾程、平台仓入仓费。"].join(","));
+    lines.push(["月份","销售件数（件）","营收金额₽","销货成本金额₽","其他费用金额₽","税额₽","本月经营利润金额₽","分给合伙人的钱₽","账上累计现金₽"].join(","));
     proj.months.forEach(m => lines.push([
       m.label, m.soldQty, m.revenue.toFixed(0), m.cogs.toFixed(0),
       (m.expenses + (m.fixedCost || 0)).toFixed(0), m.tax.toFixed(0),
@@ -1226,7 +1329,21 @@ function AppContent({ lang, setLang }) {
     const fR = (v, d = 0) => "₽ " + (Number(v) || 0).toLocaleString("ru-RU", { minimumFractionDigits: d, maximumFractionDigits: d });
     const fC = (v) => "¥ " + (Number(v) || 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fP = (v) => ((Number(v) || 0) * 100).toFixed(1) + "%";
-    const scheme = TAX_SCHEMES[params.taxScheme]?.short || params.taxScheme;
+    const scheme = t(TAX_SCHEMES[params.taxScheme]?.labelKey) || params.taxScheme;
+    const setupCost = params.oneTimeCosts || 0;
+    const inventoryInvestment = totals.totalInvestment;
+    const projectNetAfterSetup = totals.netProfit;
+    const operatingNet = totals.operatingNetProfit || 0;
+    const scheduleNet = proj.totalNetProfit || 0;
+    const finalCash = proj.finalCash || 0;
+    const initialOutflow = proj.initialOutflow || 0;
+    const laterCashFlow = proj.months.filter(m => !m.isInitial).reduce((a, b) => a + (b.cashFlow || 0), 0);
+    const scheduleGap = scheduleNet - operatingNet;
+    const cashGap = finalCash - scheduleNet;
+    const totalRestockAfterM0 = proj.months.filter(m => !m.isInitial).reduce((a, b) => a + (b.restockCost || 0), 0);
+    const totalFixedCost = proj.months.filter(m => !m.isInitial).reduce((a, b) => a + (b.fixedCost || 0), 0);
+    const totalDistributed = proj.months.reduce((a, b) => a + (b.distributed || 0), 0);
+    const signedR = (v) => `${v >= 0 ? "+" : ""}${fR(v)}`;
 
     // Product rows
     const prodRows = calcs.map(r => {
@@ -1234,9 +1351,9 @@ function AppContent({ lang, setLang }) {
       return `<tr>
         <td class="mono">${r.id}</td>
         <td class="r mono">${(r.priceCNY || 0).toFixed(2)}</td>
-        <td class="r mono">${r.qty || 0}</td>
-        <td class="r mono">${(r.list || 0).toLocaleString("ru-RU")}</td>
-        <td class="r mono">${(r.platformFee || 0).toLocaleString("ru-RU")}</td>
+        <td class="r mono">${r.qty || 0} ${t("unitPieces")}</td>
+        <td class="r mono">${(r.list || 0).toLocaleString("ru-RU")} ₽</td>
+        <td class="r mono">${(r.platformFee || 0).toLocaleString("ru-RU")} ₽</td>
         <td class="r mono">${fR(c.totalInvestment)}</td>
         <td class="r mono">${fR(c.totalRevenue)}</td>
         <td class="r mono">${fR(c.tax)}</td>
@@ -1248,14 +1365,14 @@ function AppContent({ lang, setLang }) {
     // Cash flow rows
     const cfRows = proj.months.map(m => {
       const cls = m.isInitial ? 'init-row' : '';
-      const restockLabel = m.restockQty > 0 ? `+${m.restockQty}` : '—';
+      const restockLabel = m.restockQty > 0 ? `+${m.restockQty} ${t("unitPieces")}` : '—';
       const restockCostLabel = m.restockCost > 0 && !m.isInitial ? `<br><small style="color:#A4193D">-${fR(m.restockCost)}</small>` : '';
       const stockCls = m.stockWarning ? 'neg' : '';
       return `<tr class="${cls}">
         <td class="mono">${m.isInitial ? t("initialRow") : m.label}</td>
         <td class="r mono" style="color:${m.restockQty > 0 ? '#A4193D' : ''}">${restockLabel}${restockCostLabel}</td>
-        <td class="r mono ${stockCls}">${m.stockEnd}${m.stockWarning ? ' ⚠' : ''}</td>
-        <td class="r mono">${m.soldQty}</td>
+        <td class="r mono ${stockCls}">${m.stockEnd} ${t("unitPieces")}${m.stockWarning ? ' ⚠' : ''}</td>
+        <td class="r mono">${m.soldQty ? `${m.soldQty} ${t("unitPieces")}` : '—'}</td>
         <td class="r mono">${m.isInitial ? '—' : fR(m.revenue)}</td>
         <td class="r mono">${m.isInitial ? fR(-proj.initialOutflow) : fR(m.cogs)}</td>
         <td class="r mono">${m.isInitial ? '—' : fR(m.expenses + (m.fixedCost || 0))}</td>
@@ -1359,9 +1476,9 @@ function AppContent({ lang, setLang }) {
 
     // Cost structure bar
     const costParts = [
-      { label: lang === 'zh' ? '预估采购成本' : 'COGS', val: totals.totalInvestment, clr: '#5C1A1B' },
+      { label: lang === 'zh' ? '供应商报价/预估采购' : 'COGS', val: totals.totalInvestment, clr: '#5C1A1B' },
       { label: lang === 'zh' ? '一次性启动费' : 'Setup', val: setupCost, clr: '#5C544A' },
-      { label: lang === 'zh' ? '平台综合' : 'Platform', val: calcs.reduce((s, r) => s + (r.platformFee || 0) * (r.qty || 0), 0), clr: '#7A2A2C' },
+      { label: lang === 'zh' ? '平台综合扣费' : 'Platform', val: calcs.reduce((s, r) => s + (r.platformFee || 0) * (r.qty || 0), 0), clr: '#7A2A2C' },
       { label: lang === 'zh' ? '仓储' : 'Warehouse', val: calcs.reduce((s, r) => s + (r.warehouse || 0) * (r.qty || 0), 0), clr: '#B8860B' },
       { label: lang === 'zh' ? '管理费' : 'Mgmt', val: calcs.reduce((s, r) => s + (r.mgmt || 0) * (r.qty || 0), 0), clr: '#D4A93A' },
       { label: lang === 'zh' ? '税' : 'Tax', val: totals.tax, clr: '#A4193D' },
@@ -1379,23 +1496,35 @@ function AppContent({ lang, setLang }) {
     const beText = proj.breakEvenMonth
       ? (lang === 'zh' ? `预计<span class="highlight">第${proj.breakEvenMonth}个月回本</span>` : lang === 'ru' ? `Окупаемость за <span class="highlight">${proj.breakEvenMonth} мес.</span>` : `Expected break-even at <span class="highlight">month ${proj.breakEvenMonth}</span>`)
       : (lang === 'zh' ? '预测期内未能回本' : lang === 'ru' ? 'Не окупается в прогнозе' : 'No break-even in forecast period');
-    const setupCost = params.oneTimeCosts || 0;
-    const inventoryInvestment = totals.totalInvestment;
-    const projectNetAfterSetup = totals.netProfit;
     const summaryText = lang === 'zh'
-      ? `本批次共 <strong>${calcs.length} 个产品</strong>，总备货 <strong>${totals.qty} 个上架销售单位</strong>。商品 <strong>list 为卖家标价</strong>，竞品买家活动价需反推至卖家标价后再进入模型；采购价、申报价、售价、平台综合成本、海外仓费和管理费都按同一个上架销售单位填写，例如 6 只装按整套，L12 按整套 12 件，壶杯套装按整套。platformFee 字段在本模型里代表平台综合成本，包含佣金、支付/收单、平台配送、退货逆向、广告促销预留等，不是单一佣金。当前采购价与申报价为 <strong>测算假设</strong>，不是德力正式报价；到俄运费与贴标/本地化当前均为 0，拿到工厂和货代报价后再替换。经营口径下，预计 ${projection.monthsHorizon} 个月产生营收 <strong>${fR(totals.totalRevenue)}</strong>，经营净利 <strong>${fR(totals.operatingNetProfit)}</strong>，经营投入产出 <strong>${fP(totals.operatingRoi)}</strong>。项目口径再扣除一次性启动费 <strong>${fR(setupCost)}</strong> 后，项目净利为 <strong>${fR(projectNetAfterSetup)}</strong>。现金流口径包含首批备货与补货支出，${beText}。`
+      ? `本批次共 <strong>${calcs.length} 个产品</strong>，总备货 <strong>${totals.qty} 个上架销售单位</strong>。商品卖家标价指页面/卖家标价，竞品买家活动价需反推至卖家标价后再进入模型；供应商报价/预估采购价、报关申报价、售价、平台综合扣费、海外仓费和管理费都按同一个上架销售单位填写，例如 6 只装按整套，L12 按整套 12 件，壶杯套装按整套。平台综合扣费包含佣金、支付/收单、平台配送、退货逆向、广告促销预留等，不是单一佣金。当前供应商报价与报关申报价为 <strong>测算假设</strong>，不是德力正式报价；到俄运费与贴标/本地化当前均为 0，拿到工厂和货代报价后再替换。只看商品经营的算法口径下，预计 ${projection.monthsHorizon} 个月产生营收 <strong>${fR(totals.totalRevenue)}</strong>，商品经营利润（不含启动费） <strong>${fR(totals.operatingNetProfit)}</strong>，经营回报率 <strong>${fP(totals.operatingRoi)}</strong>。再扣除一次性启动费 <strong>${fR(setupCost)}</strong> 后，扣启动费后利润为 <strong>${fR(projectNetAfterSetup)}</strong>。现金流口径包含首批备货与补货支出，${beText}。`
       : lang === 'ru'
       ? `В партии <strong>${calcs.length} SKU</strong>, всего <strong>${totals.qty} шт.</strong> Операционная прибыль без стартовых расходов: <strong>${fR(totals.operatingNetProfit)}</strong>, ROI <strong>${fP(totals.operatingRoi)}</strong>. После стартовых расходов <strong>${fR(setupCost)}</strong> проектная прибыль: <strong>${fR(projectNetAfterSetup)}</strong>. ${beText}.`
       : `This batch contains <strong>${calcs.length} SKUs</strong> totaling <strong>${totals.qty} units</strong>. Operating net profit before setup costs is <strong>${fR(totals.operatingNetProfit)}</strong> with operating ROI <strong>${fP(totals.operatingRoi)}</strong>. After one-time setup costs of <strong>${fR(setupCost)}</strong>, project net profit is <strong>${fR(projectNetAfterSetup)}</strong>. Cash flow includes initial inventory and restocking. ${beText}.`;
+    const dynamicBasisHtml = `
+      <div class="logic-note metric-basis-note">
+        <strong>当前数值口径对照：</strong>
+        <div class="basis-grid">
+          <div><b>1. 商品经营利润（不含启动费）</b><br/>所有商品按单品模型算出来的经营利润合计 = <strong>${fR(operatingNet)}</strong>，还没有扣一次性启动费。</div>
+          <div><b>2. 扣启动费后利润</b><br/>${fR(operatingNet)} - 启动费 ${fR(setupCost)} = <strong>${fR(projectNetAfterSetup)}</strong>。</div>
+          <div><b>3. 按销售排期算出的利润合计</b><br/>M1-M${projection.monthsHorizon} 表格底部“本月经营利润”合计 = <strong>${fR(scheduleNet)}</strong>；与商品经营利润差额 ${signedR(scheduleGap)}。</div>
+          <div><b>4. 最后账上还剩现金</b><br/>M0 先付出去的钱 ${fR(-initialOutflow)} + 后续每月实际现金进出 ${fR(laterCashFlow)} = <strong>${fR(finalCash)}</strong>；与按销售排期算出的利润合计差额 ${signedR(cashGap)}。</div>
+        </div>
+        <div class="basis-extra">本月实际现金进出额外参考：后续补货支出 ${fR(totalRestockAfterM0)}，固定支出合计 ${fR(totalFixedCost)}，本月拿出来分的钱 ${fR(totalDistributed)}，分给合伙人的钱 ${fR(proj.totalPartnerPayout || 0)}。</div>
+        <div class="basis-extra"><strong>不同人先看什么：</strong>新老板看最后账上还剩现金、回本月份、回报率、最缺钱的时候；供应商看销售单位、供应商报价、报关申报价、装箱/重量待补；运营新人看销售排期、补货排期、平台综合扣费、本月实际现金进出。M0 = 还没开始卖之前先付出去的钱，M1 = 第 1 个月销售。</div>
+      </div>`;
 
     // Glossary tips
     const glossaryItems = lang === 'zh' ? [
-      { t: '总营收', d: '所有商品卖出后平台打给你的总金额（已扣平台综合成本）' },
-      { t: '现金净利', d: '按单品逐个算税后汇总的利润' },
-      { t: '期末账上现金（已扣分润）', d: '按月累计计算的实际账上余额，已扣除月固定费用、补货支出和合伙人分润/提现' },
-      { t: '投入产出', d: '每投入 1 元预计能赚回多少钱，内部公式为净利 ÷ 投资 × 100%' },
-      { t: '回本月份', d: '累计现金从负变正的月份' },
-      { t: '最大回撤', d: '预测期内账上最缺钱的时刻（通常在M0）' },
+      { t: '总营收', d: '所有商品卖出后平台打给你的总金额（已扣平台综合扣费）' },
+      { t: '商品经营利润', d: '按单品逐个算税后汇总的经营利润，未扣一次性启动费' },
+      { t: '最后账上还剩现金', d: '按月累计计算的实际账上余额，已扣除月固定费用、补货支出和分给合伙人的钱/提现' },
+      { t: '回报率（ROI/投入产出）', d: '每投入 1 元预计能赚回多少钱，内部公式为利润 ÷ 投资 × 100%' },
+      { t: '回本月份', d: '账上累计现金从负变正的月份' },
+      { t: '最缺钱的时候', d: '预测期内账上现金最低的时刻；专业口径也叫最大资金压力/最大回撤' },
+      { t: 'M0/M1', d: 'M0 = 还没开始卖之前先付出去的钱；M1 = 第 1 个月销售' },
+      { t: '增值税（VAT）', d: '俄罗斯税制里的增值税；进口时付的是“进口时付的增值税（进项VAT）”，卖出时产生的是“卖出时产生的增值税（销项VAT）”' },
+      { t: '平台综合扣费', d: '平台每笔订单的综合扣减，不只是佣金，也包含支付、平台配送/退货、广告促销预留等' },
     ] : lang === 'ru' ? [
       { t: 'Выручка', d: 'Выплаты площадки за все товары (после комиссии)' },
       { t: 'Чист. прибыль', d: 'Прибыль после налога, по каждому SKU' },
@@ -1477,6 +1606,11 @@ function AppContent({ lang, setLang }) {
   .summary-text .highlight{display:inline-block;padding:1px 6px;background:rgba(31,79,46,0.08);color:#1F4F2E;font-weight:600;border-radius:2px}
   .logic-note{background:#F2EDE3;border-left:3px solid #B8860B;padding:14px 18px;margin:18px 0;font-size:12px;color:#1F1B16;line-height:1.7}
   .logic-note strong{color:#5C1A1B}
+  .metric-basis-note{border-left-color:#1F4F2E;background:rgba(242,237,227,0.65)}
+  .basis-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+  .basis-grid div{background:white;border:1px solid #D9CFB8;padding:10px 12px}
+  .basis-grid b{color:#1F1B16}
+  .basis-extra{margin-top:10px;color:#5C544A;font-size:11px}
 
   /* Rank table */
   .rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
@@ -1513,6 +1647,7 @@ function AppContent({ lang, setLang }) {
   }
   @media(max-width:768px){
     .cards{grid-template-columns:repeat(2,1fr)}
+    .basis-grid{grid-template-columns:1fr}
     .page{padding:20px 16px}
     .header{padding:24px 16px}
     table{font-size:10px}
@@ -1541,10 +1676,11 @@ function AppContent({ lang, setLang }) {
   <div class="summary-text">
     ${summaryText}
   </div>
+  ${dynamicBasisHtml}
   <div class="logic-note">
-    <strong>计算口径说明：</strong>当前采购价/申报价为测算假设，且均按“上架销售单位”计算：6只装、12件套、壶杯套装都按整套计，不按单只杯子计。若到俄运费留空为 0，则当前结果不包含中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用；贴标/本地化当前也设为 0，不进入利润测算。需待工厂 EXW/FOB 正式报价、装箱尺寸、毛重和货代报价确认后替换。经营净利 = 商品销售回款 - 已填写的采购/物流成本 - 海外仓费用 - 管理费 - 破损 - 税，不含一次性启动费；
-    项目净利 = 经营净利 - 一次性启动费；
-    期末账上现金（已扣分润） = 项目净利再叠加首批备货、补货节奏、现金回收时间，并扣除合伙人分润/提现后的账上余额。三者口径不同，不能混读。
+    <strong>计算口径说明：</strong>当前供应商报价/预估采购价和报关申报价为测算假设，且均按“上架销售单位”计算：6只装、12件套、壶杯套装都按整套计，不按单只杯子计。若到俄运费留空为 0，则当前结果不包含中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用；贴标/本地化当前也设为 0，不进入利润测算。需待工厂 EXW/FOB 正式报价、装箱尺寸、毛重和货代报价确认后替换。商品经营利润（不含启动费） = 商品销售回款 - 已填写的采购/物流成本 - 海外仓费用 - 管理费 - 破损 - 税；
+    扣启动费后利润 = 商品经营利润 - 一次性启动费；
+    最后账上还剩现金 = 扣启动费后利润再叠加首批备货、补货节奏、现金回收时间，并扣除分给合伙人的钱/提现后的账上余额。三者口径不同，不能混读。
   </div>
 
   <!-- Summary Cards -->
@@ -1564,14 +1700,14 @@ function AppContent({ lang, setLang }) {
       <div class="sub">${fC(totals.totalCostBasis / params.exchangeRate)}</div>
     </div>
     <div class="card accent">
-      <div class="label">经营净利</div>
+      <div class="label">商品经营利润（不含启动费）</div>
       <div class="value ${totals.operatingNetProfit >= 0 ? 'pos' : 'neg'}">${fR(totals.operatingNetProfit)}</div>
-      <div class="sub">不含启动费 · ${fC(totals.operatingNetProfitCNY)}</div>
+      <div class="sub">还没扣启动费 · ${fC(totals.operatingNetProfitCNY)}</div>
     </div>
     <div class="card">
-      <div class="label">项目净利</div>
+      <div class="label">扣启动费后利润</div>
       <div class="value ${totals.netProfit >= 0 ? 'pos' : 'neg'}">${fR(totals.netProfit)}</div>
-      <div class="sub">扣启动费后 · ${lang === 'zh' ? '投入产出' : 'ROI'} ${fP(totals.roi)}</div>
+      <div class="sub">已扣启动费 · ${lang === 'zh' ? '回报率' : 'ROI'} ${fP(totals.roi)}</div>
     </div>
   </div>
 
@@ -1617,7 +1753,7 @@ function AppContent({ lang, setLang }) {
       ${svgChart}
     </div>
     <div class="chart-box">
-      <div class="chart-title">${lang === 'zh' ? '月度净利润' : lang === 'ru' ? 'Ежемесячная прибыль' : 'Monthly Net Profit'}</div>
+      <div class="chart-title">${lang === 'zh' ? '月度利润' : lang === 'ru' ? 'Ежемесячная прибыль' : 'Monthly Net Profit'}</div>
       ${barChart}
     </div>
   </div>
@@ -1631,14 +1767,14 @@ function AppContent({ lang, setLang }) {
     <div class="rank-box">
       <h3 style="color:#1F4F2E">🏆 TOP ${topN} ${lang === 'zh' ? '最赚钱' : lang === 'ru' ? 'Лучшие' : 'Best Performers'}</h3>
       <table>
-        <thead><tr><th>#</th><th>${lang === 'zh' ? '产品型号' : 'SKU'}</th><th class="r">${lang === 'zh' ? '净利' : 'Profit'}</th><th class="r">${lang === 'zh' ? '投入产出' : 'ROI'}</th></tr></thead>
+        <thead><tr><th>#</th><th>${lang === 'zh' ? '产品型号' : 'SKU'}</th><th class="r">${lang === 'zh' ? '利润' : 'Profit'}</th><th class="r">${lang === 'zh' ? '回报率（ROI）' : 'ROI'}</th></tr></thead>
         <tbody>${topRows}</tbody>
       </table>
     </div>
     <div class="rank-box">
       <h3 style="color:#A4193D">⚠️ ${lang === 'zh' ? '需关注（低利润/亏损）' : lang === 'ru' ? 'Требуют внимания' : 'Needs Attention'}</h3>
       <table>
-        <thead><tr><th>#</th><th>${lang === 'zh' ? '产品型号' : 'SKU'}</th><th class="r">${lang === 'zh' ? '净利' : 'Profit'}</th><th class="r">${lang === 'zh' ? '投入产出' : 'ROI'}</th></tr></thead>
+        <thead><tr><th>#</th><th>${lang === 'zh' ? '产品型号' : 'SKU'}</th><th class="r">${lang === 'zh' ? '利润' : 'Profit'}</th><th class="r">${lang === 'zh' ? '回报率（ROI）' : 'ROI'}</th></tr></thead>
         <tbody>${bottomRows}</tbody>
       </table>
     </div>
@@ -1661,14 +1797,14 @@ function AppContent({ lang, setLang }) {
         <th class="r">${t("revenue")}</th>
         <th class="r">${t("tax")}</th>
         <th class="r">${t("netProfitCol")}</th>
-        <th class="r">${lang === 'zh' ? '投入产出' : 'ROI'}</th>
+        <th class="r">${lang === 'zh' ? '回报率（ROI）' : 'ROI'}</th>
       </tr></thead>
       <tbody>
         ${prodRows}
         <tr class="total-row">
           <td>${t("totalRow")}</td>
           <td class="r">—</td>
-          <td class="r mono">${totals.qty}</td>
+          <td class="r mono">${totals.qty} ${t("unitPieces")}</td>
           <td class="r">—</td>
           <td class="r">—</td>
           <td class="r mono">${fR(totals.totalInvestment)}</td>
@@ -1692,7 +1828,7 @@ function AppContent({ lang, setLang }) {
         <th>${t("thMonth")}</th>
         <th class="r">${t("colRestock")}</th>
         <th class="r">${t("colStock")}</th>
-        <th class="r">${t("thSoldQty")}</th>
+        <th class="r">${t("thSoldQtyD")}</th>
         <th class="r">${t("thRevenue")}</th>
         <th class="r">${t("thCogs")}</th>
         <th class="r">${t("thExpenses")}</th>
@@ -1897,7 +2033,7 @@ function AppContent({ lang, setLang }) {
         {tab === "settings" && <SettingsTab params={params} setParams={setParams} t={t} lang={lang}
           rateSource={rateSource} setRateSource={setRateSource} liveRate={liveRate} effectiveRate={effectiveRate} fetchRate={fetchRate} />}
         {tab === "help" && <HelpPanel t={t} lang={lang} />}
-        {tab === "glossary" && <GlossaryPanel t={t} lang={lang} />}
+        {tab === "glossary" && <GlossaryPanel totals={totals} params={params} proj={proj} projection={projection} fmt={fmt} t={t} lang={lang} />}
         </div>
       </main>
 
@@ -2051,15 +2187,19 @@ const Dashboard = ({ totals, params, calcs, proj, projection, projectMeta = {}, 
           <Metric label={t("totalRevenue")} value={F(totals.totalRevenue)} sub={fmtRubShort(totals.totalRevenue)} big />
         </div>
         <div className="p-4 sm:p-5 card-hover rounded-sm border-2" style={{ borderColor: totals.operatingNetProfit >= 0 ? COLORS.emerald : COLORS.crimson, background: "rgba(255,255,255,0.7)" }}>
-          <Metric label="经营净利"
+          <Metric label="商品经营利润（不含启动费）"
             value={F(totals.operatingNetProfit)}
-            sub={`不含启动费 · 投入产出 ${fmtPct(totals.operatingRoi)}`}
+            sub={`还没扣启动费 · 回报率 ${fmtPct(totals.operatingRoi)}`}
             color={totals.operatingNetProfit >= 0 ? COLORS.emerald : COLORS.crimson} big />
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
-          <Metric label="项目净利" value={F(totals.netProfit)} sub={`含启动费 · 投入产出 ${fmtPct(totals.roi)}`} color={totals.netProfit >= 0 ? COLORS.emerald : COLORS.gold} big />
+          <Metric label="扣启动费后利润" value={F(totals.netProfit)} sub={`已扣启动费 · 回报率 ${fmtPct(totals.roi)}`} color={totals.netProfit >= 0 ? COLORS.emerald : COLORS.gold} big />
         </div>
       </div>
+
+      <AudienceQuickGuide />
+
+      <MetricBasisNote totals={totals} params={params} proj={proj} projection={projection} fmt={fmt} />
 
       {operatingInput > 0 && (
         <Card kicker="Cooperation Decision" title="合作运营投入回收">
@@ -2068,17 +2208,17 @@ const Dashboard = ({ totals, params, calcs, proj, projection, projectMeta = {}, 
               <Metric label="合作运营投入" value={F(operatingInput)} sub={Fs(operatingInput)} color={COLORS.oxblood} />
             </div>
             <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
-              <Metric label={`${projection.monthsHorizon}个月权益回收`} value={F(projectedShare)} sub={`${sharePct}% 净利分配`} color={COLORS.gold} />
+              <Metric label={`${projection.monthsHorizon}个月预计分回来的钱`} value={F(projectedShare)} sub={`${sharePct}% 利润分配`} color={COLORS.gold} />
             </div>
             <div className="p-4 border rounded-sm" style={{ borderColor: inputGap >= 0 ? COLORS.emerald : COLORS.crimson, background: "white" }}>
-              <Metric label="投入缺口" value={F(inputGap)} sub={`回收率 ${fmtPct(paybackPct)}`} color={inputGap >= 0 ? COLORS.emerald : COLORS.crimson} />
+              <Metric label="离回本还差多少钱" value={F(inputGap)} sub={`回收率 ${fmtPct(paybackPct)}`} color={inputGap >= 0 ? COLORS.emerald : COLORS.crimson} />
             </div>
             <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "rgba(31,79,46,0.06)" }}>
-              <Metric label="建议结构" value="服务费/投流共担" sub="经营净利为正，运营投入需单独约定" color={COLORS.emerald} />
+              <Metric label="建议结构" value="服务费/投流共担" sub="商品经营利润为正，运营投入需单独约定" color={COLORS.emerald} />
             </div>
           </div>
           <div className="mt-3 text-xs leading-6" style={{ color: COLORS.inkSoft }}>
-            {projectMeta.basis || "经营口径不把运营投入压入项目净利。"} {projectMeta.recommendation || ""}
+            {projectMeta.basis || "只看商品经营的算法口径不把运营投入压入扣启动费后利润。"} {projectMeta.recommendation || ""}
           </div>
         </Card>
       )}
@@ -2127,7 +2267,7 @@ const Dashboard = ({ totals, params, calcs, proj, projection, projectMeta = {}, 
               sub={Fs(proj.finalCash)}
               color={proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson} />
             <Metric label={t("peakMonthly")} value={F(peakMonth.revenue)}
-              sub={`${t("monthLabel")}${peakMonth.month} · ${Fs(peakMonth.revenue)}`} color={COLORS.gold} />
+              sub={`${peakMonth.label || `${t("monthLabel")}${peakMonth.monthIdx || 0}`} · ${Fs(peakMonth.revenue)}`} color={COLORS.gold} />
           </div>
         </Card>
       </div>
@@ -2140,7 +2280,7 @@ const Dashboard = ({ totals, params, calcs, proj, projection, projectMeta = {}, 
         <Card kicker={t("costKicker")} title={t("costStructure")}>
           <CostBar totals={totals} params={params} t={t} fmt={fmt} />
         </Card>
-        <Card kicker={`Tax · ${TAX_SCHEMES[params.taxScheme].short}`} title={t("taxStructure")}>
+        <Card kicker={`税制 · ${t(TAX_SCHEMES[params.taxScheme].labelKey)}`} title={t("taxStructure")}>
           <TaxBreakdown totals={totals} params={params} t={t} fmt={fmt} />
         </Card>
       </div>
@@ -2172,10 +2312,28 @@ const CashFlowChart = ({ proj, t, fmt }) => {
   const _t = t || ((k) => k);
   const _F = fmt ? fmt.fmtPrimary : fmtRubShort;
   const data = proj.months.map(m => ({ label: m.label, cumCash: m.cumCash, monthly: m.cashFlow }));
+  const BreakEvenLabel = ({ viewBox }) => {
+    if (!viewBox) return null;
+    const x = Number(viewBox.x || 0);
+    const y = Number(viewBox.y || 0);
+    return (
+      <text
+        x={x}
+        y={y + 18}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fill={COLORS.emerald}
+        fontSize={11}
+        fontFamily="Geist, system-ui, sans-serif"
+      >
+        {_t("chartBreakEven")}
+      </text>
+    );
+  };
   return (
     <div style={{ width: "100%", height: 280 }}>
       <ResponsiveContainer>
-        <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
+        <LineChart data={data} margin={{ top: 30, right: 20, left: 0, bottom: 5 }}>
           <CartesianGrid stroke={COLORS.line} strokeDasharray="3 3" />
           <XAxis dataKey="label" stroke={COLORS.inkSoft} fontSize={11} />
           <YAxis stroke={COLORS.inkSoft} fontSize={11} tickFormatter={(v) => _F(v)} />
@@ -2183,7 +2341,7 @@ const CashFlowChart = ({ proj, t, fmt }) => {
           <ReferenceLine y={0} stroke={COLORS.ink} strokeWidth={1} />
           {proj.breakEvenMonth && (
             <ReferenceLine x={`M${proj.breakEvenMonth}`} stroke={COLORS.emerald} strokeDasharray="5 3"
-              label={{ value: _t("chartBreakEven"), fill: COLORS.emerald, fontSize: 11, position: "top" }} />
+              label={<BreakEvenLabel />} />
           )}
           <Line type="monotone" dataKey="cumCash" stroke={COLORS.oxblood} strokeWidth={2.5}
             dot={{ fill: COLORS.oxblood, r: 3 }} activeDot={{ r: 5 }} name={_t("chartCumCash")} />
@@ -2256,8 +2414,8 @@ const CostBar = ({ totals, params, t, fmt }) => {
 const TaxBreakdown = ({ totals, params, t, fmt }) => {
   const F = fmt.fmtPrimary, Ff = fmt.fmtPrimaryFull;
   const rows = [];
-  if (totals.vatPart > 0) rows.push({ label: "VAT", value: totals.vatPart });
-  if (totals.usnPart > 0) rows.push({ label: "USN", value: totals.usnPart });
+  if (totals.vatPart > 0) rows.push({ label: t("taxVatPartLabel"), value: totals.vatPart });
+  if (totals.usnPart > 0) rows.push({ label: t("taxUsnPartLabel"), value: totals.usnPart });
   if (totals.profitTaxPart > 0) rows.push({ label: t("costTax"), value: totals.profitTaxPart });
   if (rows.length === 0 && totals.tax > 0) rows.push({ label: t("costTax"), value: totals.tax });
   const taxRate = totals.totalRevenue > 0 ? totals.tax / totals.totalRevenue : 0;
@@ -2373,7 +2531,7 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
             <th className="text-left p-2 font-medium w-8"></th>
             <th className="text-left p-2 font-medium">{t("productId")}</th>
             <th className="text-right p-2 font-medium">{t("costCny")}</th>
-            {showDeclared && <th className="text-right p-2 font-medium" style={{ color: COLORS.oxblood }}>Decl.¥</th>}
+            {showDeclared && <th className="text-right p-2 font-medium" style={{ color: COLORS.oxblood }}>报关申报价（¥/销售单位）</th>}
             <th className="text-right p-2 font-medium">{t("qty")}</th>
             <th className="text-right p-2 font-medium">{t("listPrice")}</th>
             <th className="text-right p-2 font-medium">{t("platformFee")}</th>
@@ -2404,11 +2562,11 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
                       {fmtCny(r.declaredCNY ?? r.priceCNY)}
                     </td>
                   )}
-                  <td className="p-2 text-right font-mono text-xs">{r.qty}</td>
-                  <td className="p-2 text-right font-mono text-xs">{r.list?.toLocaleString("ru-RU")}</td>
-                  <td className="p-2 text-right font-mono text-xs">{r.platformFee?.toLocaleString("ru-RU")}</td>
-                  <td className="p-2 text-right font-mono text-xs">{r.warehouse}</td>
-                  <td className="p-2 text-right font-mono text-xs">{r.mgmt}</td>
+                  <td className="p-2 text-right font-mono text-xs">{r.qty} {t("unitPieces")}</td>
+                  <td className="p-2 text-right font-mono text-xs">{r.list?.toLocaleString("ru-RU")} ₽</td>
+                  <td className="p-2 text-right font-mono text-xs">{r.platformFee?.toLocaleString("ru-RU")} ₽</td>
+                  <td className="p-2 text-right font-mono text-xs">{r.warehouse} ₽</td>
+                  <td className="p-2 text-right font-mono text-xs">{r.mgmt} ₽</td>
                   <td className="p-2 text-right font-mono text-xs border-l" style={{ borderColor: COLORS.line }}>{F(r.c.totalInvestment)}</td>
                   <td className="p-2 text-right font-mono text-xs">{F(r.c.totalRevenue)}</td>
                   <td className="p-2 text-right font-mono text-xs" style={{ color: COLORS.crimson }}>{F(r.c.tax)}</td>
@@ -2440,7 +2598,7 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
               <td className="p-2 font-mono text-xs">{t("totalRow")}</td>
               <td className="p-2"></td>
               {showDeclared && <td className="p-2"></td>}
-              <td className="p-2 text-right font-mono text-xs">{calcs.reduce((a, b) => a + (b.qty || 0), 0)}</td>
+              <td className="p-2 text-right font-mono text-xs">{calcs.reduce((a, b) => a + (b.qty || 0), 0)} {t("unitPieces")}</td>
               <td colSpan={4}></td>
               <td className="p-2 text-right font-mono text-xs border-l" style={{ borderColor: COLORS.line }}>
                 {F(calcs.reduce((a, b) => a + b.c.totalInvestment, 0))}
@@ -2580,7 +2738,7 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
 };
 
 // ============================================================
-// 销售排期 Tab（含售价/平台综合成本排期）
+// 销售排期 Tab（含售价/平台综合扣费排期）
 // ============================================================
 const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updateSchedule, applyCurve,
   priceScheduleStore, setPriceScheduleStore, restockStore, updateRestock, setRestockStore,
@@ -2600,7 +2758,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
     });
   };
 
-  // 更新某SKU某月的平台综合成本
+  // 更新某SKU某月的平台综合扣费
   const updateFee = (productId, monthIdx, val) => {
     setPriceScheduleStore(s => {
       const entry = { ...(s[productId] || {}) };
@@ -2623,7 +2781,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
     });
   };
 
-  // 重置所有平台综合成本排期
+  // 重置所有平台综合扣费排期
   const resetFees = () => {
     setPriceScheduleStore(s => {
       const next = { ...s };
@@ -2683,11 +2841,11 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
           <thead style={{ background: COLORS.paper }}>
             <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
               <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: "120px" }}>{t("sku")}</th>
-              <th className="text-right p-2" style={{ minWidth: "60px" }}>{t("total")}</th>
+              <th className="text-right p-2" style={{ minWidth: "72px" }}>{t("totalPieces")}</th>
               {Array.from({ length: months }, (_, i) => (
                 <th key={i} className="text-center p-2 font-mono" style={{ minWidth: "60px" }}>{t("monthLabel")}{i + 1}</th>
               ))}
-              <th className="text-right p-2" style={{ minWidth: "70px" }}>{t("allocated")}</th>
+              <th className="text-right p-2" style={{ minWidth: "88px" }}>{t("allocatedPieces")}</th>
             </tr>
           </thead>
           <tbody>
@@ -2701,7 +2859,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
               return (
                 <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
                   <td className="p-2 font-mono sticky left-0 z-10" style={{ background: "white" }}>{p.id}</td>
-                  <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{totalPurchased}</td>
+                  <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{totalPurchased} {t("unitPieces")}</td>
                   {sched.map((q, i) => (
                     <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
                       <input type="number" value={q || 0} min="0"
@@ -2709,7 +2867,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                     </td>
                   ))}
                   <td className="p-2 text-right font-mono font-semibold" style={{ color: matches ? COLORS.emerald : COLORS.crimson }}>
-                    {allocated}/{totalPurchased}
+                    {allocated}/{totalPurchased} {t("unitPieces")}
                   </td>
                 </tr>
               );
@@ -2722,7 +2880,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                 {products.reduce((acc, p) => {
                   const rSched = restockStore[p.id] || [p.qty || 0];
                   return acc + (rSched.reduce((a, b) => a + (b || 0), 0) || (p.qty || 0));
-                }, 0)}
+                }, 0)} {t("unitPieces")}
               </td>
               {Array.from({ length: months }, (_, i) => {
                 const sum = products.reduce((acc, p) => {
@@ -2731,7 +2889,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                   const sched = getSchedule(p.id, totalPurchased, months, scheduleStore);
                   return acc + (sched[i] || 0);
                 }, 0);
-                return <td key={i} className="p-2 text-center font-mono">{sum}</td>;
+                return <td key={i} className="p-2 text-center font-mono">{sum} {t("unitPieces")}</td>;
               })}
               <td></td>
             </tr>
@@ -2796,7 +2954,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                         );
                       })}
                       <td className="p-2 text-right font-mono font-semibold" style={{ color: COLORS.ink }}>
-                        {totalPurchased}
+                        {totalPurchased} {t("unitPieces")}
                       </td>
                     </tr>
                   );
@@ -2806,20 +2964,20 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                 <tr className="font-semibold">
                   <td className="p-2 sticky left-0" style={{ background: COLORS.paper }}>{t("total")}</td>
                   <td className="p-2 text-center font-mono" style={{ color: COLORS.oxblood }}>
-                    {products.reduce((acc, p) => acc + ((restockStore[p.id] || [p.qty || 0])[0] || 0), 0)}
+                    {products.reduce((acc, p) => acc + ((restockStore[p.id] || [p.qty || 0])[0] || 0), 0)} {t("unitPieces")}
                   </td>
                   {Array.from({ length: months }, (_, i) => {
                     const sum = products.reduce((acc, p) => {
                       const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
                       return acc + (rSched[i + 1] || 0);
                     }, 0);
-                    return <td key={i} className="p-2 text-center font-mono" style={{ color: sum > 0 ? COLORS.emerald : undefined }}>{sum}</td>;
+                    return <td key={i} className="p-2 text-center font-mono" style={{ color: sum > 0 ? COLORS.emerald : undefined }}>{sum} {t("unitPieces")}</td>;
                   })}
                   <td className="p-2 text-right font-mono">
                     {products.reduce((acc, p) => {
                       const rSched = restockStore[p.id] || [p.qty || 0, ...Array(months).fill(0)];
                       return acc + rSched.reduce((a, b) => a + (b || 0), 0);
-                    }, 0)}
+                    }, 0)} {t("unitPieces")}
                   </td>
                 </tr>
               </tfoot>
@@ -2855,7 +3013,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
               <thead style={{ background: COLORS.paper }}>
                 <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
                   <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: "120px" }}>{t("sku")}</th>
-                  <th className="text-right p-2" style={{ minWidth: "60px" }}>{t("defaultPrice")}</th>
+                  <th className="text-right p-2" style={{ minWidth: "72px" }}>{t("defaultPrice")}（₽）</th>
                   {Array.from({ length: months }, (_, i) => (
                     <th key={i} className="text-center p-2 font-mono" style={{ minWidth: "70px" }}>{t("monthLabel")}{i + 1}</th>
                   ))}
@@ -2868,7 +3026,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                   return (
                     <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
                       <td className="p-2 font-mono sticky left-0 z-10" style={{ background: "white" }}>{p.id}</td>
-                      <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{(p.list || 0).toLocaleString("ru-RU")}</td>
+                      <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{(p.list || 0).toLocaleString("ru-RU")} ₽</td>
                       {Array.from({ length: months }, (_, i) => {
                         const v = listArr[i] || 0;
                         const isCustom = v > 0 && v !== (p.list || 0);
@@ -2890,7 +3048,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
         )}
       </div>
 
-      {/* ===== 平台综合成本排期表格（可折叠） ===== */}
+      {/* ===== 平台综合扣费排期表格（可折叠） ===== */}
       <div className="border" style={{ borderColor: COLORS.line, background: "white" }}>
         <button
           onClick={() => setShowFeeSchedule(!showFeeSchedule)}
@@ -2917,7 +3075,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
               <thead style={{ background: COLORS.paper }}>
                 <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
                   <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: "120px" }}>{t("sku")}</th>
-                  <th className="text-right p-2" style={{ minWidth: "60px" }}>{t("defaultPrice")}</th>
+                  <th className="text-right p-2" style={{ minWidth: "72px" }}>{t("defaultPrice")}（₽）</th>
                   {Array.from({ length: months }, (_, i) => (
                     <th key={i} className="text-center p-2 font-mono" style={{ minWidth: "70px" }}>{t("monthLabel")}{i + 1}</th>
                   ))}
@@ -2930,7 +3088,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                   return (
                     <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
                       <td className="p-2 font-mono sticky left-0 z-10" style={{ background: "white" }}>{p.id}</td>
-                      <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{(p.platformFee || 0).toLocaleString("ru-RU")}</td>
+                      <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{(p.platformFee || 0).toLocaleString("ru-RU")} ₽</td>
                       {Array.from({ length: months }, (_, i) => {
                         const v = feeArr[i] || 0;
                         const isCustom = v > 0 && v !== (p.platformFee || 0);
@@ -2959,9 +3117,9 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
 
 
 // ============================================================
-// VAT 阈值监控（动态税档）
+// 增值税阈值监控（动态税制）
 // ============================================================
-const VATThresholdMonitor = ({ proj, projection, updateProj, params, t }) => {
+const VATThresholdMonitor = ({ proj, projection, updateProj, params, t, lang }) => {
   const final = proj.finalCumRevenue || 0;
   const T1 = 20_000_000, T2 = 250_000_000, T3 = 450_000_000;
   const condEnd = Math.max(final * 1.1, 30_000_000);
@@ -2993,7 +3151,7 @@ const VATThresholdMonitor = ({ proj, projection, updateProj, params, t }) => {
       ) : (
         <div className="text-xs p-3 border" style={{ borderColor: COLORS.line, background: COLORS.paper, color: COLORS.inkSoft }}>
           <Info size={12} className="inline mr-1" />
-          {t("vatFixedNote")} <strong style={{ color: COLORS.oxblood }}>{TAX_SCHEMES[params.taxScheme].short}</strong>.
+          {t("vatFixedNote")} <strong style={{ color: COLORS.oxblood }}>{taxSchemeShortLabel(TAX_SCHEMES[params.taxScheme], lang)}</strong>.
           {" "}{t("vatSwitchHint")}
         </div>
       )}
@@ -3066,7 +3224,7 @@ const VATThresholdMonitor = ({ proj, projection, updateProj, params, t }) => {
 // ============================================================
 // 现金流 Tab
 // ============================================================
-const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStore, setWithdrawalStore, t, lang, fmt }) => {
+const ProjectionTab = ({ proj, projection, setProjection, params, totals, withdrawalStore, setWithdrawalStore, t, lang, fmt }) => {
   const updateProj = (k, v) => setProjection(p => ({ ...p, [k]: v }));
   const months = projection.monthsHorizon;
   const [showWithdrawalSchedule, setShowWithdrawalSchedule] = useState(false);
@@ -3104,9 +3262,11 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
         </div>
       </div>
 
-      <Card kicker="VAT Threshold · 2026" title={t("vatThreshold")}>
-        <VATThresholdMonitor proj={proj} projection={projection} updateProj={updateProj} params={params} t={t} />
+      <Card kicker="增值税阈值 · 2026" title={t("vatThreshold")}>
+        <VATThresholdMonitor proj={proj} projection={projection} updateProj={updateProj} params={params} t={t} lang={lang} />
       </Card>
+
+      <AudienceQuickGuide compact />
 
       <Card kicker="Cumulative Cash" title={t("cumCashChart")}>
         <CashFlowChart proj={proj} t={t} fmt={fmt} />
@@ -3160,7 +3320,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
                 {Array.from({ length: months }, (_, i) => (
                   <th key={i} className="text-center p-2 font-mono" style={{ minWidth: '80px' }}>{t("monthLabel")}{i + 1}</th>
                 ))}
-                <th className="text-right p-2" style={{ minWidth: '80px' }}>{t("total")}</th>
+                <th className="text-right p-2" style={{ minWidth: '80px' }}>{t("totalAmountRub")}</th>
               </tr>
             </thead>
             <tbody>
@@ -3177,7 +3337,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
                   );
                 })}
                 <td className="p-2 text-right font-mono font-semibold" style={{ color: COLORS.emerald }}>
-                  {((withdrawalStore?.amounts || []).reduce((a, b) => a + (b || 0), 0)).toLocaleString('ru-RU')}
+                  {((withdrawalStore?.amounts || []).reduce((a, b) => a + (b || 0), 0)).toLocaleString('ru-RU')} ₽
                 </td>
               </tr>
             </tbody>
@@ -3193,6 +3353,9 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
       </Card>
 
       <Card kicker="Monthly P&L" title={t("cashFlowDetail")}>
+        <div className="mb-3">
+          <MetricBasisNote totals={totals} params={params} proj={proj} projection={projection} fmt={fmt} compact />
+        </div>
         <div className="text-xs mb-3 p-2 border-l-2" style={{ borderColor: COLORS.gold, background: COLORS.paper, color: COLORS.inkSoft }}>
           <Info size={12} className="inline mr-1" />
           <strong style={{ color: COLORS.ink }}>{t("projCashVsPnl")}</strong>
@@ -3232,13 +3395,13 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
                     {m.isInitial ? "—" : (m.vatTierKey ? t(m.vatTierKey, m.vatTierKey === "vatLabelFixedOsn" ? { rate: (m.vatRate*100).toFixed(0) } : {}) : "—")}
                   </td>
                   <td className="p-2 text-right font-mono text-[10px]" style={{ color: m.restockQty > 0 ? COLORS.crimson : COLORS.inkSoft }}>
-                    {m.restockQty > 0 ? `+${m.restockQty}` : "—"}
+                    {m.restockQty > 0 ? `+${m.restockQty} ${t("unitPieces")}` : "—"}
                     {m.restockCost > 0 && !m.isInitial && <div className="text-[9px]" style={{ color: COLORS.crimson }}>-{F(m.restockCost)}</div>}
                   </td>
                   <td className="p-2 text-right font-mono" style={{ color: m.stockWarning ? COLORS.crimson : COLORS.inkSoft }}>
-                    {m.stockEnd}{m.stockWarning && <span className="ml-1 text-[9px]">⚠</span>}
+                    {m.stockEnd} {t("unitPieces")}{m.stockWarning && <span className="ml-1 text-[9px]">⚠</span>}
                   </td>
-                  <td className="p-2 text-right font-mono">{m.soldQty || "—"}</td>
+                  <td className="p-2 text-right font-mono">{m.soldQty ? `${m.soldQty} ${t("unitPieces")}` : "—"}</td>
                   <td className="p-2 text-right font-mono">{m.revenue ? F(m.revenue) : "—"}</td>
                   <td className="p-2 text-right font-mono">{m.cogs ? F(m.cogs) : (m.isInitial ? F(-(proj.initialOutflow - (m.importVAT || 0))) : "—")}</td>
                   <td className="p-2 text-right font-mono">{m.expenses ? F(m.expenses) : "—"}</td>
@@ -3263,12 +3426,12 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
                 <td className="p-2">{t("totalRow")}</td>
                 <td className="p-2"></td>
                 <td className="p-2 text-right font-mono" style={{ color: COLORS.crimson }}>
-                  {proj.months.reduce((a, b) => a + (b.restockQty || 0), 0)}
+                  {proj.months.reduce((a, b) => a + (b.restockQty || 0), 0)} {t("unitPieces")}
                 </td>
                 <td className="p-2 text-right font-mono">
-                  {proj.months.length > 0 ? proj.months[proj.months.length - 1].stockEnd : 0}
+                  {proj.months.length > 0 ? proj.months[proj.months.length - 1].stockEnd : 0} {t("unitPieces")}
                 </td>
-                <td className="p-2 text-right font-mono">{proj.months.reduce((a, b) => a + b.soldQty, 0)}</td>
+                <td className="p-2 text-right font-mono">{proj.months.reduce((a, b) => a + b.soldQty, 0)} {t("unitPieces")}</td>
                 <td className="p-2 text-right font-mono">{F(proj.totalRevenue)}</td>
                 <td colSpan={3}></td>
                 <td className="p-2 text-right font-mono" style={{ color: COLORS.crimson }}>{F(proj.totalTax)}</td>
@@ -3299,7 +3462,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, withdrawalStor
 const SettingsTab = ({ params, setParams, t, lang, rateSource, setRateSource, liveRate, effectiveRate, fetchRate }) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 anim-in">
     <Card kicker={t("taxRegimeKicker")} title={t("taxRegime")}>
-      <TaxSchemePicker params={params} setParams={setParams} t={t} />
+      <TaxSchemePicker params={params} setParams={setParams} t={t} lang={lang} />
     </Card>
     <Card kicker={t("globalParamsKicker")} title={t("globalParams")}>
       <ParamsPanel params={params} setParams={setParams} t={t} rateSource={rateSource} setRateSource={setRateSource} liveRate={liveRate} effectiveRate={effectiveRate} fetchRate={fetchRate} />
@@ -3325,7 +3488,7 @@ const SettingsTab = ({ params, setParams, t, lang, rateSource, setRateSource, li
   </div>
 );
 
-const TaxSchemePicker = ({ params, setParams, t }) => (
+const TaxSchemePicker = ({ params, setParams, t, lang }) => (
   <div className="space-y-3">
     {Object.entries(TAX_SCHEMES).map(([k, v]) => (
       <button key={k} onClick={() => setParams(p => ({ ...p, taxScheme: k }))}
@@ -3339,7 +3502,7 @@ const TaxSchemePicker = ({ params, setParams, t }) => (
             <div className="font-semibold text-sm">{t(v.labelKey)}</div>
             <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>{t(v.descKey)}</div>
           </div>
-          <Tag color={params.taxScheme === k ? COLORS.oxblood : COLORS.inkSoft}>{v.short}</Tag>
+          <Tag color={params.taxScheme === k ? COLORS.oxblood : COLORS.inkSoft}>{taxSchemeShortLabel(v, lang)}</Tag>
         </div>
       </button>
     ))}
@@ -3478,39 +3641,41 @@ const HelpPanel = ({ t }) => (
 // ============================================================
 const GLOSSARY = {
   zh: [
-    { section: "📊 总览仪表盘", items: [
-      { term: "总营收", desc: "所有商品卖出后，平台打给你的总金额（售价 − 平台综合成本）。", example: "商品售价 1249₽，平台综合成本 652₽ → 单件回款 597₽。30件 → 总营收 = 597 × 30 × 97%（扣货损）= 17,373₽" },
-      { term: "总投资", desc: "测算口径下需要占用的资金：预估采购成本 + 已填写的到俄物流费用 + 一次性费用。德力当前版本到俄运费和贴标/本地化都为 0，等工厂和货代报价后再重算。采购成本按上架销售单位填写，正式报价后必须替换。", example: "6只装预估采购价18¥/套 × 汇率12.8 = 230.4₽，到俄运费和贴标暂不计 → 每套成本230.4₽。100套 → 投资 = 23,040₽" },
-      { term: "现金净利", desc: "按每个产品单独算税后汇总的利润。= 总营收 − 总投资 − 仓储 − 管理费 − 税。", example: "营收 17,373₽ − 投资 9,354₽ − 仓 2,970₽ − 管理 1,080₽ − 税 580₽ = 净利 3,389₽" },
-      { term: "期末账上现金（已扣分润）", desc: "经过N个月销售排期后，扣除月固定费用、补货支出和合伙人分润/提现后，账上实际还剩多少钱。按月度现金流累计计算。", example: "M0投入 -108万₽ → M1经营回款+15万 → M2补货/分润后+20万 → ... → M8账上余额 = +57.5万₽" },
-      { term: "⚠️ 现金净利 vs 期末账上现金", desc: "两个数不一样是正常的！经营净利/现金净利是利润口径；期末账上现金是现金流口径，会叠加M0备货、补货节奏、月固定费用，以及合伙人分润/提现。", example: "经营净利看这批货赚了多少；期末账上现金看经过备货、补货、固定月租和分润后，账户里实际剩多少" },
-      { term: "投入产出", desc: "每投入1块钱能赚回多少。= 净利润 ÷ 总投资 × 100%", example: "投资10万₽，净赚4.7万₽ → 投入产出 = 47%。意思是每投1卢布赚回0.47卢布" },
-      { term: "净利", desc: "每赚100块营收里有多少是纯利润。= 净利润 ÷ 总营收 × 100%", example: "营收21万₽，净利4.7万₽ → 净利 = 22.3%。每100₽营收中22.3₽是纯利" },
+    { section: "总览仪表盘", items: [
+      { term: "总营收", desc: "所有商品卖出后，平台打给你的总金额（售价 - 平台综合扣费）。", example: "商品售价 1249₽，平台综合扣费 652₽ → 单件回款 597₽。30件 → 总营收 = 597 × 30 × 97%（扣货损）= 17,373₽" },
+      { term: "总投资", desc: "测算口径下需要占用的资金：供应商报价/预估采购价 + 已填写的到俄物流费用 + 一次性费用。德力当前版本到俄运费和贴标/本地化都为 0，等工厂和货代报价后再重算。供应商报价按上架销售单位填写，正式报价后必须替换。", example: "6只装预估供应商报价18¥/套 × 汇率12.8 = 230.4₽，到俄运费和贴标暂不计 → 每套成本230.4₽。100套 → 投资 = 23,040₽" },
+      { term: "商品经营利润（不含启动费）", desc: "按每个产品单独算税后汇总的经营利润。它看的是这批商品本身赚不赚钱，还没有扣一次性启动费。= 总营收 − 总投资 − 仓储 − 管理费 − 税。", example: "营收 17,373₽ − 投资 9,354₽ − 仓 2,970₽ − 管理 1,080₽ − 税 580₽ = 商品经营利润 3,389₽" },
+      { term: "扣启动费后利润", desc: "商品经营利润再扣掉一次性启动费后的结果。适合判断这个项目把启动成本也算进去后还剩多少利润。", example: "商品经营利润 50万₽ − 一次性启动费 8万₽ = 扣启动费后利润 42万₽" },
+      { term: "最后账上还剩现金", desc: "经过N个月销售排期后，扣除月固定费用、补货支出和分给合伙人的钱/提现后，账上实际还剩多少钱。它按月度现金流累计计算。", example: "M0先付 -108万₽ → M1经营回款+15万 → M2补货/分润后+20万 → ... → M8账上余额 = +57.5万₽" },
+      { term: "利润 vs 最后账上还剩现金", desc: "两个数不一样是正常的。利润是经营结果口径；最后账上还剩现金是现金流口径，会叠加M0备货、补货节奏、月固定费用，以及分给合伙人的钱/提现。", example: "商品经营利润看这批货赚了多少；最后账上还剩现金看经过备货、补货、固定月租和分润后，账户里实际剩多少" },
+      { term: "回报率（ROI/投入产出）", desc: "每投入1块钱能赚回多少。= 利润 ÷ 总投资 × 100%", example: "投资10万₽，赚4.7万₽ → 回报率 = 47%。意思是每投1卢布赚回0.47卢布" },
+      { term: "利润率（净利率）", desc: "每赚100块营收里有多少是利润。= 利润 ÷ 总营收 × 100%", example: "营收21万₽，利润4.7万₽ → 利润率 = 22.3%。每100₽营收中22.3₽是利润" },
     ]},
-    { section: "📈 投资人关注", items: [
-      { term: "初始投入", desc: "M0（第零个月）你要一次性掏出的全部钱：所有商品的采购、已填写的运费、一次性费用和进项VAT（如果是OSN）。如果运费留空，就代表当前模型暂不含到俄头程物流。", example: "产品采购合计108万₽、到俄运费和贴标待报价 → 初始投入先按 -108万₽ 测算，报价后重跑" },
-      { term: "最大资金压力（回撤）", desc: "整个预测期内，你账上最缺钱的那一刻。通常就是M0刚付完货款的时候。", example: "M0付完108万₽，账上 -108万₽ → 这就是最大回撤" },
-      { term: "回本月份", desc: "累计现金从负变正的那个月。之前都是亏的，从这个月开始你把本钱赚回来了。", example: "M5累计 -5万₽，M6累计 +2万₽ → 第6个月回本" },
+    { section: "投资人关注", items: [
+      { term: "M0 先付出去的钱", desc: "M0（第零个月）你要一次性掏出的全部钱：所有商品的供应商报价/预估采购、已填写的运费、一次性费用和进口时付的增值税（进项VAT，如果是俄罗斯一般税制）。如果运费留空，就代表当前模型暂不含到俄头程物流。", example: "产品采购合计108万₽、到俄运费和贴标待报价 → M0 先按 -108万₽ 测算，报价后重跑" },
+      { term: "最缺钱的时候", desc: "整个预测期内，你账上现金最低的那一刻。通常就是M0刚付完货款的时候。专业口径也叫最大资金压力/最大回撤。", example: "M0付完108万₽，账上 -108万₽ → 这就是最缺钱的时候" },
+      { term: "回本月份", desc: "账上累计现金从负变正的那个月。之前都是还没回本，从这个月开始你把本钱赚回来了。", example: "M5账上累计 -5万₽，M6账上累计 +2万₽ → 第6个月回本" },
       { term: "旺季峰值回款", desc: "销售排期里回款最高的月份。玻璃餐厨品类淡旺季明显，比平均月回款更适合判断旺季资金压力。", example: "M10-M12销量更高，若M11回款最高为45万₽，就按45万₽观察峰值库存和现金流。" },
     ]},
-    { section: "🏷️ 商品明细", items: [
-      { term: "预估采购价 vs 申报价", desc: "当前采购价/申报价是测算假设，不是德力正式报价。字段按上架销售单位填写，不按单只杯子：6只装按整套，L12按12件套整套，壶杯套装按整套。拿到工厂 EXW/FOB、MOQ、装箱和毛重后，需要替换并重跑模型。OSN税制下，进项VAT按申报价算。", example: "TY1628 6只装预估采购18¥/套，申报15¥/套 → 进项VAT按15¥/套算；若工厂报价按单只给，需要先乘以套内数量再填入模型" },
-      { term: "平台综合成本", desc: "Ozon/WB/Yandex 每笔订单的综合扣减，不只是佣金，还包括支付、平台配送/退货、广告促销预留等。", example: "售价1249₽，平台综合成本652₽ → 你实际到手 597₽" },
+    { section: "商品明细", items: [
+      { term: "供应商报价 vs 报关申报价", desc: "当前供应商报价/预估采购价和报关申报价是测算假设，不是德力正式报价。字段按上架销售单位填写，不按单只杯子：6只装按整套，L12按12件套整套，壶杯套装按整套。拿到工厂 EXW/FOB、MOQ、装箱和毛重后，需要替换并重跑模型。俄罗斯一般税制（OSN）下，进口时付的增值税（进项VAT）按报关申报价算。", example: "TY1628 6只装预估供应商报价18¥/套，报关申报价15¥/套 → 进口时付的增值税（进项VAT）按15¥/套算；若工厂报价按单只给，需要先乘以套内数量再填入模型" },
+      { term: "平台综合扣费", desc: "Ozon/WB/Yandex 每笔订单的综合扣减，不只是佣金，还包括支付、平台配送/退货、广告促销预留等。", example: "售价1249₽，平台综合扣费652₽ → 你实际到手 597₽" },
       { term: "海外仓费用、管理费", desc: "海外仓费用 = 俄罗斯本地仓储/处理费用。管理费 = 代运营、客服、售后处理等管理成本。两项在模型里分开填写、分开查看。", example: "例：海外仓费用99₽/销售单位，管理费36₽/销售单位，两项分别进入成本表。" },
       { term: "有效件数", desc: "考虑货损率后的实际可售数量。默认货损3%。", example: "备货100件 × (1-3%) = 有效97件。3件在运输中损坏不能卖" },
-      { term: "单位回款", desc: "每卖出1件，平台实际打给你的钱。= 售价 − 平台综合成本", example: "售价1249₽ − 平台综合成本652₽ = 单位回款597₽" },
+      { term: "单位回款", desc: "每卖出1件，平台实际打给你的钱。= 售价 − 平台综合扣费", example: "售价1249₽ − 平台综合扣费652₽ = 单位回款597₽" },
     ]},
-    { section: "💰 现金流预测", items: [
-      { term: "当月净利 vs 现金流", desc: "净利 = 营收 − 成本 − 仓管 − 税（会计视角，含销货成本）。现金流 = 营收 − 仓管 − 税 − 合伙人分成（现金视角，M0已付全部货款，月度不重复扣）。", example: "M3营收30万₽，货物成本15万₽，仓管5万₽，税2万₽\n→ 净利 = 30-15-5-2 = 8万₽\n→ 现金流 = 30-5-2 = 23万₽（因为15万货款M0就付了）" },
-      { term: "累计现金", desc: "从M0到当月，所有现金流加起来的总和。负数=还没回本，正数=已回本。", example: "M0: -100万 → M1: -100+20=-80万 → M2: -80+25=-55万 → ... → M6: +5万（回本了）" },
-      { term: "税档", desc: "当月适用的税制。如果开了\"自动VAT\"，累计营收过20M₽会自动从USN切换到USN+VAT 5%。", example: "M1~M4累计营收18M₽ → 免VAT。M5突破20M₽ → 自动加VAT 5%" },
+    { section: "现金流预测", items: [
+      { term: "本月经营利润 vs 本月实际现金进出", desc: "本月经营利润 = 营收 − 成本 − 仓管 − 税，属于利润视角，含销货成本。本月实际现金进出 = 营收 − 仓管 − 税 − 分给合伙人的钱，属于现金视角；因为M0已付全部货款，月度不重复扣销货成本。", example: "M3营收30万₽，货物成本15万₽，仓管5万₽，税2万₽\n→ 本月经营利润 = 30-15-5-2 = 8万₽\n→ 本月实际现金进出 = 30-5-2 = 23万₽（因为15万货款M0就付了）" },
+      { term: "账上累计现金", desc: "从M0到当月，所有实际现金进出加起来的总和。负数=还没回本，正数=已回本。", example: "M0: -100万 → M1: -100+20=-80万 → M2: -80+25=-55万 → ... → M6: +5万（回本了）" },
+      { term: "本月适用税制", desc: "当月适用的俄罗斯税制。如果开了“自动增值税（VAT）”，累计营收过20M₽会自动从俄罗斯简化税制（USN）切换到“俄罗斯简化税制（USN）+ 增值税（VAT）5%”。", example: "M1~M4累计营收18M₽ → 免增值税（VAT）。M5突破20M₽ → 自动加增值税（VAT）5%" },
     ]},
-    { section: "🏛️ 税制简述", items: [
-      { term: "USN 6%", desc: "按总收入的6%交税，最简单。不管你赚不赚钱都要交。", example: "月营收100万₽ → 税 = 6万₽，跟利润无关" },
-      { term: "USN 15%", desc: "按（收入−支出）× 15%交税。有个保底：最少交收入的1%。", example: "营收100万₽，支出80万₽ → 利润20万₽ × 15% = 3万₽。但保底 = 100万×1% = 1万₽。取高的 → 交3万₽" },
-      { term: "USN + VAT 5%/7%", desc: "累计营收超过20M₽后触发。在USN基础上额外交5%或7%的增值税，且不能抵扣进项。", example: "售价含税1249₽ → VAT 5% = 1249×5%÷105% ≈ 59.5₽/件" },
-      { term: "OSN", desc: "一般纳税制：VAT 22%（可抵扣进项）+ 利润税 25%。最复杂但大企业必选。", example: "进口报关VAT按申报价算，卖出时收销项VAT，两者相抵后交差额" },
-      { term: "进项VAT vs 销项VAT", desc: "进项VAT = 进口货物时你付的增值税（按申报价计算）。销项VAT = 卖出商品时向消费者收的增值税。OSN下可以用进项抵销项。", example: "进口100件，申报价15¥×12=180₽/件 → 进项VAT = 180×22% = 39.6₽/件\n卖出时售价1249₽ → 销项VAT = 1249×22%÷122% ≈ 225₽/件\n实缴 = 225-39.6 = 185.4₽/件" },
+    { section: "税制简述", items: [
+      { term: "俄罗斯简化税制（USN）6%", desc: "按总收入的6%交税，最简单。不管你赚不赚钱都要交。", example: "月营收100万₽ → 税 = 6万₽，跟利润无关" },
+      { term: "俄罗斯简化税制（USN）15%", desc: "按（收入−支出）× 15%交税。有个保底：最少交收入的1%。", example: "营收100万₽，支出80万₽ → 利润20万₽ × 15% = 3万₽。但保底 = 100万×1% = 1万₽。取高的 → 交3万₽" },
+      { term: "俄罗斯简化税制（USN）+ 增值税（VAT）5%/7%", desc: "累计营收超过20M₽后触发。在俄罗斯简化税制（USN）基础上额外交5%或7%的增值税，且不能抵扣进口时付的增值税（进项VAT）。", example: "售价含税1249₽ → 增值税（VAT）5% = 1249×5%÷105% ≈ 59.5₽/件" },
+      { term: "俄罗斯一般税制（OSN）", desc: "一般纳税制：增值税（VAT）22%（可抵扣进口时付的增值税）+ 利润税 25%。最复杂但大企业必选。", example: "进口时付的增值税按报关申报价算，卖出时产生销项增值税，两者相抵后交差额" },
+      { term: "进口时付的增值税（进项VAT） vs 卖出时产生的增值税（销项VAT）", desc: "进项VAT = 进口货物时你付的增值税（按报关申报价计算）。销项VAT = 卖出商品时向消费者收的增值税。俄罗斯一般税制（OSN）下可以用进项抵销项。", example: "进口100件，报关申报价15¥×12=180₽/件 → 进口时付的增值税（进项VAT） = 180×22% = 39.6₽/件\n卖出时售价1249₽ → 卖出时产生的增值税（销项VAT） = 1249×22%÷122% ≈ 225₽/件\n实缴 = 225-39.6 = 185.4₽/件" },
+      { term: "M0 / M1", desc: "M0 = 还没开始卖之前先付出去的钱；M1 = 第1个月销售。看现金流时先分清这两个阶段。", example: "M0 先付货款 -108万₽；M1 开始销售回款 +15万₽。" },
     ]},
   ],
   en: [
@@ -3580,7 +3745,7 @@ const GLOSSARY = {
   ],
 };
 
-const GlossaryPanel = ({ t, lang }) => {
+const GlossaryPanel = ({ totals, params, proj, projection, fmt, t, lang }) => {
   const data = GLOSSARY[lang] || GLOSSARY.zh;
   const titles = { zh: "术语词典 · 指标解释与举例", en: "Glossary · Metrics Explained with Examples", ru: "Глоссарий · Метрики с примерами" };
   const hints = { zh: "每个术语都附带真实数字举例，帮助你直观理解。", en: "Each term includes a real-number example for intuitive understanding.", ru: "Каждый термин с примером для наглядности." };
@@ -3591,6 +3756,7 @@ const GlossaryPanel = ({ t, lang }) => {
         <h2 className="font-display text-2xl font-semibold">{titles[lang] || titles.zh}</h2>
         <p className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>{hints[lang] || hints.zh}</p>
       </div>
+      <MetricBasisNote totals={totals} params={params} proj={proj} projection={projection} fmt={fmt} />
       {data.map((sec, si) => (
         <Card key={si} title={sec.section}>
           <div className="space-y-0">
