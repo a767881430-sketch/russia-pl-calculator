@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from "recharts";
-import { Plus, Trash2, Save, Info, ChevronDown, ChevronRight, RotateCcw, FileDown, AlertCircle, Sparkles, Globe, Share2, FolderOpen, FilePlus, Upload, Copy, X, Edit3 } from "lucide-react";
+import { Plus, Trash2, Save, Info, ChevronDown, ChevronRight, RotateCcw, FileDown, AlertCircle, Sparkles, Globe, Share2, FolderOpen, FilePlus, Upload, Copy, X, Edit3, BookOpen } from "lucide-react";
 import { createT, createCurrencyFormatter, useLiveRate, LANG_OPTIONS } from "./i18n.js";
 
 // ============================================================
@@ -669,6 +669,7 @@ const LoginGate = ({ children, lang, setLang }) => {
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
   const t = createT(lang);
+  const guideHref = `${import.meta.env.BASE_URL || "/"}usage-guide.html`;
 
   if (authed) return children;
 
@@ -719,6 +720,11 @@ const LoginGate = ({ children, lang, setLang }) => {
             style={{ background: COLORS.oxblood, color: COLORS.cream }}>
             {t("loginButton")}
           </button>
+          <a href={guideHref} target="_blank" rel="noopener noreferrer"
+            className="btn-interact w-full mt-3 px-4 py-2.5 text-sm font-medium rounded-sm flex items-center justify-center gap-2 border"
+            style={{ borderColor: COLORS.line, color: COLORS.oxblood, background: "rgba(255,255,255,0.65)" }}>
+            <BookOpen size={15} /> {t("usageGuide")}
+          </a>
         </form>
         <div className="mt-4 text-center text-[10px]" style={{ color: COLORS.inkSoft }}>
           {t("loginFooter")}
@@ -758,6 +764,7 @@ function AppContent({ lang, setLang }) {
   // --- 多项目管理状态 ---
   const [projectName, setProjectName] = useState("");  // 启动时从 localStorage 读取
   const [showProjectPanel, setShowProjectPanel] = useState(false);
+  const guideHref = `${import.meta.env.BASE_URL || "/"}usage-guide.html`;
 
   // --- i18n ---
   const t = useMemo(() => createT(lang), [lang]);
@@ -1995,6 +2002,12 @@ function AppContent({ lang, setLang }) {
                 style={{ borderColor: COLORS.gold, color: COLORS.gold }}>
                 <Share2 size={14} /> <span className="hidden sm:inline">{t("shareLink")}</span>
               </button>
+              {/* 使用说明 */}
+              <a href={guideHref} target="_blank" rel="noopener noreferrer"
+                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                style={{ borderColor: COLORS.line, color: COLORS.inkSoft }}>
+                <BookOpen size={14} /> <span className="hidden sm:inline">{t("usageGuide")}</span>
+              </a>
               {/* 重置 */}
               <button onClick={resetSample}
                 className="btn-interact flex items-center gap-1.5 px-2 py-2 text-xs rounded-sm"

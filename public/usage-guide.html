@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>俄罗斯电商损益与现金流计算器 · 使用说明</title>
+  <style>
+    :root {
+      --cream: #faf7f2;
+      --paper: #f2ede3;
+      --ink: #1f1b16;
+      --muted: #5c544a;
+      --line: #d9cfb8;
+      --oxblood: #5c1a1b;
+      --red: #a4193d;
+      --gold: #b8860b;
+      --green: #1f4f2e;
+      --blue: #27445c;
+      --white: #fffdfa;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(31,27,22,.035) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(31,27,22,.025) 1px, transparent 1px),
+        var(--cream);
+      background-size: 28px 28px;
+      line-height: 1.7;
+    }
+    a { color: inherit; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: rgba(250,247,242,.94);
+      backdrop-filter: blur(12px);
+    }
+    .topbar-inner {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 220px; text-decoration: none; }
+    .mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      background: var(--oxblood);
+      color: var(--cream);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 22px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+    .brand small {
+      display: block;
+      color: var(--gold);
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      font-size: 10px;
+      line-height: 1.2;
+    }
+    .brand b { display: block; font-size: 15px; line-height: 1.25; }
+    .nav { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .nav a, .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 36px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.62);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+    .btn.primary { background: var(--oxblood); color: var(--cream); border-color: var(--oxblood); }
+    .btn.green { background: var(--green); color: var(--cream); border-color: var(--green); }
+    .btn.ghost { background: transparent; }
+    .hero {
+      padding: 42px 0 28px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(242,237,227,.72));
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
+      gap: 28px;
+      align-items: center;
+    }
+    .eyebrow {
+      color: var(--gold);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    h1, h2, h3 {
+      font-family: Georgia, "Noto Serif SC", "Microsoft YaHei", serif;
+      line-height: 1.16;
+      margin: 0;
+    }
+    h1 { font-size: clamp(34px, 5vw, 58px); max-width: 780px; }
+    .lead {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 760px;
+    }
+    .hero-actions { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .console {
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 50px rgba(31,27,22,.11);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .console-head {
+      min-height: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 9px; height: 9px; border-radius: 99px; display: block; background: var(--line); }
+    .dashboard-map { padding: 16px; display: grid; gap: 10px; }
+    .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .mini-metric, .mini-panel {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .mini-metric span { display: block; color: var(--muted); font-size: 10px; font-weight: 800; }
+    .mini-metric b { display: block; margin-top: 4px; font-family: Consolas, monospace; font-size: 15px; }
+    .mini-metric.green b { color: var(--green); }
+    .mini-metric.red b { color: var(--red); }
+    .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .bars { display: grid; gap: 7px; margin-top: 8px; }
+    .bar { height: 10px; border-radius: 99px; background: var(--paper); overflow: hidden; }
+    .bar i { display: block; height: 100%; background: var(--green); }
+    .bar:nth-child(2) i { background: var(--gold); }
+    .bar:nth-child(3) i { background: var(--blue); }
+    section { padding: 38px 0; }
+    section + section { border-top: 1px solid rgba(217,207,184,.75); }
+    .section-head { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 18px; }
+    .section-head h2 { font-size: clamp(26px, 3vw, 38px); }
+    .section-head p { margin: 8px 0 0; color: var(--muted); max-width: 720px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .card {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.74);
+      border-radius: 6px;
+      padding: 18px;
+    }
+    .card h3 { font-size: 22px; margin-bottom: 8px; }
+    .card p { color: var(--muted); margin: 0; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      margin-bottom: 10px;
+      border: 1px solid var(--line);
+      color: var(--oxblood);
+      background: var(--paper);
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .route-list { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+    .route-list li { display: flex; gap: 8px; color: var(--muted); }
+    .route-list b { color: var(--ink); }
+    .check { color: var(--green); font-weight: 900; }
+    .steps { display: grid; gap: 12px; counter-reset: step; }
+    .step {
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      border-radius: 6px;
+      counter-increment: step;
+    }
+    .step::before {
+      content: counter(step);
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      background: var(--oxblood);
+      color: var(--cream);
+      font-family: Georgia, serif;
+      font-size: 22px;
+      font-weight: 800;
+      border-radius: 4px;
+    }
+    .step h3 { font-size: 21px; margin-bottom: 5px; }
+    .step p { margin: 0; color: var(--muted); }
+    .callout {
+      border-left: 4px solid var(--gold);
+      background: rgba(242,237,227,.86);
+      padding: 16px 18px;
+      border-radius: 0 6px 6px 0;
+      color: var(--muted);
+    }
+    .callout strong { color: var(--oxblood); }
+    .metric-table, .project-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .metric-table th, .metric-table td, .project-table th, .project-table td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+    .metric-table th, .project-table th {
+      background: var(--paper);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .metric-table tr:last-child td, .project-table tr:last-child td { border-bottom: 0; }
+    .mono { font-family: Consolas, "Courier New", monospace; white-space: nowrap; }
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 10px;
+      align-items: stretch;
+    }
+    .flow-item {
+      position: relative;
+      border: 1px solid var(--line);
+      background: var(--white);
+      padding: 15px;
+      border-radius: 6px;
+    }
+    .flow-item:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gold);
+      font-weight: 900;
+      z-index: 1;
+    }
+    .flow-item b { display: block; font-size: 18px; margin-bottom: 4px; }
+    .flow-item span { color: var(--muted); font-size: 13px; }
+    .faq { display: grid; gap: 10px; }
+    details {
+      border: 1px solid var(--line);
+      background: var(--white);
+      border-radius: 6px;
+      padding: 14px 16px;
+    }
+    summary { cursor: pointer; font-weight: 800; color: var(--ink); }
+    details p { margin: 10px 0 0; color: var(--muted); }
+    .footer {
+      padding: 30px 0 42px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .print-note { display: none; }
+    @media (max-width: 920px) {
+      .topbar { position: static; }
+      .topbar-inner, .section-head { align-items: flex-start; flex-direction: column; }
+      .nav { justify-content: flex-start; }
+      .hero-grid, .grid-3, .grid-2, .mini-grid, .flow { grid-template-columns: 1fr; }
+      .metric-row { grid-template-columns: repeat(2, 1fr); }
+      .flow-item:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .topbar, .hero-actions { display: none; }
+      .hero { border-bottom: 0; padding: 24px 0; }
+      section { break-inside: avoid; padding: 22px 0; }
+      .card, .step, details, .metric-table, .project-table { break-inside: avoid; }
+      .print-note { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="./" aria-label="打开计算器">
+        <span class="mark">Р</span>
+        <span><small>Cross-border P&L</small><b>俄罗斯电商损益计算器</b></span>
+      </a>
+      <nav class="nav" aria-label="页面导航">
+        <a href="#quick">快速看懂</a>
+        <a href="#roles">不同人先看什么</a>
+        <a href="#metrics">指标怎么读</a>
+        <a href="#projects">打开项目</a>
+        <a href="./" class="btn primary">打开计算器</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow">使用说明 / 给新人、供应商、新老板</div>
+          <h1>先看结论，再看口径，最后才改数字。</h1>
+          <p class="lead">这份说明不是财务教材，而是一张“怎么看这张损益表”的路线图。别人第一次打开时，按这里走，就能知道红框里的数为什么不一样、每个项目该看哪里、哪些数据需要等供应商或货代补齐。</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="./?project=deli-glass-russia-22sku-standard-project.json">打开德力标准模型</a>
+            <a class="btn green" href="./?project=ozon-wholesale-90day-pack/ozon-wholesale-90day-standard-project.json">打开 Ozon 标准模型</a>
+            <a class="btn ghost" href="#print">打印成讲解稿</a>
+          </div>
+        </div>
+        <div class="console" aria-label="计算器界面示意">
+          <div class="console-head"><span>Dashboard reading order</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="dashboard-map">
+            <div class="metric-row">
+              <div class="mini-metric"><span>总营收</span><b>₽ 12.4M</b></div>
+              <div class="mini-metric green"><span>商品经营利润</span><b>₽ 2.1M</b></div>
+              <div class="mini-metric red"><span>最缺钱的时候</span><b>-₽ 1.3M</b></div>
+              <div class="mini-metric green"><span>最后账上现金</span><b>₽ 880K</b></div>
+            </div>
+            <div class="mini-grid">
+              <div class="mini-panel">
+                <b>当前数值口径对照</b>
+                <div class="bars"><div class="bar"><i style="width:82%"></i></div><div class="bar"><i style="width:64%"></i></div><div class="bar"><i style="width:48%"></i></div></div>
+              </div>
+              <div class="mini-panel">
+                <b>M0 / M1 图例</b>
+                <p style="margin:8px 0 0;color:var(--muted);font-size:13px">M0 = 先付出去的钱<br>M1 = 第 1 个月销售</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quick">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">5 分钟流程</div>
+            <h2>第一次打开，照这 5 步走</h2>
+            <p>先不要急着改参数。先确认你看的项目、预测期、销售单位和风险口径都对，再决定要不要调数字。</p>
+          </div>
+        </div>
+        <div class="steps">
+          <div class="step"><div><h3>打开项目链接，输入访问密码</h3><p>项目链接通常长这样：<span class="mono">?project=xxx-project.json</span>。如果别人给你的是主页，先在下方“打开项目”里选一个标准模型。</p></div></div>
+          <div class="step"><div><h3>先看总览仪表盘</h3><p>老板先看“最后账上还剩现金、回本月份、回报率、最缺钱的时候”。不要只盯一个利润数字。</p></div></div>
+          <div class="step"><div><h3>看“当前数值口径对照”</h3><p>这里会解释红框里的值为什么不相等：商品经营利润、扣启动费后利润、按销售排期算出的利润、最后账上现金，本来就是不同算法口径。</p></div></div>
+          <div class="step"><div><h3>再看商品明细和销售排期</h3><p>供应商报价、报关申报价、售价、平台综合扣费都按“销售单位”填。6 只装按整套，12 件套按整套，不按单只杯子。</p></div></div>
+          <div class="step"><div><h3>最后导出报告或复制链接</h3><p>给老板看用“导出报告”；给同事继续编辑用“分享链接”；需要 Excel 对账时再导出 CSV。</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="roles">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Reading routes</div>
+            <h2>不同人先看什么</h2>
+            <p>同一张表，不同角色关心点不一样。先按角色读，效率最高。</p>
+          </div>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <span class="tag">新老板</span>
+            <h3>先判断值不值得做</h3>
+            <ul class="route-list">
+              <li><span class="check">✓</span><span><b>最后账上还剩现金：</b>项目跑完账上还有多少钱。</span></li>
+              <li><span class="check">✓</span><span><b>回本月份：</b>预计第几个月不再亏现金。</span></li>
+              <li><span class="check">✓</span><span><b>回报率：</b>投入的钱预计能赚回多少。</span></li>
+              <li><span class="check">✓</span><span><b>最缺钱的时候：</b>项目过程里最低需要准备多少现金。</span></li>
+            </ul>
+          </article>
+          <article class="card">
+            <span class="tag">供应商</span>
+            <h3>先确认报价口径</h3>
+            <ul class="route-list">
+              <li><span class="check">✓</span><span><b>销售单位：</b>一套、一盒、一个链接到底算什么。</span></li>
+              <li><span class="check">✓</span><span><b>供应商报价：</b>当前是测算假设，正式报价后要替换。</span></li>
+              <li><span class="check">✓</span><span><b>报关申报价：</b>会影响进口时付的增值税和税务成本。</span></li>
+              <li><span class="check">✓</span><span><b>装箱/重量：</b>没补齐前，到俄物流不能当最终结果。</span></li>
+            </ul>
+          </article>
+          <article class="card">
+            <span class="tag">运营新人</span>
+            <h3>先看执行节奏</h3>
+            <ul class="route-list">
+              <li><span class="check">✓</span><span><b>销售排期：</b>每个月计划卖多少。</span></li>
+              <li><span class="check">✓</span><span><b>补货排期：</b>M0 首批和后续补货怎么走。</span></li>
+              <li><span class="check">✓</span><span><b>平台综合扣费：</b>不是单一佣金，含履约、支付、退货、广告等预留。</span></li>
+              <li><span class="check">✓</span><span><b>本月实际现金进出：</b>利润好看但现金可能还在路上。</span></li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="metrics">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Metric guide</div>
+            <h2>最容易误读的指标</h2>
+            <p>这几个值不用相等。它们回答的问题不一样。</p>
+          </div>
+        </div>
+        <table class="metric-table">
+          <thead><tr><th>指标</th><th>白话解释</th><th>什么时候看</th></tr></thead>
+          <tbody>
+            <tr><td><b>商品经营利润（不含启动费）</b></td><td>只看商品卖出去以后，扣掉已录入成本、平台综合扣费、仓费、管理费、税之后能剩多少。</td><td>判断商品模型本身有没有空间。</td></tr>
+            <tr><td><b>扣启动费后利润</b></td><td>商品经营利润再扣一次性启动费。</td><td>判断项目第一阶段大概赚不赚钱。</td></tr>
+            <tr><td><b>按销售排期算出的利润合计</b></td><td>按 M1-MN 每个月实际卖出、价格变化、固定费用算出来的合计。</td><td>判断销售节奏变化后的真实利润。</td></tr>
+            <tr><td><b>最后账上还剩现金</b></td><td>M0 先付的钱 + 每月实际现金进出 - 分给合伙人的钱之后，账上还剩多少。</td><td>判断现金流够不够。</td></tr>
+            <tr><td><b>回报率（ROI/投入产出）</b></td><td>每投入 1 元，预计赚回多少。它是比例，不是现金余额。</td><td>比较多个项目哪个更有效率。</td></tr>
+          </tbody>
+        </table>
+        <div class="callout" style="margin-top:16px">
+          <strong>M0/M1 图例：</strong>M0 = 还没开始卖之前先付出去的钱；M1 = 第 1 个月销售。看到 M0 为负是正常的，因为那是先备货、启动、支付前置成本。
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Workflow</div>
+            <h2>一张图看懂计算逻辑</h2>
+            <p>如果有人问“为什么数字对不上”，就按这条链路解释。</p>
+          </div>
+        </div>
+        <div class="flow">
+          <div class="flow-item"><b>商品单品模型</b><span>供应商报价、报关申报价、售价、平台综合扣费、仓费、税。</span></div>
+          <div class="flow-item"><b>项目费用</b><span>一次性启动费、固定月费、广告/内容/测试预算。</span></div>
+          <div class="flow-item"><b>销售和补货排期</b><span>每个月卖多少、何时补货、是否有旺季峰值。</span></div>
+          <div class="flow-item"><b>现金流和分润</b><span>实际回款、账上累计现金、分给合伙人的钱。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Project links</div>
+            <h2>常用项目入口</h2>
+            <p>标准模型通常最适合给新人讲解；保守模型适合低预算试水；放量/进取模型适合讨论扩张。</p>
+          </div>
+        </div>
+        <table class="project-table">
+          <thead><tr><th>项目</th><th>适合谁看</th><th>入口</th></tr></thead>
+          <tbody>
+            <tr><td><b>德力 22SKU · 保守试水</b></td><td>先小批试卖、控制现金占用。</td><td><a class="btn" href="./?project=deli-glass-russia-22sku-conservative-project.json">打开 A 模型</a></td></tr>
+            <tr><td><b>德力 22SKU · 标准启动</b></td><td>默认讲解版本，适合老板/供应商一起看。</td><td><a class="btn primary" href="./?project=deli-glass-russia-22sku-standard-project.json">打开 B 模型</a></td></tr>
+            <tr><td><b>德力 22SKU · 进取放量</b></td><td>讨论多平台和更高备货规模。</td><td><a class="btn" href="./?project=deli-glass-russia-22sku-aggressive-project.json">打开 C 模型</a></td></tr>
+            <tr><td><b>Ozon 90 天 · 标准启动</b></td><td>本地现货供货合作的默认测算。</td><td><a class="btn primary" href="./?project=ozon-wholesale-90day-pack/ozon-wholesale-90day-standard-project.json">打开标准模型</a></td></tr>
+            <tr><td><b>Ozon 90 天项目包</b></td><td>先看决策报告、再进入三套模型。</td><td><a class="btn" href="./ozon-wholesale-90day-pack/index.html">打开项目包</a></td></tr>
+            <tr><td><b>德力合作提案</b></td><td>给工厂或合作方看完整方案。</td><td><a class="btn" href="./deli-proposal/index.html">打开方案页</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Before editing</div>
+            <h2>改数字前，先确认这些</h2>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>可以直接改的</h3>
+            <p>售价、供应商报价、报关申报价、平台综合扣费、月销量、补货数量、一次性启动费、固定月费、分润比例。</p>
+          </div>
+          <div class="card">
+            <h3>拿到资料后再改的</h3>
+            <p>头程、清关、保险、尾程、平台仓入仓费、装箱尺寸、毛重、每箱套数、正式税务主体方案。</p>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:14px">
+          <strong>关键风险口径：</strong>当前 SKU 利润模型不含头程、清关、保险、尾程、平台仓入仓费。这些不是被忽略，而是等装箱和货代报价后作为单独预算项替换。
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">FAQ</div>
+            <h2>新人最常问的问题</h2>
+          </div>
+        </div>
+        <div class="faq">
+          <details open><summary>为什么红框里的几个利润/现金值不一样？</summary><p>因为口径不同：商品经营利润只看商品，扣启动费后利润会扣一次性启动费，销售排期利润按每个月实际卖出节奏算，最后账上现金还会叠加 M0 先付款、补货、固定支出和分润。</p></details>
+          <details><summary>为什么有的项目供应商报价是 0？</summary><p>例如 Ozon 本地现货供货合作，运营方不买断库存，所以供应商报价不作为运营方现金采购支出填写；供货结算、处理、平台综合扣费和税费仍然在模型里体现。</p></details>
+          <details><summary>平台综合扣费是不是平台佣金？</summary><p>不是。它通常包含佣金、支付/收单、平台配送、退货逆向、广告促销预留等综合负担。</p></details>
+          <details><summary>供应商报价和报关申报价为什么分开？</summary><p>供应商报价用于经营测算，报关申报价会影响进口时付的增值税和税务成本。俄罗斯一般税制（OSN）下，进口时付的增值税按报关申报价计算。</p></details>
+          <details><summary>怎么给老板汇报？</summary><p>按“最后账上还剩现金 → 回本月份 → 回报率 → 最缺钱的时候 → 风险口径”这个顺序讲。不要一上来讲公式。</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section id="print">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Meeting mode</div>
+            <h2>需要开会讲，就这样用</h2>
+            <p>这页可以直接打印成 PDF，当作讲解稿。浏览器里按 Ctrl+P，选择“另存为 PDF”。</p>
+          </div>
+          <a class="btn primary" href="#quick">回到讲解顺序</a>
+        </div>
+        <div class="grid-3">
+          <div class="card"><span class="tag">1-3 分钟</span><h3>先讲目的</h3><p>这不是会计报表，是投资测算和现金流判断工具。</p></div>
+          <div class="card"><span class="tag">3-7 分钟</span><h3>讲四个指标</h3><p>商品经营利润、扣启动费后利润、销售排期利润、最后账上现金。</p></div>
+          <div class="card"><span class="tag">7-10 分钟</span><h3>讲缺口和资料</h3><p>哪些报价还没补齐，补齐后哪些成本要重算。</p></div>
+        </div>
+        <p class="print-note">打印提示：建议横向打印，页面会自动隐藏顶部导航。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <b>星哈酷 · XingHaKu Investment Analytics</b><br>
+      说明页只解释怎么看模型，不替代正式会计、税务和物流报价。最终申报和合同条款请以当地会计师、货代、平台政策和双方合同为准。
+    </div>
+  </footer>
+</body>
+</html>

@@ -12,6 +12,7 @@ const DICT = {
   saving: { zh: "保存中…", en: "Saving…", ru: "Сохранение…" },
   exportCSV: { zh: "导出 CSV", en: "Export CSV", ru: "Экспорт CSV" },
   exportHTML: { zh: "导出报告", en: "Export Report", ru: "Экспорт отчёта" },
+  usageGuide: { zh: "使用说明", en: "Guide", ru: "Гид" },
   htmlReportTitle: { zh: "俄罗斯电商投资效益分析报告", en: "Russia E-commerce P&L Analysis Report", ru: "Отчёт P&L для маркетплейсов" },
   htmlGenDate: { zh: "报告生成日期", en: "Report Generated", ru: "Дата отчёта" },
   htmlSummary: { zh: "总览摘要", en: "Executive Summary", ru: "Сводка" },
