@@ -602,8 +602,9 @@ const MetricBasisNote = ({ totals, params, proj, projection, fmt, compact = fals
   const totalRestockAfterM0 = (proj.months || []).filter(m => !m.isInitial).reduce((a, b) => a + (b.restockCost || 0), 0);
   const totalFixedCost = (proj.months || []).filter(m => !m.isInitial).reduce((a, b) => a + (b.fixedCost || 0), 0);
   const horizon = projection?.monthsHorizon || ((proj.months || []).length ? (proj.months.length - 1) : 0);
-  const signed = (v) => `${v >= 0 ? "+" : ""}${F(v)}`;
-  const signedRub = (v) => `${v >= 0 ? "+" : ""}${Fs(v)}`;
+  const isNearZero = (v) => Math.abs(v) < 0.01;
+  const absMoney = (v) => `${F(Math.abs(v))} / ${Fs(Math.abs(v))}`;
+  const diffText = (v, base) => isNearZero(v) ? `和${base}基本一致` : `比${base}${v >= 0 ? "多了" : "少了"} ${absMoney(v)}`;
   const rowClass = compact ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2";
 
   return (
@@ -614,45 +615,46 @@ const MetricBasisNote = ({ totals, params, proj, projection, fmt, compact = fals
           <div className="text-[10px] tracking-[0.2em] uppercase font-body" style={{ color: COLORS.gold }}>Live Metric Guide</div>
           <div className="font-display text-lg font-semibold" style={{ color: COLORS.ink }}>当前数值口径对照</div>
           <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>
-            这里会跟着当前项目、销售排期、分润和启动费实时重算。新人只要按这几行看，就能知道红框里的数为什么不会相等。
+            先记一句：商品利润看“赚不赚”，月度排期看“什么时候赚到”，账上现金看“钱包最后剩多少”。所以红框里的数字本来就不一定相等。
           </div>
         </div>
       </div>
       <div className={`p-4 grid ${rowClass} gap-3 text-xs`}>
         <div className="p-3 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
-          <div className="font-semibold mb-1" style={{ color: COLORS.ink }}>1. 商品经营利润（不含启动费）</div>
+          <div className="font-semibold mb-2" style={{ color: COLORS.ink }}>1. 商品利润：这批货本身赚不赚</div>
           <div className="leading-6" style={{ color: COLORS.inkSoft }}>
-            所有商品按单品模型算出来的经营利润合计 = <strong style={{ color: COLORS.emerald }}>{F(operatingNet)}</strong>
-            <span className="font-mono ml-1">({Fs(operatingNet)})</span>。它只看商品经营结果，还没有扣一次性启动费。
+            <div>当前结果：<strong style={{ color: COLORS.emerald }}>{F(operatingNet)}</strong><span className="font-mono ml-1">({Fs(operatingNet)})</span></div>
+            <div>怎么算：把每个商品按当前售价、供应商报价、平台扣费和税算一遍再相加。</div>
+            <div>注意：它不看几月卖完，也还没扣一次性启动费。</div>
           </div>
         </div>
         <div className="p-3 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
-          <div className="font-semibold mb-1" style={{ color: COLORS.ink }}>2. 扣启动费后利润</div>
+          <div className="font-semibold mb-2" style={{ color: COLORS.ink }}>2. 项目利润：扣掉前期费用后还剩多少</div>
           <div className="leading-6" style={{ color: COLORS.inkSoft }}>
-            {F(operatingNet)} - 启动费 {F(setupCost)} = <strong style={{ color: projectNet >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(projectNet)}</strong>
-            <span className="font-mono ml-1">({Fs(projectNet)})</span>
+            <div>当前结果：<strong style={{ color: projectNet >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(projectNet)}</strong><span className="font-mono ml-1">({Fs(projectNet)})</span></div>
+            <div>怎么算：第 1 项商品利润 {F(operatingNet)} - 启动费 {F(setupCost)}。</div>
+            <div>适合看：这批货把前期费用也扣掉后，项目整体还赚不赚。</div>
           </div>
         </div>
         <div className="p-3 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
-          <div className="font-semibold mb-1" style={{ color: COLORS.ink }}>3. 按销售排期算出的利润合计</div>
+          <div className="font-semibold mb-2" style={{ color: COLORS.ink }}>3. 月度排期利润：按每个月卖货节奏重算</div>
           <div className="leading-6" style={{ color: COLORS.inkSoft }}>
-            M1-M{horizon} 表格底部“本月经营利润”合计 = <strong style={{ color: scheduleNet >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(scheduleNet)}</strong>
-            <span className="font-mono ml-1">({Fs(scheduleNet)})</span>。
-            和商品经营利润差额为 <span className="font-mono" style={{ color: scheduleGap >= 0 ? COLORS.emerald : COLORS.crimson }}>{signed(scheduleGap)} / {signedRub(scheduleGap)}</span>，
-            主要来自销售排期、按月价格、实际卖出数量和固定支出。
+            <div>当前结果：<strong style={{ color: scheduleNet >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(scheduleNet)}</strong><span className="font-mono ml-1">({Fs(scheduleNet)})</span></div>
+            <div>怎么算：把 M1-M{horizon} 每个月“本月经营利润”加起来。</div>
+            <div>为什么会变：它按月份重新算销量、当月售价/扣费和固定月费，<span style={{ color: scheduleGap >= 0 ? COLORS.emerald : COLORS.crimson }}>所以{diffText(scheduleGap, "第 1 项商品利润")}</span>。</div>
           </div>
         </div>
         <div className="p-3 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
-          <div className="font-semibold mb-1" style={{ color: COLORS.ink }}>4. 最后账上还剩现金</div>
+          <div className="font-semibold mb-2" style={{ color: COLORS.ink }}>4. 账上现金：最后钱包里还剩多少</div>
           <div className="leading-6" style={{ color: COLORS.inkSoft }}>
-            M0 先付出去的钱 {F(-initialOutflow)} + 后续每月实际现金进出 {F(laterCashFlow)} = <strong style={{ color: finalCash >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(finalCash)}</strong>
-            <span className="font-mono ml-1">({Fs(finalCash)})</span>。
-            它和按销售排期算出的利润合计差额为 <span className="font-mono" style={{ color: cashGap >= 0 ? COLORS.emerald : COLORS.crimson }}>{signed(cashGap)} / {signedRub(cashGap)}</span>。
+            <div>当前结果：<strong style={{ color: finalCash >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(finalCash)}</strong><span className="font-mono ml-1">({Fs(finalCash)})</span></div>
+            <div>怎么算：M0 先付出去的钱 {F(-initialOutflow)} + 后续每月实际现金进出 {F(laterCashFlow)}。</div>
+            <div>为什么会变：这不是利润表，是现金余额；补货、固定支出、分给合伙人的钱都会影响它，<span style={{ color: cashGap >= 0 ? COLORS.emerald : COLORS.crimson }}>所以{diffText(cashGap, "第 3 项月度利润合计")}</span>。</div>
           </div>
         </div>
       </div>
       <div className="px-4 pb-4 text-[11px] leading-5" style={{ color: COLORS.inkSoft }}>
-        本月实际现金进出额外参考：后续补货支出 {F(totalRestockAfterM0)}，固定支出合计 {F(totalFixedCost)}，本月拿出来分的钱 {F(totalDistributed)}，分给合伙人的钱 {F(partnerPayout)}。
+        看表顺序：老板先看第 4 项，运营复盘看第 3 项，供应商报价沟通看第 1 项。第 3 项和第 4 项最容易不同，因为利润表按成本归属算，现金余额按真钱收付时间算。额外参考：后续补货支出 {F(totalRestockAfterM0)}，固定支出合计 {F(totalFixedCost)}，本月拿出来分的钱 {F(totalDistributed)}，分给合伙人的钱 {F(partnerPayout)}。
       </div>
     </div>
   );
@@ -1350,7 +1352,8 @@ function AppContent({ lang, setLang }) {
     const totalRestockAfterM0 = proj.months.filter(m => !m.isInitial).reduce((a, b) => a + (b.restockCost || 0), 0);
     const totalFixedCost = proj.months.filter(m => !m.isInitial).reduce((a, b) => a + (b.fixedCost || 0), 0);
     const totalDistributed = proj.months.reduce((a, b) => a + (b.distributed || 0), 0);
-    const signedR = (v) => `${v >= 0 ? "+" : ""}${fR(v)}`;
+    const htmlAbsR = (v) => fR(Math.abs(v));
+    const htmlCompare = (v, base) => Math.abs(v) < 0.01 ? `和${base}基本一致` : `比${base}${v >= 0 ? "多了" : "少了"} ${htmlAbsR(v)}`;
 
     // Product rows
     const prodRows = calcs.map(r => {
@@ -1511,13 +1514,14 @@ function AppContent({ lang, setLang }) {
     const dynamicBasisHtml = `
       <div class="logic-note metric-basis-note">
         <strong>当前数值口径对照：</strong>
+        <div class="basis-extra">先记一句：商品利润看“赚不赚”，月度排期看“什么时候赚到”，账上现金看“钱包最后剩多少”。所以红框里的数字本来就不一定相等。</div>
         <div class="basis-grid">
-          <div><b>1. 商品经营利润（不含启动费）</b><br/>所有商品按单品模型算出来的经营利润合计 = <strong>${fR(operatingNet)}</strong>，还没有扣一次性启动费。</div>
-          <div><b>2. 扣启动费后利润</b><br/>${fR(operatingNet)} - 启动费 ${fR(setupCost)} = <strong>${fR(projectNetAfterSetup)}</strong>。</div>
-          <div><b>3. 按销售排期算出的利润合计</b><br/>M1-M${projection.monthsHorizon} 表格底部“本月经营利润”合计 = <strong>${fR(scheduleNet)}</strong>；与商品经营利润差额 ${signedR(scheduleGap)}。</div>
-          <div><b>4. 最后账上还剩现金</b><br/>M0 先付出去的钱 ${fR(-initialOutflow)} + 后续每月实际现金进出 ${fR(laterCashFlow)} = <strong>${fR(finalCash)}</strong>；与按销售排期算出的利润合计差额 ${signedR(cashGap)}。</div>
+          <div><b>1. 商品利润：这批货本身赚不赚</b><br/>当前结果：<strong>${fR(operatingNet)}</strong><br/>怎么算：把每个商品按当前售价、供应商报价、平台扣费和税算一遍再相加。<br/>注意：它不看几月卖完，也还没扣一次性启动费。</div>
+          <div><b>2. 项目利润：扣掉前期费用后还剩多少</b><br/>当前结果：<strong>${fR(projectNetAfterSetup)}</strong><br/>怎么算：第 1 项商品利润 ${fR(operatingNet)} - 启动费 ${fR(setupCost)}。<br/>适合看：这批货把前期费用也扣掉后，项目整体还赚不赚。</div>
+          <div><b>3. 月度排期利润：按每个月卖货节奏重算</b><br/>当前结果：<strong>${fR(scheduleNet)}</strong><br/>怎么算：把 M1-M${projection.monthsHorizon} 每个月“本月经营利润”加起来。<br/>为什么会变：它按月份重新算销量、当月售价/扣费和固定月费，所以${htmlCompare(scheduleGap, "第 1 项商品利润")}。</div>
+          <div><b>4. 账上现金：最后钱包里还剩多少</b><br/>当前结果：<strong>${fR(finalCash)}</strong><br/>怎么算：M0 先付出去的钱 ${fR(-initialOutflow)} + 后续每月实际现金进出 ${fR(laterCashFlow)}。<br/>为什么会变：这不是利润表，是现金余额；补货、固定支出、分给合伙人的钱都会影响它，所以${htmlCompare(cashGap, "第 3 项月度利润合计")}。</div>
         </div>
-        <div class="basis-extra">本月实际现金进出额外参考：后续补货支出 ${fR(totalRestockAfterM0)}，固定支出合计 ${fR(totalFixedCost)}，本月拿出来分的钱 ${fR(totalDistributed)}，分给合伙人的钱 ${fR(proj.totalPartnerPayout || 0)}。</div>
+        <div class="basis-extra">看表顺序：老板先看第 4 项，运营复盘看第 3 项，供应商报价沟通看第 1 项。第 3 项和第 4 项最容易不同，因为利润表按成本归属算，现金余额按真钱收付时间算。额外参考：后续补货支出 ${fR(totalRestockAfterM0)}，固定支出合计 ${fR(totalFixedCost)}，本月拿出来分的钱 ${fR(totalDistributed)}，分给合伙人的钱 ${fR(proj.totalPartnerPayout || 0)}。</div>
         <div class="basis-extra"><strong>不同人先看什么：</strong>新老板看最后账上还剩现金、回本月份、回报率、最缺钱的时候；供应商看销售单位、供应商报价、报关申报价、装箱/重量待补；运营新人看销售排期、补货排期、平台综合扣费、本月实际现金进出。M0 = 还没开始卖之前先付出去的钱，M1 = 第 1 个月销售。</div>
       </div>`;
 
