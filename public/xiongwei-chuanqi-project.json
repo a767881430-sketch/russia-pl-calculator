@@ -1,0 +1,56 @@
+{
+  "projectName": "雄伟传奇",
+  "params": {
+    "exchangeRate": 12,
+    "usdRate": 95,
+    "damageRate": 0.03,
+    "shippingPerUnit": 0,
+    "labelingPerUnit": 0,
+    "grayShipPrice": 0,
+    "whiteShipPrice": 0,
+    "taxScheme": "usn_15",
+    "vatRate": 0.22,
+    "profitTaxRate": 0.25,
+    "customTaxRate": 0.15,
+    "incomeBasis": "payout",
+    "oneTimeCosts": 0
+  },
+  "products": [
+    {
+      "id": "23597（三合一）",
+      "priceCNY": 98.975,
+      "declaredCNY": 98.975,
+      "qty": 330,
+      "weight": 0,
+      "list": 6899,
+      "platformFee": 4616,
+      "warehouse": 201.6,
+      "mgmt": 206.97
+    },
+    {
+      "id": "24999",
+      "priceCNY": 84.421,
+      "declaredCNY": 84.421,
+      "qty": 410,
+      "weight": 0,
+      "list": 6999,
+      "platformFee": 4892,
+      "warehouse": 201.6,
+      "mgmt": 209.97
+    }
+  ],
+  "scheduleStore": {},
+  "priceScheduleStore": {},
+  "restockStore": {},
+  "withdrawalStore": {
+    "amounts": []
+  },
+  "projection": {
+    "monthsHorizon": 6,
+    "partnerSharePct": 50,
+    "monthlyFixedCost": 0,
+    "autoVATEscalation": true,
+    "priorYearRevenue": 0
+  },
+  "projectMeta": {}
+}

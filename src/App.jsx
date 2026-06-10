@@ -81,6 +81,16 @@ const DEFAULT_PROJECTION = {
   priorYearRevenue: 0,        // 进入本预测期前的累计营收（如已经卖了一段时间）
 };
 
+const PUBLIC_PROJECTS = [
+  { name: "雄伟传奇", file: "xiongwei-chuanqi-project.json", desc: "新增线上项目，适合直接发给别人看。" },
+  { name: "德力 22SKU · 保守试水", file: "deli-glass-russia-22sku-conservative-project.json", desc: "先小批试卖、控制现金占用。" },
+  { name: "德力 22SKU · 标准启动", file: "deli-glass-russia-22sku-standard-project.json", desc: "默认讲解版本，适合老板/供应商一起看。" },
+  { name: "德力 22SKU · 进取放量", file: "deli-glass-russia-22sku-aggressive-project.json", desc: "讨论多平台和更高备货规模。" },
+  { name: "Ozon 90 天 · 保守试销", file: "ozon-wholesale-90day-pack/ozon-wholesale-90day-conservative-project.json", desc: "低预算验证上架、客服和履约链路。" },
+  { name: "Ozon 90 天 · 标准启动", file: "ozon-wholesale-90day-pack/ozon-wholesale-90day-standard-project.json", desc: "本地现货供货合作的默认测算。" },
+  { name: "Ozon 90 天 · 放量验证", file: "ozon-wholesale-90day-pack/ozon-wholesale-90day-scale-project.json", desc: "需要供货价、库存、补货和售后机制更稳定。" },
+];
+
 // 38 SKU 样例
 const SAMPLE_PRODUCTS = [
   { id: "A1300400", priceCNY: 17.65, declaredCNY: 17.65, qty: 30, weight: 0.38, list: 1249, platformFee: 652, warehouse: 99, mgmt: 36 },
@@ -766,7 +776,8 @@ function AppContent({ lang, setLang }) {
   // --- 多项目管理状态 ---
   const [projectName, setProjectName] = useState("");  // 启动时从 localStorage 读取
   const [showProjectPanel, setShowProjectPanel] = useState(false);
-  const guideHref = `${import.meta.env.BASE_URL || "/"}usage-guide.html`;
+  const baseHref = import.meta.env.BASE_URL || "/";
+  const guideHref = `${baseHref}usage-guide.html`;
 
   // --- i18n ---
   const t = useMemo(() => createT(lang), [lang]);
@@ -977,6 +988,7 @@ function AppContent({ lang, setLang }) {
   };
 
   const saveToCloud = () => saveProject(projectName);
+  const publicProjectHref = (file) => `${baseHref}?project=${encodeURIComponent(file)}`;
 
   const saveAsProject = () => {
     const newName = prompt(t("projectSaveAsPrompt"), projectName + " " + t("projectDuplicate"));
@@ -2091,86 +2103,117 @@ function AppContent({ lang, setLang }) {
             </div>
             {/* Panel Body — scrollable project list */}
             <div style={{ overflowY: "auto", flex: 1, padding: "16px 20px" }}>
-              {(() => {
-                const index = getProjectIndex();
-                const names = Object.keys(index);
-                if (names.length === 0) {
-                  return (
-                    <div className="text-center py-12" style={{ color: COLORS.inkSoft }}>
-                      <FolderOpen size={40} style={{ opacity: 0.3, margin: "0 auto 12px" }} />
-                      <div className="text-sm">{t("noProducts")}</div>
-                    </div>
-                  );
-                }
-                // 按保存时间倒序排列
-                names.sort((a, b) => (index[b].savedAt || "").localeCompare(index[a].savedAt || ""));
-                return names.map((name) => {
-                  const proj = index[name];
-                  const isCurrent = name === projectName;
-                  const savedDate = proj.savedAt ? new Date(proj.savedAt) : null;
-                  const timeStr = savedDate ? savedDate.toLocaleString() : "—";
-                  return (
-                    <div key={name} className="flex items-center justify-between gap-3 py-3 px-3 rounded-sm mb-2 ledger-row"
-                      style={{
-                        background: isCurrent ? "rgba(92,26,27,0.06)" : "rgba(255,255,255,0.6)",
-                        border: `1px solid ${isCurrent ? COLORS.oxblood + "40" : COLORS.line}`,
-                      }}>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-display font-semibold text-sm truncate" style={{ color: isCurrent ? COLORS.oxblood : COLORS.ink }}>
-                            {name}
-                          </span>
-                          {isCurrent && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-sm font-medium"
-                              style={{ background: COLORS.oxblood, color: COLORS.cream }}>
-                              {t("projectCurrent")}
+              <section className="mb-5">
+                <div className="flex items-start gap-2 mb-2">
+                  <Globe size={16} style={{ color: COLORS.emerald, flexShrink: 0, marginTop: 2 }} />
+                  <div>
+                    <div className="font-semibold text-sm" style={{ color: COLORS.ink }}>{t("publicProjects")}</div>
+                    <div className="text-[11px] leading-5" style={{ color: COLORS.inkSoft }}>{t("publicProjectsHint")}</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {PUBLIC_PROJECTS.map(item => (
+                    <a key={item.file} href={publicProjectHref(item.file)}
+                      className="ledger-row rounded-sm border px-3 py-3 flex items-start justify-between gap-3"
+                      style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.72)", textDecoration: "none" }}
+                      onClick={() => setShowProjectPanel(false)}>
+                      <div className="min-w-0">
+                        <div className="font-display font-semibold text-sm truncate" style={{ color: COLORS.ink }}>{item.name}</div>
+                        <div className="text-[11px] leading-5 mt-1" style={{ color: COLORS.inkSoft }}>{item.desc}</div>
+                      </div>
+                      <span className="text-[11px] font-medium flex-shrink-0" style={{ color: COLORS.emerald }}>{t("projectOpen")}</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+
+              <section>
+                <div className="flex items-start gap-2 mb-2">
+                  <Save size={16} style={{ color: COLORS.gold, flexShrink: 0, marginTop: 2 }} />
+                  <div>
+                    <div className="font-semibold text-sm" style={{ color: COLORS.ink }}>{t("localProjects")}</div>
+                    <div className="text-[11px] leading-5" style={{ color: COLORS.inkSoft }}>{t("localProjectsHint")}</div>
+                  </div>
+                </div>
+                {(() => {
+                  const index = getProjectIndex();
+                  const names = Object.keys(index);
+                  if (names.length === 0) {
+                    return (
+                      <div className="text-center py-8 rounded-sm border" style={{ color: COLORS.inkSoft, borderColor: COLORS.line, background: "rgba(255,255,255,0.45)" }}>
+                        <FolderOpen size={32} style={{ opacity: 0.3, margin: "0 auto 10px" }} />
+                        <div className="text-sm">{t("noProducts")}</div>
+                      </div>
+                    );
+                  }
+                  names.sort((a, b) => (index[b].savedAt || "").localeCompare(index[a].savedAt || ""));
+                  return names.map((name) => {
+                    const proj = index[name];
+                    const isCurrent = name === projectName;
+                    const savedDate = proj.savedAt ? new Date(proj.savedAt) : null;
+                    const timeStr = savedDate ? savedDate.toLocaleString() : "—";
+                    return (
+                      <div key={name} className="flex items-center justify-between gap-3 py-3 px-3 rounded-sm mb-2 ledger-row"
+                        style={{
+                          background: isCurrent ? "rgba(92,26,27,0.06)" : "rgba(255,255,255,0.6)",
+                          border: `1px solid ${isCurrent ? COLORS.oxblood + "40" : COLORS.line}`,
+                        }}>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-display font-semibold text-sm truncate" style={{ color: isCurrent ? COLORS.oxblood : COLORS.ink }}>
+                              {name}
                             </span>
+                            {isCurrent && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-sm font-medium"
+                                style={{ background: COLORS.oxblood, color: COLORS.cream }}>
+                                {t("projectCurrent")}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[11px] mt-1 font-mono" style={{ color: COLORS.inkSoft }}>
+                            {t("projectSkuCount", { n: proj.skuCount || 0 })} · {t("projectLastSaved", { time: timeStr })}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {!isCurrent && (
+                            <button onClick={() => loadProject(name)}
+                              className="btn-interact px-2.5 py-1.5 text-[11px] font-medium rounded-sm"
+                              style={{ background: COLORS.emerald, color: COLORS.cream }}>
+                              {t("projectOpen")}
+                            </button>
                           )}
-                        </div>
-                        <div className="text-[11px] mt-1 font-mono" style={{ color: COLORS.inkSoft }}>
-                          {t("projectSkuCount", { n: proj.skuCount || 0 })} · {t("projectLastSaved", { time: timeStr })}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        {!isCurrent && (
-                          <button onClick={() => loadProject(name)}
-                            className="btn-interact px-2.5 py-1.5 text-[11px] font-medium rounded-sm"
-                            style={{ background: COLORS.emerald, color: COLORS.cream }}>
-                            {t("projectOpen")}
+                          <button onClick={() => {
+                              const newName = prompt(t("projectRenamePrompt"), name);
+                              if (newName) renameProject(name, newName);
+                            }}
+                            className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
+                            style={{ color: COLORS.inkSoft }} title={t("projectRename")}>
+                            <Edit3 size={13} />
                           </button>
-                        )}
-                        <button onClick={() => {
-                            const newName = prompt(t("projectRenamePrompt"), name);
-                            if (newName) renameProject(name, newName);
-                          }}
-                          className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
-                          style={{ color: COLORS.inkSoft }} title={t("projectRename")}>
-                          <Edit3 size={13} />
-                        </button>
-                        <button onClick={() => {
-                            // 导出特定项目
-                            const data = { projectName: name, ...proj.data };
-                            const json = JSON.stringify(data, null, 2);
-                            const safeName = (name || "project").replace(/[<>:"/\\|?*]/g, "_");
-                            const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(json);
-                            const a = document.createElement("a");
-                            a.href = dataUri; a.download = `${safeName}.json`; a.style.display = "none";
-                            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                          }}
-                          className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
-                          style={{ color: COLORS.gold }} title={t("projectExportJson")}>
-                          <FileDown size={13} />
-                        </button>
-                        <button onClick={() => deleteProject(name)}
-                          className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
-                          style={{ color: COLORS.crimson }} title={t("projectDelete")}>
-                          <Trash2 size={13} />
-                        </button>
+                          <button onClick={() => {
+                              const data = { projectName: name, ...proj.data };
+                              const json = JSON.stringify(data, null, 2);
+                              const safeName = (name || "project").replace(/[<>:"/\\|?*]/g, "_");
+                              const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(json);
+                              const a = document.createElement("a");
+                              a.href = dataUri; a.download = `${safeName}.json`; a.style.display = "none";
+                              document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                            }}
+                            className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
+                            style={{ color: COLORS.gold }} title={t("projectExportJson")}>
+                            <FileDown size={13} />
+                          </button>
+                          <button onClick={() => deleteProject(name)}
+                            className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
+                            style={{ color: COLORS.crimson }} title={t("projectDelete")}>
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                });
-              })()}
+                    );
+                  });
+                })()}
+              </section>
             </div>
           </div>
         </div>
