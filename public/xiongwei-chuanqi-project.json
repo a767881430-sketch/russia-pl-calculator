@@ -18,25 +18,69 @@
   "products": [
     {
       "id": "23597（三合一）",
-      "priceCNY": 98.975,
-      "declaredCNY": 98.975,
-      "qty": 330,
+      "priceCNY": 101.0,
+      "declaredCNY": 101.0,
+      "qty": 425,
       "weight": 0,
-      "list": 6899,
-      "platformFee": 4616,
+      "list": 7599,
+      "platformFee": 5121.12,
       "warehouse": 201.6,
-      "mgmt": 206.97
+      "mgmt": 227.97
     },
     {
       "id": "24999",
-      "priceCNY": 84.421,
-      "declaredCNY": 84.421,
-      "qty": 410,
+      "priceCNY": 88.18,
+      "declaredCNY": 88.18,
+      "qty": 590,
       "weight": 0,
-      "list": 6999,
-      "platformFee": 4892,
+      "list": 7899,
+      "platformFee": 5554.19,
       "warehouse": 201.6,
-      "mgmt": 209.97
+      "mgmt": 236.97
+    },
+    {
+      "id": "23587（单外套）",
+      "priceCNY": 61.06,
+      "declaredCNY": 61.06,
+      "qty": 265,
+      "weight": 0,
+      "list": 5799,
+      "platformFee": 4050.12,
+      "warehouse": 179.2,
+      "mgmt": 173.97
+    },
+    {
+      "id": "23588",
+      "priceCNY": 83.18,
+      "declaredCNY": 83.18,
+      "qty": 625,
+      "weight": 0,
+      "list": 7899,
+      "platformFee": 5554.19,
+      "warehouse": 201.6,
+      "mgmt": 236.97
+    },
+    {
+      "id": "2328",
+      "priceCNY": 51.06,
+      "declaredCNY": 51.06,
+      "qty": 175,
+      "weight": 0,
+      "list": 5199,
+      "platformFee": 3707.26,
+      "warehouse": 179.2,
+      "mgmt": 155.97
+    },
+    {
+      "id": "24888",
+      "priceCNY": 51.06,
+      "declaredCNY": 51.06,
+      "qty": 150,
+      "weight": 0,
+      "list": 5199,
+      "platformFee": 3693.12,
+      "warehouse": 179.2,
+      "mgmt": 155.97
     }
   ],
   "scheduleStore": {},
@@ -46,7 +90,7 @@
     "amounts": []
   },
   "projection": {
-    "monthsHorizon": 6,
+    "monthsHorizon": 8,
     "partnerSharePct": 50,
     "monthlyFixedCost": 0,
     "autoVATEscalation": true,
