@@ -29,6 +29,23 @@ const DICT = {
   saveFail: { zh: "保存失败", en: "Save failed", ru: "Ошибка сохранения" },
   loadedLocal: { zh: "已加载本地数据", en: "Local data loaded", ru: "Данные загружены" },
   shareLink: { zh: "分享链接", en: "Share Link", ru: "Поделиться" },
+  shareProject: { zh: "给别人看", en: "Share", ru: "Показать другим" },
+  shareCurrentVersion: { zh: "复制当前版本链接", en: "Copy current version link", ru: "Скопировать ссылку на текущую версию" },
+  shareStoredProject: { zh: "复制分享链接", en: "Copy share link", ru: "Скопировать ссылку" },
+  publicLinkCopied: { zh: "✓ 公开项目链接已复制", en: "✓ Public project link copied", ru: "✓ Ссылка на опубликованный проект скопирована" },
+  sharePanelTitle: { zh: "给别人看 / 发布到线上", en: "Share or publish", ru: "Поделиться или опубликовать" },
+  sharePanelHint: { zh: "临时发别人看，用分享链接；长期挂在网站里，用线上公开项目。", en: "Use a share link for temporary sharing, and a published project for long-term website access.", ru: "Для временного доступа используйте ссылку, а для постоянного размещения — опубликованный проект." },
+  sharePanelCurrentTitle: { zh: "当前版本", en: "Current version", ru: "Текущая версия" },
+  sharePanelCurrentDesc: { zh: "复制后，别人打开链接就能看到你现在这份数据，不需要先发布网站。", en: "Copy a link so others can open exactly this current dataset without a site release first.", ru: "Скопируйте ссылку, чтобы другие открыли именно эту текущую версию без публикации сайта." },
+  sharePanelPublicTitle: { zh: "线上公开项目", en: "Published projects", ru: "Опубликованные проекты" },
+  sharePanelPublicDesc: { zh: "这些项目已经跟网站一起发布，适合长期固定给老板、供应商或新人查看。", en: "These projects are already published with the site and are best for stable long-term sharing.", ru: "Эти проекты уже опубликованы вместе с сайтом и подходят для постоянного доступа." },
+  sharePanelPublishTitle: { zh: "发布到网站", en: "Publish to the site", ru: "Опубликовать на сайте" },
+  sharePanelPublishDesc: { zh: "当前静态站还不能在浏览器里一键上传。要长期公开，请导出 JSON，再放进 public/ 后发布。", en: "This static site cannot upload directly from the browser yet. For long-term publishing, export JSON and release it from public/.", ru: "Этот статический сайт пока не умеет загружать проект из браузера. Для постоянной публикации экспортируйте JSON и выпустите его из public/." },
+  sharePanelMissingHint: { zh: "如果你记得还有别的本机项目，但这里没看到，通常说明它保存在别的浏览器、电脑，或另一个浏览器用户里。", en: "If you remember other local projects but do not see them here, they are usually saved in another browser, computer, or browser profile.", ru: "Если вы помните другие локальные проекты, но не видите их здесь, обычно они сохранены в другом браузере, компьютере или профиле браузера." },
+  sharePanelOpenProjects: { zh: "打开项目列表", en: "Open project list", ru: "Открыть список проектов" },
+  sharePanelExportJson: { zh: "导出当前项目 JSON", en: "Export current project JSON", ru: "Экспортировать JSON текущего проекта" },
+  sharePanelOpenGuide: { zh: "打开发布说明", en: "Open publishing guide", ru: "Открыть инструкцию" },
+  publicProjectCopyLink: { zh: "复制链接", en: "Copy link", ru: "Скопировать ссылку" },
   shareCopied: { zh: "✓ 分享链接已复制到剪贴板", en: "✓ Share link copied to clipboard", ru: "✓ Ссылка скопирована" },
   shareFail: { zh: "生成分享链接失败", en: "Share link failed", ru: "Ошибка создания ссылки" },
   shareUploading: { zh: "⏳ 正在上传...", en: "⏳ Uploading...", ru: "⏳ Загрузка..." },
@@ -41,6 +58,7 @@ const DICT = {
   tabSchedule: { zh: "销售排期", en: "Sales Schedule", ru: "График продаж" },
   tabProjection: { zh: "现金流预测", en: "Cash Flow", ru: "Денежный поток" },
   tabSettings: { zh: "参数与税制", en: "Settings & Tax", ru: "Настройки" },
+  tabTariffs: { zh: "平台定价表", en: "Tariff Tables", ru: "Тарифы" },
   tabHelp: { zh: "税制说明", en: "Tax Guide", ru: "Налоговый гид" },
   tabGlossary: { zh: "术语词典", en: "Glossary", ru: "Глоссарий" },
 
@@ -66,16 +84,16 @@ const DICT = {
 
   // === Dashboard Cards ===
   cumCashTitle: { zh: "累积现金流", en: "Cumulative Cash Flow", ru: "Накопленный кэш" },
-  cumCashKicker: { zh: "Cumulative Cash", en: "Cumulative Cash", ru: "Кумулятивный кэш" },
+  cumCashKicker: { zh: "累计现金", en: "Cumulative Cash", ru: "Кумулятивный кэш" },
   investorTitle: { zh: "投资人关注", en: "Investor Metrics", ru: "Метрики инвестора" },
-  investorKicker: { zh: "Investor Metrics", en: "Investor Metrics", ru: "Инвестор" },
+  investorKicker: { zh: "投资人关注", en: "Investor Metrics", ru: "Инвестор" },
   initialOutflow: { zh: "M0 先付出去的钱", en: "Initial Outflow", ru: "Начальные вложения" },
   maxDrawdown: { zh: "最缺钱的时候", en: "Max Drawdown", ru: "Макс. просадка" },
   finalCash: { zh: "最后账上还剩现金", en: "Final Cash After Partner Payout", ru: "Итоговый кэш после выплаты партнеру" },
   avgMonthly: { zh: "月均回款（仅参考）", en: "Avg Monthly Revenue", ru: "Сред. месяц. выручка" },
   peakMonthly: { zh: "旺季峰值回款", en: "Peak Monthly Revenue", ru: "Пиковая мес. выручка" },
   monthlyPnL: { zh: "本月经营利润分布", en: "Monthly P&L", ru: "Помесячная прибыль" },
-  monthlyPnLKicker: { zh: "Monthly P&L", en: "Monthly P&L", ru: "Помесячно" },
+  monthlyPnLKicker: { zh: "月度利润", en: "Monthly P&L", ru: "Помесячно" },
 
   // === Break Even ===
   breakEvenMsg: { zh: "第 {n} 个月回本（达成盈亏平衡）", en: "Break even in month {n}", ru: "Окупаемость за {n} мес." },
@@ -83,7 +101,7 @@ const DICT = {
 
   // === Cost Structure ===
   costStructure: { zh: "成本结构", en: "Cost Structure", ru: "Структура затрат" },
-  costKicker: { zh: "Cost Structure", en: "Cost Structure", ru: "Затраты" },
+  costKicker: { zh: "成本结构", en: "Cost Structure", ru: "Затраты" },
   costProcure: { zh: "供应商报价/预估采购成本", en: "Procurement", ru: "Закупка" },
   costPlatformFee: { zh: "平台综合扣费", en: "Platform Burden", ru: "Расходы площадки" },
   costWarehouse: { zh: "海外仓", en: "Warehouse", ru: "Склад" },
@@ -100,18 +118,18 @@ const DICT = {
 
   // === Product Ranking ===
   rankingTitle: { zh: "商品盈利排行（按回报率）", en: "Product Ranking (by ROI)", ru: "Рейтинг товаров (ROI)" },
-  rankingKicker: { zh: "Profitability Ranking", en: "Profitability Ranking", ru: "Рейтинг" },
+  rankingKicker: { zh: "盈利排行", en: "Profitability Ranking", ru: "Рейтинг" },
 
   // === Products Tab ===
   productsTitle: { zh: "商品明细", en: "Product Details", ru: "Детали товаров" },
   productCount: { zh: "{n} 个产品", en: "{n} SKUs", ru: "{n} SKU" },
-  productsHint: { zh: "点击行展开编辑。供应商报价/预估采购价、报关申报价、售价、平台综合扣费、海外仓费和管理费都按“上架销售单位”填写：6只装按整套，L12按整套12件，壶杯套装按整套；当前报价是测算假设，正式报价后需替换。", en: "Click a row to edit. Costs, list price, platform burden, overseas warehouse fee and management fee are per sellable listing unit, e.g. a 6-pack or 12-piece set, not per individual cup.", ru: "Нажмите на строку для редактирования. Цена и расходы указаны за продаваемую единицу/набор, не за отдельный стакан." },
+  productsHint: { zh: "点击行展开编辑。供应商报价/预估采购价、报关申报价、平台计费价/折扣前售价、平台综合扣费、海外仓费和管理费都按“上架销售单位”填写：6只装按整套，L12按整套12件，壶杯套装按整套；当前报价是测算假设，正式报价后需替换。", en: "Click a row to edit. Costs, list price, platform burden, overseas warehouse fee and management fee are per sellable listing unit, e.g. a 6-pack or 12-piece set, not per individual cup.", ru: "Нажмите на строку для редактирования. Цена и расходы указаны за продаваемую единицу/набор, не за отдельный стакан." },
   clearAll: { zh: "清空", en: "Clear", ru: "Очистить" },
   addProduct: { zh: "添加商品", en: "Add Product", ru: "Добавить" },
   productId: { zh: "产品ID", en: "Product ID", ru: "ID товара" },
   costCny: { zh: "供应商报价/预估采购价（¥/销售单位）", en: "Cost ¥/unit", ru: "Себест. ¥/ед." },
   qty: { zh: "数量（销售单位）", en: "Qty (sellable units)", ru: "Кол-во (ед. продажи)" },
-  listPrice: { zh: "售价（₽/销售单位）", en: "List (₽/unit)", ru: "Цена (₽/ед.)" },
+  listPrice: { zh: "平台计费价/折扣前售价（₽/销售单位）", en: "List (₽/unit)", ru: "Цена (₽/ед.)" },
   platformFee: { zh: "平台综合扣费（₽/销售单位）", en: "Platform Burden (₽/unit)", ru: "Расходы площадки (₽/ед.)" },
   warehouseFee: { zh: "海外仓费（₽/销售单位）", en: "Overseas WH (₽/unit)", ru: "Склад (₽/ед.)" },
   mgmtFee: { zh: "管理费（₽/销售单位）", en: "Mgmt (₽/unit)", ru: "Упр. (₽/ед.)" },
@@ -166,7 +184,7 @@ const DICT = {
   withdrawalSplitNote: { zh: "拿出来的钱按 {pct}% 分给合伙人，其余留给自己。没拿出来的利润继续留在项目里。", en: "Withdrawn amount split {pct}% to partner. Remainder stays in project.", ru: "Распределяется {pct}% партнёру. Остаток — в проекте." },
   fixedCost: { zh: "每月固定支出（薪资/工具）", en: "Monthly Fixed Cost", ru: "Пост. расходы/мес." },
   priorRevenue: { zh: "本年已累计营收（跨阈值用）", en: "Prior Year Revenue", ru: "Выручка за пред. период" },
-  projNote: { zh: "月度测算按销售排期、售价排期和平台综合扣费排期联动计算；默认采用冷启动 + 冬季旺季曲线，不按全年平均摊销。", en: "Projection follows sales, price and platform-burden schedules; defaults use seasonality rather than an even average.", ru: "Прогноз основан на графиках продаж, цены и расходов." },
+  projNote: { zh: "月度测算按销售排期、平台计费价排期和平台综合扣费排期联动计算；默认采用冷启动 + 冬季旺季曲线，不按全年平均摊销。", en: "Projection follows sales, price and platform-burden schedules; defaults use seasonality rather than an even average.", ru: "Прогноз основан на графиках продаж, цены и расходов." },
   cashFlowDetail: { zh: "月度损益与现金流明细", en: "Monthly P&L & Cash Flow Detail", ru: "Помесячный P&L и кэш" },
   cashFlowWarning: { zh: "利润视角 vs 现金流视角", en: "Two different views: P&L vs Cash Flow", ru: "Два ракурса: P&L и Кэш" },
 
@@ -189,9 +207,9 @@ const DICT = {
 
   // === Settings Tab ===
   taxRegime: { zh: "俄罗斯税制选择", en: "Russian Tax Regime", ru: "Налоговый режим РФ" },
-  taxRegimeKicker: { zh: "Tax Regime · 2026", en: "Tax Regime · 2026", ru: "Налоговый режим · 2026" },
+  taxRegimeKicker: { zh: "税制 · 2026", en: "Tax Regime · 2026", ru: "Налоговый режим · 2026" },
   globalParams: { zh: "全局参数", en: "Global Parameters", ru: "Глобальные параметры" },
-  globalParamsKicker: { zh: "Global Parameters", en: "Global Parameters", ru: "Параметры" },
+  globalParamsKicker: { zh: "全局参数", en: "Global Parameters", ru: "Параметры" },
   exchangeRate: { zh: "汇率（1元 → ? 卢布）", en: "Exchange Rate (1 CNY → ? RUB)", ru: "Курс (1 CNY → ? RUB)" },
   damageRate: { zh: "损耗率", en: "Damage Rate", ru: "Потери" },
   shippingPerUnit: { zh: "到俄运费（待报价）", en: "RU Shipping (Pending Quote)", ru: "Доставка РФ (по запросу)" },
@@ -211,10 +229,10 @@ const DICT = {
   labelingCost: { zh: "贴标/本地化（暂不计）", en: "Labeling / Localization (excluded)", ru: "Маркировка (не учт.)" },
   oneTimeCosts: { zh: "首批启动费（不含库存/广告/物流）", en: "One-time Setup Costs", ru: "Разовые расходы" },
   incomeBasis: { zh: "收入确认基础", en: "Income Recognition", ru: "Признание дохода" },
-  incomeBasisKicker: { zh: "Income Recognition", en: "Income Recognition", ru: "Признание дохода" },
-  basisPayout: { zh: "平台到手金额（M × 售价 − 平台综合扣费）", en: "Platform Payout (M × Price − Fees)", ru: "Выплата площадки" },
+  incomeBasisKicker: { zh: "收入确认", en: "Income Recognition", ru: "Признание дохода" },
+  basisPayout: { zh: "平台到手金额（M × 平台计费价 − 平台综合扣费）", en: "Platform Payout (M × Price − Fees)", ru: "Выплата площадки" },
   basisPayoutDesc: { zh: "实操推荐：以平台实际回款为税基入账。", en: "Recommended: use actual platform payout as tax base.", ru: "Рекомендуется: выплата площадки как налоговая база." },
-  basisList: { zh: "全额上架价（M × 售价）", en: "Full List Price (M × Price)", ru: "Полная цена (М × Цена)" },
+  basisList: { zh: "全额平台计费价（M × 折扣前售价）", en: "Full List Price (M × Price)", ru: "Полная цена (М × Цена)" },
   basisListDesc: { zh: "最保守：按全额卖家标价确认收入，税负会更高。", en: "Conservative: includes platform fees in tax base.", ru: "Консервативно: платформенные сборы в налоговую базу." },
 
   // === Footer ===
@@ -252,6 +270,7 @@ const DICT = {
   publicProjectsHint: { zh: "这些项目已经随网站发布，别人打开同一个网站也能看到。", en: "These projects are published with the site and visible to others.", ru: "Эти проекты опубликованы на сайте и видны другим." },
   localProjects: { zh: "本机保存项目", en: "Local projects", ru: "Локальные проекты" },
   localProjectsHint: { zh: "这里的数据只保存在当前浏览器，别人打开链接看不到；要给别人看，请用上方线上项目、分享链接，或导出 JSON 后发给对方。", en: "These are saved only in this browser. Others cannot see them unless you use a published project, share link, or exported JSON.", ru: "Они сохранены только в этом браузере. Другие их не видят без опубликованного проекта, ссылки или JSON." },
+  localProjectsMissingHint: { zh: "这里如果没看到你记得的旧项目，通常是因为它保存在别的浏览器、电脑，或另一个浏览器用户里。", en: "If older projects you remember are missing here, they are usually stored in another browser, computer, or browser profile.", ru: "Если здесь нет старых проектов, которые вы помните, обычно они сохранены в другом браузере, компьютере или профиле браузера." },
   projectOpen: { zh: "打开", en: "Open", ru: "Открыть" },
   projectOpenConfirm: { zh: "打开项目 \"{name}\"？当前未保存的修改会丢失。", en: "Open \"{name}\"? Unsaved changes will be lost.", ru: "Открыть \"{name}\"? Несохранённые данные будут потеряны." },
   projectRename: { zh: "重命名", en: "Rename", ru: "Переименовать" },
@@ -290,7 +309,7 @@ const DICT = {
   fieldDeclaredCost: { zh: "报关申报价（¥/销售单位）", en: "Estimated Declared Cost / unit (CNY)", ru: "Деклар. цена / ед. (CNY)" },
   fieldQty: { zh: "数量 (销售单位)", en: "Qty (sellable units)", ru: "Кол-во (ед. продажи)" },
   fieldWeight: { zh: "重量 (kg)", en: "Weight (kg)", ru: "Вес (кг)" },
-  fieldListPrice: { zh: "上架售价 (₽)", en: "List Price (₽)", ru: "Цена (₽)" },
+  fieldListPrice: { zh: "平台计费价/折扣前售价 (₽)", en: "List Price (₽)", ru: "Цена (₽)" },
   fieldPlatformFee: { zh: "平台综合扣费（₽/销售单位）", en: "Platform Burden (₽/unit)", ru: "Расходы площадки (₽/ед.)" },
   fieldWarehouse: { zh: "海外仓费用 (₽/销售单位)", en: "Overseas Warehouse (₽/unit)", ru: "Склад (₽/ед.)" },
   fieldMgmt: { zh: "管理费 (₽/销售单位)", en: "Mgmt Fee (₽/unit)", ru: "Управление (₽/ед.)" },
@@ -390,14 +409,14 @@ const DICT = {
   paramOneTime: { zh: "首批启动费（样品/包装/拍摄/合规）", en: "One-time Costs (design/photo/compliance)", ru: "Разовые расходы (дизайн/фото/серт.)" },
 
   // === Price Schedule ===
-  priceScheduleTitle: { zh: "售价排期 · 按月调价", en: "Price Schedule · Monthly Pricing", ru: "График цен · Помесячно" },
-  priceScheduleHint: { zh: "默认继承商品统一售价，修改后变色显示。空白/0 = 使用默认值。", en: "Defaults to product base price. Modified values shown in color. Empty/0 = default.", ru: "По умолчанию базовая цена. Изменённые выделены цветом. Пусто/0 = по умолчанию." },
+  priceScheduleTitle: { zh: "平台计费价排期 · 按月调价", en: "Price Schedule · Monthly Pricing", ru: "График цен · Помесячно" },
+  priceScheduleHint: { zh: "默认继承商品的加权平台计费价/折扣前售价：只选一个平台就用该平台计费价，多平台销售就按销售占比加权。空白/0 = 使用默认值。", en: "Defaults to weighted platform price. Empty/0 = default.", ru: "По умолчанию взвешенная цена площадок. Пусто/0 = по умолчанию." },
   feeScheduleTitle: { zh: "平台综合扣费排期 · 按月调整", en: "Platform Burden Schedule · Monthly Fees", ru: "График расходов площадки · Помесячно" },
-  feeScheduleHint: { zh: "默认继承商品统一平台综合扣费。这里不是单一佣金，而是佣金、支付、平台物流/退货、广告促销预留等合计。", en: "Defaults to product base platform burden, including commission, payment, fulfillment/returns and promotion reserve.", ru: "По умолчанию базовые расходы площадки." },
+  feeScheduleHint: { zh: "默认继承商品的加权平台综合扣费。这里不是单一佣金，而是佣金、支付、平台物流/退货、广告促销预留等合计。", en: "Defaults to weighted platform burden, including commission, payment, fulfillment/returns and promotion reserve.", ru: "По умолчанию взвешенные расходы площадок." },
   defaultPrice: { zh: "默认值", en: "Default", ru: "По умолч." },
-  resetPrices: { zh: "重置售价", en: "Reset Prices", ru: "Сброс цен" },
+  resetPrices: { zh: "重置平台计费价", en: "Reset Prices", ru: "Сброс цен" },
   resetFees: { zh: "重置平台综合扣费", en: "Reset Fees", ru: "Сброс расходов" },
-  priceLabel: { zh: "售价₽", en: "Price₽", ru: "Цена₽" },
+  priceLabel: { zh: "计费价₽", en: "Price₽", ru: "Цена₽" },
   feeLabel: { zh: "综合扣费₽", en: "Fee₽", ru: "Расход₽" },
 
   // === Restock Schedule ===

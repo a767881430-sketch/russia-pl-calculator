@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from "recharts";
-import { Plus, Trash2, Save, Info, ChevronDown, ChevronRight, RotateCcw, FileDown, AlertCircle, Sparkles, Globe, Share2, FolderOpen, FilePlus, Upload, Copy, X, Edit3, BookOpen } from "lucide-react";
+import { Plus, Trash2, Save, Info, ChevronDown, ChevronRight, RotateCcw, FileDown, AlertCircle, Sparkles, Globe, Share2, FolderOpen, FilePlus, Upload, Copy, X, Edit3, BookOpen, Send, Link as LinkIcon, MoreHorizontal, Search } from "lucide-react";
 import { createT, createCurrencyFormatter, useLiveRate, LANG_OPTIONS } from "./i18n.js";
+import {
+  SALES_PLATFORMS,
+  getProductPlatformConfigs,
+  calcPlatformUnitEconomics,
+  getProductPlatformAverages,
+  getPlatformTariffMeta,
+} from "./lib/platformPricing.js";
+import { PLATFORM_TARIFFS } from "./lib/platformTariffs.js";
 
 // ============================================================
 // 字体 & 主题
@@ -31,6 +39,8 @@ const COLORS = {
   oxblood: "#5C1A1B", oxbloodSoft: "#7A2A2C", gold: "#B8860B", goldSoft: "#D4A93A",
   emerald: "#1F4F2E", emeraldSoft: "#2D7144", crimson: "#A4193D", line: "#D9CFB8",
 };
+
+const TARIFF_META = getPlatformTariffMeta();
 
 // ============================================================
 // 2026 俄罗斯税制
@@ -77,7 +87,7 @@ const hasImportVATInvoice = (product) => {
 
 const DEFAULT_PROJECTION = {
   monthsHorizon: 8, partnerSharePct: 50, monthlyFixedCost: 0,
-  autoVATEscalation: true,    // 自动按累计营收触发VAT
+  autoVATEscalation: true,    // 自动按累计营收触发 VAT
   priorYearRevenue: 0,        // 进入本预测期前的累计营收（如已经卖了一段时间）
 };
 
@@ -157,6 +167,7 @@ const fmtCnyShort = (v) => {
 // 单品计算
 // ============================================================
 const calcProduct = (p, params) => {
+  const platformAvg = getProductPlatformAverages(p);
   const declaredCNY = (p.declaredCNY ?? p.priceCNY) || 0;
   const priceRUB = (p.priceCNY || 0) * params.exchangeRate;
   const declaredRUB = declaredCNY * params.exchangeRate;
@@ -166,13 +177,17 @@ const calcProduct = (p, params) => {
   const totalInvestment = unitCost * (p.qty || 0);
   const totalDeclaredCost = declaredUnitCost * (p.qty || 0);
 
-  const unitPayout = (p.list || 0) - (p.platformFee || 0);
+  const listPrice = platformAvg.list;
+  const platformFee = platformAvg.platformFee;
+  const warehouse = platformAvg.warehouse;
+  const mgmt = platformAvg.mgmt;
+  const unitPayout = listPrice - platformFee;
   const effectiveQty = (p.qty || 0) * (1 - params.damageRate);
   const totalRevenue = unitPayout * effectiveQty;
-  const totalWarehouse = (p.warehouse || 0) * (p.qty || 0);
-  const totalMgmt = (p.mgmt || 0) * (p.qty || 0);
+  const totalWarehouse = warehouse * (p.qty || 0);
+  const totalMgmt = mgmt * (p.qty || 0);
 
-  // 灰关无进项VAT发票，OSN下不可抵扣
+  // 灰关无进项 VAT 发票，OSN 下不可抵扣
   const canDeductVAT = params.taxScheme === "osn" && hasImportVATInvoice(p);
   const inputVATPerUnit = canDeductVAT ? declaredRUB * params.vatRate : 0;
   const totalInputVAT = inputVATPerUnit * (p.qty || 0);
@@ -181,9 +196,9 @@ const calcProduct = (p, params) => {
   if (params.taxScheme === "osn") outputVATRate = params.vatRate;
   else if (params.taxScheme === "usn_6_vat5" || params.taxScheme === "usn_15_vat5") outputVATRate = 0.05;
   else if (params.taxScheme === "usn_6_vat7" || params.taxScheme === "usn_15_vat7") outputVATRate = 0.07;
-  const totalOutputVAT = (p.list || 0) * outputVATRate / (1 + outputVATRate) * effectiveQty;
+  const totalOutputVAT = listPrice * outputVATRate / (1 + outputVATRate) * effectiveQty;
 
-  const incomeBase = params.incomeBasis === "list" ? (p.list || 0) * effectiveQty : totalRevenue;
+  const incomeBase = params.incomeBasis === "list" ? listPrice * effectiveQty : totalRevenue;
   const expenses = totalInvestment + totalWarehouse + totalMgmt;
   const profitBeforeTax = totalRevenue - expenses;
 
@@ -223,13 +238,14 @@ const calcProduct = (p, params) => {
 
   const netProfit = totalRevenue - expenses - tax;
   const bookNetProfit = totalRevenue - (totalDeclaredCost + totalWarehouse + totalMgmt) - tax;
-  const totalGMV = (p.list || 0) * effectiveQty;
+  const totalGMV = listPrice * effectiveQty;
   const profitMargin = totalGMV > 0 ? netProfit / totalGMV : 0;
   const roi = totalInvestment > 0 ? netProfit / totalInvestment : 0;
 
   return {
     priceRUB, declaredRUB, unitCost, declaredUnitCost, totalInvestment, totalDeclaredCost,
-    unitPayout, effectiveQty, totalRevenue, totalGMV, totalWarehouse, totalMgmt,
+    listPrice, platformFee, warehouse, mgmt, unitPayout, effectiveQty, totalRevenue, totalGMV, totalWarehouse, totalMgmt,
+    platformAvg, platformDetails: platformAvg.active,
     totalInputVAT, totalOutputVAT, expenses, profitBeforeTax,
     tax, vatPart, usnPart, profitTaxPart,
     netProfit, bookNetProfit, profitMargin, roi,
@@ -284,14 +300,14 @@ const getRestockSchedule = (id, qty, n, restockStore) => {
   if (!Array.isArray(s)) return [qty, ...Array(n).fill(0)]; // 默认：M0=全量，后续无补货
   // 长度匹配直接返回；否则截断或补零
   if (s.length === n + 1) return s;
-  if (s.length > n + 1) return s.slice(0, n + 1); // 从12月切回8月：截断多余月份
-  return [...s, ...Array(n + 1 - s.length).fill(0)]; // 从8月切到12月：补零
+  if (s.length > n + 1) return s.slice(0, n + 1); // 从长周期切回短周期：截断多余月份
+  return [...s, ...Array(n + 1 - s.length).fill(0)]; // 从短周期切到长周期：补零
 };
 
-// 阶梯VAT阈值（2026 联邦法 №425-FZ）
-// 累计年营收 ≤ 20M ₽: USN无VAT
-// 20M-250M ₽: 触发VAT，可选5%(无进项抵扣)
-// 250M-450M ₽: 7%(无进项抵扣)
+// 阶梯 VAT 阈值（2026 联邦法 №425-FZ）
+// 累计年营收 <= 20M ₽: USN 无 VAT
+// 20M-250M ₽: 触发 VAT，可选 5%（无进项抵扣）
+// 250M-450M ₽: 7%（无进项抵扣）
 // 450M+ : 强制俄罗斯一般税制
 const VAT_TIER = (cumRevenue) => {
   if (cumRevenue <= 20_000_000) return { rate: 0, labelKey: "vatLabelNoVat", tier: 0 };
@@ -318,14 +334,16 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
   const { monthsHorizon, partnerSharePct, monthlyFixedCost, autoVATEscalation, priorYearRevenue } = projection;
   const months = [];
 
-  // 计算每个产品的单位成本（供补货成本计算用）
+  // 计算每个商品的单位成本（供补货成本计算用）
   const productUnitCosts = {};
+  const productPlatformAverages = {};
   for (const p of products) {
     const shipPerUnit = calcShipping(p, params);
     productUnitCosts[p.id] = (p.priceCNY || 0) * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
+    productPlatformAverages[p.id] = getProductPlatformAverages(p);
   }
 
-  // M0 首批采购：用 restockStore 的 M0 数量
+  // M0 首批采购：使用 restockStore 的 M0 数量
   let totalActual = 0, totalDeclared = 0, totalImportVAT = 0;
   for (const p of products) {
     const declaredCNY = (p.declaredCNY ?? p.priceCNY) || 0;
@@ -362,7 +380,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
     restockQty: totalStockEnd, restockCost: totalActual, stockEnd: totalStockEnd, stockWarning: false,
   });
 
-  // 跨月累计营收（动态增值税触发用）
+  // 跨月累计营收（用于动态增值税触发）
   let cumRevenue = priorYearRevenue || 0;
   let vatTriggered = false;
   let vatTriggerMonth = null;
@@ -382,14 +400,15 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
       const shipPerUnit = calcShipping(p, params);
       const declaredUnit = declaredCNY * params.exchangeRate + shipPerUnit + params.labelingPerUnit;
       // 按月取售价/平台费
-      const monthList = getPriceForMonth(p.id, m - 1, p.list || 0, priceStore);
-      const monthFee = getFeeForMonth(p.id, m - 1, p.platformFee || 0, priceStore);
+      const platformAvg = productPlatformAverages[p.id] || getProductPlatformAverages(p);
+      const monthList = getPriceForMonth(p.id, m - 1, platformAvg.list, priceStore);
+      const monthFee = getFeeForMonth(p.id, m - 1, platformAvg.platformFee, priceStore);
       const unitPayout = monthList - monthFee;
-      revenue += q * unitPayout; // 100%营收（假设全卖出）
-      damageLoss += q * params.damageRate * unitPayout; // 货损 = 损坏数量 × 单位回款（丢失的收入）
+      revenue += q * unitPayout; // 100% 营收（假设全卖出）
+      damageLoss += q * params.damageRate * unitPayout; // 货损 = 损坏数量 * 单位回款（丢失的收入）
       cogs += q * unitCost;
       declaredCogs += q * declaredUnit;
-      expenses += q * (1 - params.damageRate) * ((p.warehouse || 0) + (p.mgmt || 0));
+      expenses += q * (1 - params.damageRate) * ((platformAvg.warehouse || 0) + (platformAvg.mgmt || 0));
       listSum += q * (1 - params.damageRate) * monthList;
 
       // 补货：读取该月补货数量，更新库存
@@ -412,11 +431,11 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
     const grossProfit = revenue - damageLoss - cogs - expenses - fixedCost; // 明确扣除货损
     const incomeBase = params.incomeBasis === "list" ? listSum : (revenue - damageLoss);
 
-    // 决定本月用什么税制
+    // 决定本月使用什么税制
     let effectiveScheme = params.taxScheme;
     let vatTierKey = null;
 
-    // 仅当用户选了USN且开启了"自动跨档"，才动态升级
+    // 仅当用户选择 USN 且开启“自动跨档”时才动态升级
     if (autoVATEscalation && (params.taxScheme === "usn_6" || params.taxScheme === "usn_15")) {
       const tier = VAT_TIER(cumRevenue);
       vatTierKey = tier.labelKey;
@@ -426,23 +445,23 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
           vatTriggerMonth = m;
           triggeredRate = tier.rate;
         } else if (tier.rate > triggeredRate) {
-          // 当年度内继续上跨 (e.g. 5% → 7%)
+          // 当年度内继续上跨 (e.g. 5% -> 7%)
           triggeredRate = tier.rate;
         }
-        // 选哪一档：根据原始USN类型匹配对应方案
+        // 选择方案：根据原始 USN 类型匹配对应方案
         if (triggeredRate === 0.05) effectiveScheme = params.taxScheme === "usn_6" ? "usn_6_vat5" : "usn_15_vat5";
         else if (triggeredRate === 0.07) effectiveScheme = params.taxScheme === "usn_6" ? "usn_6_vat7" : "usn_15_vat7";
         else if (triggeredRate >= 0.22) effectiveScheme = "osn";
       }
     } else {
-      // 用户手动选了带VAT的方案：显示该方案档位
+      // 用户手动选择了带 VAT 的方案：显示该方案档位
       if (params.taxScheme === "usn_6_vat5" || params.taxScheme === "usn_15_vat5") vatTierKey = "vatLabelFixed5";
       else if (params.taxScheme === "usn_6_vat7" || params.taxScheme === "usn_15_vat7") vatTierKey = "vatLabelFixed7";
       else if (params.taxScheme === "osn") vatTierKey = "vatLabelFixedOsn";
       else vatTierKey = "vatLabelNoVat";
     }
 
-    // 计算本月销项VAT率
+    // 计算本月销项 VAT 率
     let outputVATRate = 0;
     if (effectiveScheme === "osn") outputVATRate = params.vatRate;
     else if (effectiveScheme === "usn_6_vat5" || effectiveScheme === "usn_15_vat5") outputVATRate = 0.05;
@@ -486,7 +505,7 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
     const distributed = Math.min(withdrawalAmount, Math.max(0, netProfit));
     const partnerPayout = distributed * (partnerSharePct / 100);
     const ownerPayout = distributed - partnerPayout;
-    // 现金流 = 营收 - 货损 - 费用 - 税 - 合伙人 - 补货支出
+    // 现金流 = 营收 - 货损 - 费用 - 税 - 合伙人分成 - 补货支出
     const cashFlow = revenue - damageLoss - expenses - fixedCost - tax - partnerPayout - monthRestockCost;
     cumCash += cashFlow;
 
@@ -518,16 +537,145 @@ const calcProjection = (products, params, projection, store, priceStore = {}, re
 // ============================================================
 // 通用 UI
 // ============================================================
-const NumInput = ({ value, onChange, suffix, prefix, step = 1, className = "", ...rest }) => (
-  <div className={`flex items-stretch border bg-white/60 input-glow rounded-sm ${className}`} style={{ borderColor: COLORS.line }}>
-    {prefix && <div className="px-2 flex items-center text-xs font-mono" style={{ color: COLORS.inkSoft, background: COLORS.paper }}>{prefix}</div>}
-    <input type="number" step={step} value={Number.isFinite(value) ? value : ""}
-      onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-      className="flex-1 px-2 py-2.5 sm:py-1.5 bg-transparent font-mono text-sm w-full"
-      style={{ color: COLORS.ink, minWidth: 0 }} {...rest} />
-    {suffix && <div className="px-2 flex items-center text-xs font-mono" style={{ color: COLORS.inkSoft, background: COLORS.paper }}>{suffix}</div>}
-  </div>
-);
+const formatNumberForInput = (value, emptyWhenZero = true) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "";
+  if (emptyWhenZero && n === 0) return "";
+  return String(n);
+};
+
+const normalizeNumberDraft = (raw, allowNegative = false) => {
+  let next = String(raw ?? "")
+    .replace(/,/g, ".")
+    .replace(/[^\d.-]/g, "");
+  if (!allowNegative) next = next.replace(/-/g, "");
+  else next = next.replace(/(?!^)-/g, "");
+  const sign = next.startsWith("-") ? "-" : "";
+  const body = sign ? next.slice(1) : next;
+  const [integer = "", ...decimalParts] = body.split(".");
+  const decimal = decimalParts.length ? `.${decimalParts.join("")}` : "";
+  const normalizedInteger = integer.replace(/^0+(?=\d)/, "");
+  return `${sign}${normalizedInteger}${decimal}`;
+};
+
+const isIncompleteNumberDraft = (draft) => ["", "-", ".", "-.", "0.", "-0."].includes(draft);
+
+const useNumericInputDraft = ({ value, onChange, emptyWhenZero = true, allowNegative = false, readOnly, onFocus, onBlur, onKeyDown }) => {
+  const [focused, setFocused] = useState(false);
+  const [draft, setDraft] = useState(() => formatNumberForInput(value, emptyWhenZero));
+
+  useEffect(() => {
+    if (!focused) setDraft(formatNumberForInput(value, emptyWhenZero));
+  }, [value, emptyWhenZero, focused]);
+
+  const commit = useCallback((rawDraft = draft) => {
+    const next = normalizeNumberDraft(rawDraft, allowNegative);
+    if (isIncompleteNumberDraft(next)) {
+      onChange(0);
+      setDraft(formatNumberForInput(0, emptyWhenZero));
+      return;
+    }
+    const parsed = Number(next);
+    if (Number.isFinite(parsed)) {
+      onChange(parsed);
+      setDraft(formatNumberForInput(parsed, emptyWhenZero));
+    } else {
+      setDraft(formatNumberForInput(value, emptyWhenZero));
+    }
+  }, [allowNegative, draft, emptyWhenZero, onChange, value]);
+
+  const inputProps = {
+    type: "text",
+    inputMode: "decimal",
+    value: draft,
+    onFocus: (event) => {
+      setFocused(true);
+      if (!readOnly && emptyWhenZero && Number(value) === 0) setDraft("");
+      onFocus?.(event);
+    },
+    onChange: (event) => {
+      const next = normalizeNumberDraft(event.target.value, allowNegative);
+      setDraft(next);
+      if (!isIncompleteNumberDraft(next)) {
+        const parsed = Number(next);
+        if (Number.isFinite(parsed)) onChange(parsed);
+      }
+    },
+    onBlur: (event) => {
+      setFocused(false);
+      commit(event.currentTarget.value);
+      onBlur?.(event);
+    },
+    onKeyDown: (event) => {
+      if (event.key === "Enter") {
+        commit(event.currentTarget.value);
+        event.currentTarget.blur();
+      } else if (event.key === "Escape") {
+        setDraft(formatNumberForInput(value, emptyWhenZero));
+        event.currentTarget.blur();
+      }
+      onKeyDown?.(event);
+    },
+  };
+
+  return inputProps;
+};
+
+const NumInput = ({
+  value,
+  onChange,
+  suffix,
+  prefix,
+  step = 1,
+  className = "",
+  emptyWhenZero = true,
+  allowNegative = false,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  readOnly,
+  ...rest
+}) => {
+  const inputProps = useNumericInputDraft({ value, onChange, emptyWhenZero, allowNegative, readOnly, onFocus, onBlur, onKeyDown });
+  return (
+    <div className={`flex items-stretch border bg-white/60 input-glow rounded-sm ${className}`} style={{ borderColor: COLORS.line }}>
+      {prefix && <div className="px-2 flex items-center text-xs font-mono" style={{ color: COLORS.inkSoft, background: COLORS.paper }}>{prefix}</div>}
+      <input
+        {...inputProps}
+        step={step}
+        readOnly={readOnly}
+        className="flex-1 px-2 py-2.5 sm:py-1.5 bg-transparent font-mono text-sm w-full"
+        style={{ color: COLORS.ink, minWidth: 0 }}
+        {...rest}
+      />
+      {suffix && <div className="px-2 flex items-center text-xs font-mono" style={{ color: COLORS.inkSoft, background: COLORS.paper }}>{suffix}</div>}
+    </div>
+  );
+};
+
+const InlineNumInput = ({
+  value,
+  onChange,
+  min,
+  step = 1,
+  style = {},
+  emptyWhenZero = true,
+  allowNegative = false,
+  readOnly,
+  ...rest
+}) => {
+  const inputProps = useNumericInputDraft({ value, onChange, emptyWhenZero, allowNegative, readOnly });
+  return (
+    <input
+      {...inputProps}
+      min={min}
+      step={step}
+      readOnly={readOnly}
+      style={style}
+      {...rest}
+    />
+  );
+};
 
 // 防抖文本输入：使用本地 state，仅在 blur / Enter 时提交，避免每次击键触发父级重渲染
 const DebouncedTextInput = ({ value, onCommit, className = "", style = {}, ...rest }) => {
@@ -571,6 +719,32 @@ const Metric = ({ label, value, sub, color, big }) => (
   </div>
 );
 
+const MiniMetric = ({ label, value, sub, color }) => (
+  <div className="min-w-0">
+    <div className="text-[10px] leading-snug" style={{ color: COLORS.inkSoft }}>{label}</div>
+    <div className="font-mono text-xs sm:text-sm font-semibold leading-tight break-words" style={{ color: color || COLORS.ink }}>{value}</div>
+    {sub && <div className="text-[10px] leading-snug break-words" style={{ color: COLORS.inkSoft }}>{sub}</div>}
+  </div>
+);
+
+const MetricHelpCard = ({ label, value, sub, helper, action, color }) => (
+  <div className="p-4 border rounded-sm min-w-0" style={{ borderColor: COLORS.line, background: "white" }}>
+    <Metric label={label} value={value} sub={sub} color={color} />
+    <div className="mt-3 space-y-2 text-[11px] leading-5" style={{ color: COLORS.inkSoft }}>
+      <div className="flex gap-1.5">
+        <span className="font-semibold whitespace-nowrap" style={{ color: COLORS.ink }}>怎么看：</span>
+        <span className="min-w-0">{helper}</span>
+      </div>
+      {action && (
+        <div className="flex gap-1.5 border-t pt-2" style={{ borderColor: COLORS.line }}>
+          <span className="font-semibold whitespace-nowrap" style={{ color: COLORS.oxblood }}>下一步：</span>
+          <span className="min-w-0">{action}</span>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 const AudienceQuickGuide = ({ compact = false }) => {
   const items = [
     { role: "新老板", text: "先看最后账上还剩现金、回本月份、回报率、最缺钱的时候。" },
@@ -594,12 +768,326 @@ const AudienceQuickGuide = ({ compact = false }) => {
   );
 };
 
+const AudienceViewPanel = ({ activeView, setActiveView, totals, calcs, proj, projection, fmt }) => {
+  const F = fmt.fmtPrimary;
+  const Fs = fmt.fmtSecondary;
+  const views = [
+    { id: "boss", label: "老板", title: "老板视角", desc: "这一屏回答：这件事值不值得继续推进、钱够不够撑到回本。" },
+    { id: "supplier", label: "供应商", title: "供应商视角", desc: "这一屏回答：报价单位、报关口径、重量尺寸有没有对齐。" },
+    { id: "ops", label: "运营", title: "运营视角", desc: "这一屏回答：销量排期、补货、平台扣费和现金流有没有卡点。" },
+  ];
+  const active = views.find((item) => item.id === activeView) || views[0];
+  const missingWeightCount = calcs.filter((item) => !(Number(item.weight || item.weightKg || 0) > 0)).length;
+  const missingSizeCount = calcs.filter((item) => !(Number(item.volL || 0) > 0 && Number(item.volW || 0) > 0 && Number(item.volH || 0) > 0)).length;
+  const missingSpecCount = calcs.filter((item) => (
+    !(Number(item.weight || item.weightKg || 0) > 0) ||
+    !(Number(item.volL || 0) > 0 && Number(item.volW || 0) > 0 && Number(item.volH || 0) > 0)
+  )).length;
+  const totalSupplierCostCny = calcs.reduce((sum, item) => sum + Number(item.priceCNY || 0) * Number(item.qty || 0), 0);
+  const totalDeclaredCostCny = calcs.reduce((sum, item) => sum + Number((item.declaredCNY ?? item.priceCNY) || 0) * Number(item.qty || 0), 0);
+  const avgSupplierCostCny = totals.qty > 0 ? totalSupplierCostCny / totals.qty : 0;
+  const avgDeclaredCostCny = totals.qty > 0 ? totalDeclaredCostCny / totals.qty : 0;
+  const avgPlatformFee = totals.qty > 0
+    ? calcs.reduce((sum, item) => sum + Number(item.c.platformFee || 0) * Number(item.qty || 0), 0) / totals.qty
+    : 0;
+  const salesMonths = (proj.months || []).filter((month) => !month.isInitial);
+  const totalSoldQty = salesMonths.reduce((sum, month) => sum + Number(month.soldQty || 0), 0);
+  const totalRestockQty = salesMonths.reduce((sum, month) => sum + Number(month.restockQty || 0), 0);
+  const totalRestockCost = salesMonths.reduce((sum, month) => sum + Number(month.restockCost || 0), 0);
+  const firstSalesMonth = salesMonths[0] || {};
+  const cardsByView = {
+    boss: [
+      {
+        label: "最后账上现金",
+        value: F(proj.finalCash),
+        sub: proj.finalCash >= 0 ? "现金为正" : "现金为负",
+        helper: proj.finalCash >= 0 ? "预测结束时项目账上还有钱，老板先看这个判断资金是否撑得住。" : "预测结束时账上为负，需要补资金、调销量或减少支出。",
+        action: proj.finalCash >= 0 ? "再确认补货节奏、合伙人提现和税费是否都已计入。" : "先降低首批量、推迟补货，或准备额外周转资金。",
+        color: proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson,
+      },
+      {
+        label: "回本月份",
+        value: proj.breakEvenMonth ? "M" + proj.breakEvenMonth : "未回本",
+        sub: `${projection.monthsHorizon} 个月预测期`,
+        helper: proj.breakEvenMonth ? `第 ${proj.breakEvenMonth} 个月账上累计现金第一次转正。` : "预测期内累计现金没有转正，说明回款节奏或利润还不够。",
+        action: proj.breakEvenMonth ? "看回本前最低现金点，确认这段时间现金能扛住。" : "优先复核售价、平台扣费、销售排期和首批库存量。",
+        color: proj.breakEvenMonth ? COLORS.emerald : COLORS.crimson,
+      },
+      {
+        label: "回报率",
+        value: fmtPct(totals.roi),
+        sub: "扣启动费后利润 " + F(totals.netProfit),
+        helper: "看每投入 1 块钱大概能赚回多少；它不是现金流，不能单独替代回本判断。",
+        action: "老板看它判断值不值得做，但还要和回本月份、账上现金一起看。",
+        color: totals.roi >= 0 ? COLORS.emerald : COLORS.crimson,
+      },
+      {
+        label: "最缺钱的时候",
+        value: F(proj.maxDrawdown),
+        sub: Fs(proj.maxDrawdown),
+        helper: "这是整个预测里资金压力最大的点，用来判断至少要准备多少周转资金。",
+        action: "如果这个数太大，先把首批采购和补货计划拆小。",
+        color: COLORS.crimson,
+      },
+    ],
+    supplier: [
+      {
+        label: "销售单位",
+        value: String(totals.qty || 0),
+        sub: `${calcs.length} 个商品`,
+        helper: "这里按上架销售单位算：套装、组合装都按整套，不按单只零件。",
+        action: "供应商报价时先确认一箱、一套、一组到底对应几个销售单位。",
+        color: COLORS.ink,
+      },
+      {
+        label: "供应商报价",
+        value: fmtCnyShort(totalSupplierCostCny),
+        sub: `平均 ${fmtCny(avgSupplierCostCny)}/销售单位`,
+        helper: "这是实际采购报价口径，供应商主要核对这个价格和销售单位是否一致。",
+        action: "如果正式报价变了，先改这里，再重新看利润和现金流。",
+        color: COLORS.oxblood,
+      },
+      {
+        label: "报关申报价",
+        value: fmtCnyShort(totalDeclaredCostCny),
+        sub: `平均 ${fmtCny(avgDeclaredCostCny)}/销售单位`,
+        helper: "这是清关和税务测算口径，不一定等于供应商报价，但要能解释差异。",
+        action: "报关价和采购价差太大时，需要财务或清关方确认口径。",
+        color: COLORS.gold,
+      },
+      {
+        label: "规格待补",
+        value: String(missingSpecCount),
+        sub: `缺重量 ${missingWeightCount} / 缺尺寸 ${missingSizeCount}`,
+        helper: "重量、长宽高会影响平台物流费和头程测算；缺了就先不要定最终报价。",
+        action: missingSpecCount ? "让供应商补重量、长宽高、装箱数，再回来刷新测算。" : "规格已齐，可以继续核对平台类目和费用。",
+        color: missingSpecCount ? COLORS.crimson : COLORS.emerald,
+      },
+    ],
+    ops: [
+      {
+        label: "销售排期总量",
+        value: String(totalSoldQty),
+        sub: `${projection.monthsHorizon} 个月计划销量`,
+        helper: "运营先看销量是否已经分到月份里，不能只看总库存。",
+        action: totalSoldQty > 0 ? "去销售排期里检查每个月是否符合真实上架节奏。" : "先把预计每月销量填进销售排期。",
+        color: totalSoldQty > 0 ? COLORS.emerald : COLORS.crimson,
+      },
+      {
+        label: "补货排期",
+        value: String(totalRestockQty),
+        sub: totalRestockCost > 0 ? `补货支出 ${F(totalRestockCost)}` : "暂无补货支出",
+        helper: "补货会影响账上现金，尤其是回款还没到但先要付货款的时候。",
+        action: totalRestockQty > 0 ? "检查补货月份是否早于断货，同时不要把现金压垮。" : "如果首批不够卖，在补货排期里加数量。",
+        color: totalRestockQty > 0 ? COLORS.gold : COLORS.inkSoft,
+      },
+      {
+        label: "平均平台扣费",
+        value: F(avgPlatformFee),
+        sub: "每销售单位",
+        helper: "平台佣金、物流、支付和广告预留都会压缩利润，运营调价要先看它。",
+        action: "如果扣费偏高，优先检查佣金类目、尺寸体积、签收率和广告预留。",
+        color: COLORS.oxblood,
+      },
+      {
+        label: "M1 实际现金进出",
+        value: F(firstSalesMonth.cashFlow || 0),
+        sub: firstSalesMonth.label || "第 1 个月",
+        helper: "这是按实际收付款节奏看的现金，不等同于本月经营利润。",
+        action: "如果 M1 为负，看是不是首月销量少、补货早、固定支出或税费过高。",
+        color: (firstSalesMonth.cashFlow || 0) >= 0 ? COLORS.emerald : COLORS.crimson,
+      },
+    ],
+  };
+  const cards = cardsByView[active.id] || cardsByView.boss;
+
+  return (
+    <section className="border rounded-sm overflow-hidden" style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.78)" }}>
+      <div className="p-4 sm:p-5 border-b" style={{ borderColor: COLORS.line }}>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="text-[10px] uppercase" style={{ color: COLORS.gold, letterSpacing: 0 }}>查看视角</div>
+            <h2 className="font-display text-xl sm:text-2xl font-bold mt-1" style={{ color: COLORS.ink }}>{active.title}</h2>
+            <p className="text-xs sm:text-sm leading-6 mt-1 max-w-3xl" style={{ color: COLORS.inkSoft }}>{active.desc}</p>
+          </div>
+          <div className="flex flex-wrap gap-1.5 rounded-sm border p-1" style={{ borderColor: COLORS.line, background: COLORS.paper }}>
+            {views.map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setActiveView(view.id)}
+                className="px-3 py-2 text-xs font-medium rounded-sm"
+                style={{
+                  background: active.id === view.id ? COLORS.oxblood : "transparent",
+                  color: active.id === view.id ? COLORS.cream : COLORS.inkSoft,
+                }}
+              >
+                {view.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        {cards.map((card) => (
+          <MetricHelpCard key={card.label} {...card} />
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const DecisionSummaryPanel = ({ totals, params, calcs, proj, projection, fmt, readOnly = false }) => {
+  const F = fmt.fmtPrimary;
+  const totalSupplierCostCny = calcs.reduce((sum, item) => sum + Number(item.priceCNY || 0) * Number(item.qty || 0), 0);
+  const totalDeclaredCostCny = calcs.reduce((sum, item) => sum + Number((item.declaredCNY ?? item.priceCNY) || 0) * Number(item.qty || 0), 0);
+  const avgPlatformFee = totals.qty > 0
+    ? calcs.reduce((sum, item) => sum + Number(item.c.platformFee || 0) * Number(item.qty || 0), 0) / totals.qty
+    : 0;
+  const finalCashOk = (proj.finalCash || 0) >= 0;
+  const profitOk = (totals.netProfit || 0) >= 0;
+  const paybackOk = Boolean(proj.breakEvenMonth);
+  const missingWeightCount = calcs.filter((item) => !(Number(item.weight || item.weightKg || 0) > 0)).length;
+  const missingSizeCount = calcs.filter((item) => !(Number(item.volL || 0) > 0 && Number(item.volW || 0) > 0 && Number(item.volH || 0) > 0)).length;
+  const missingSpecCount = missingWeightCount + missingSizeCount;
+  const taxLabel = TAX_SCHEMES[params.taxScheme]?.shortZh || params.taxScheme || "未选择";
+  const statusItems = [
+    {
+      label: "账上现金",
+      ok: finalCashOk,
+      text: F(proj.finalCash),
+      note: finalCashOk ? "预测结束后账上仍为正，资金暂时撑得住。" : "预测结束后账上为负，需要补资金或调排期。",
+      action: finalCashOk ? "下一步看最缺钱月份，确认中间现金不断。" : "先减少首批量、延后补货，或补周转资金。",
+    },
+    {
+      label: "回本",
+      ok: paybackOk,
+      text: paybackOk ? "M" + proj.breakEvenMonth : projection.monthsHorizon + " 个月内未回本",
+      note: paybackOk ? `第 ${proj.breakEvenMonth} 个月累计现金转正。` : "预测期内现金没有转正，老板要谨慎。",
+      action: paybackOk ? "继续检查回本前现金压力。" : "优先复核售价、平台扣费和销量排期。",
+    },
+    {
+      label: "利润",
+      ok: profitOk,
+      text: F(totals.netProfit),
+      note: profitOk ? "扣掉启动费后仍有利润。" : "扣掉启动费后亏损，需要复核售价、扣费和成本。",
+      action: profitOk ? "再用敏感性分析看售价和汇率变化。" : "先不要发布给外部，先调售价或成本。",
+    },
+    {
+      label: "规格",
+      ok: missingWeightCount === 0 && missingSizeCount === 0,
+      text: (missingWeightCount || missingSizeCount) ? `缺重量 ${missingWeightCount} / 缺尺寸 ${missingSizeCount}` : "重量和尺寸已填写",
+      note: (missingWeightCount || missingSizeCount) ? "规格缺失会影响平台物流费和头程测算。" : "规格齐全后，费用匹配会更可靠。",
+      action: (missingWeightCount || missingSizeCount) ? "让供应商补重量、长宽高、装箱数。" : "可以继续核对平台佣金类目。",
+    },
+  ];
+  const confirmItems = [
+    {
+      label: "商品数",
+      value: String(calcs.length),
+      sub: "销售单位 " + (totals.qty || 0),
+      helper: "确认这里不是单只数量，而是平台上架卖给客户的单位数量。",
+      action: "套装、组合装先统一销售单位。",
+      color: COLORS.ink,
+    },
+    {
+      label: "供应商报价",
+      value: fmtCnyShort(totalSupplierCostCny),
+      sub: "按销售单位",
+      helper: "这是和供应商谈采购价的底数，会直接影响商品利润。",
+      action: "正式报价变动后先改这里。",
+      color: COLORS.oxblood,
+    },
+    {
+      label: "报关申报价",
+      value: fmtCnyShort(totalDeclaredCostCny),
+      sub: "税务口径",
+      helper: "这是清关和税务测算用的口径，和采购价不一致时要能解释。",
+      action: "让清关/财务确认后再发布。",
+      color: COLORS.gold,
+    },
+    {
+      label: "平均平台扣费",
+      value: F(avgPlatformFee),
+      sub: "每销售单位",
+      helper: "这是平台佣金、物流、支付、广告预留等合计后的平均扣费。",
+      action: "扣费偏高时先查类目、尺寸、签收率。",
+      color: COLORS.emerald,
+    },
+  ];
+  const roleNotes = [
+    {
+      role: "老板先看",
+      text: finalCashOk && paybackOk ? "账上现金和回本月份都能接受，再看回报率是否值得投入。" : "先别只看利润，现金和回本还没完全过关。",
+    },
+    {
+      role: "供应商先看",
+      text: missingSpecCount ? "报价之外还要补重量、长宽高，否则平台物流费会偏。" : "供应商报价、报关申报价和规格都可以继续核对。",
+    },
+    {
+      role: "运营先看",
+      text: "销售排期、补货排期和平台扣费决定现金什么时候进出，后面在对应页签细调。",
+    },
+  ];
+  const decisionText = finalCashOk && profitOk && paybackOk
+    ? "这版在确认最终报价、报关价、重量和包装规格后，可以进入报价和供货讨论。"
+    : "这版在做决策前还需要继续调整。";
+
+  return (
+    <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-4">
+      <div className="border rounded-sm p-4 sm:p-5" style={{ borderColor: COLORS.oxblood + "66", background: "rgba(92,26,27,0.05)" }}>
+        <div className="text-[10px] uppercase" style={{ color: COLORS.oxblood, letterSpacing: 0 }}>决策摘要</div>
+        <h2 className="font-display text-xl sm:text-2xl font-bold mt-1" style={{ color: COLORS.ink }}>决策摘要</h2>
+        <p className="mt-2 text-sm sm:text-base leading-7" style={{ color: COLORS.ink }}>{decisionText}</p>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {statusItems.map((item) => (
+            <div key={item.label} className="flex items-start gap-2 border rounded-sm p-3" style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.76)" }}>
+              <span className="mt-1 h-2 w-2 rounded-full flex-shrink-0" style={{ background: item.ok ? COLORS.emerald : COLORS.crimson }} />
+              <div>
+                <div className="text-[10px] font-semibold" style={{ color: item.ok ? COLORS.emerald : COLORS.crimson }}>{item.label}</div>
+                <div className="text-xs leading-5" style={{ color: COLORS.inkSoft }}>{item.text}</div>
+                <div className="text-[11px] leading-5 mt-1" style={{ color: COLORS.inkSoft }}>{item.note}</div>
+                <div className="text-[11px] leading-5 mt-1 font-medium" style={{ color: COLORS.ink }}>{item.action}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-2">
+          {roleNotes.map((item) => (
+            <div key={item.role} className="border rounded-sm p-3 text-[11px] leading-5" style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.62)", color: COLORS.inkSoft }}>
+              <span className="font-semibold" style={{ color: COLORS.oxblood }}>{item.role}：</span>{item.text}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="border rounded-sm p-4 sm:p-5" style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.78)" }}>
+        <div className="text-[10px] uppercase" style={{ color: COLORS.gold, letterSpacing: 0 }}>报价确认</div>
+        <h2 className="font-display text-xl sm:text-2xl font-bold mt-1" style={{ color: COLORS.ink }}>报价前要对齐的数字</h2>
+        <p className="mt-2 text-xs leading-6" style={{ color: COLORS.inkSoft }}>
+          这块不是最终结论，而是发给老板、供应商或新人前必须确认的输入口径。
+        </p>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {confirmItems.map((item) => (
+            <MetricHelpCard key={item.label} {...item} />
+          ))}
+        </div>
+        <div className="mt-4 text-xs leading-6" style={{ color: COLORS.inkSoft }}>
+          当前税制：<strong style={{ color: COLORS.ink }}>{taxLabel}</strong>。
+          {readOnly
+            ? "最终报价、报关申报价、重量和包装规格如有变化，请联系内部人员更新并重新发布。"
+            : "最终报价、报关申报价、重量和包装规格确认后，请重新保存并发布。"}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const MetricBasisNote = ({ totals, params, proj, projection, fmt, compact = false }) => {
   if (!totals || !proj || !fmt) return null;
   const F = fmt.fmtPrimary;
   const Fs = fmt.fmtSecondary;
-  const setupCost = Number(params?.oneTimeCosts || 0);
   const operatingNet = Number(totals.operatingNetProfit || 0);
+  const setupCost = Number(params?.oneTimeCosts ?? totals.setupCost ?? 0);
   const projectNet = Number(totals.netProfit || 0);
   const scheduleNet = Number(proj.totalNetProfit || 0);
   const finalCash = Number(proj.finalCash || 0);
@@ -622,7 +1110,7 @@ const MetricBasisNote = ({ totals, params, proj, projection, fmt, compact = fals
       <div className="px-4 py-3 border-b flex items-start gap-2" style={{ borderColor: COLORS.line }}>
         <Info size={15} style={{ color: COLORS.gold, flexShrink: 0, marginTop: 2 }} />
         <div>
-          <div className="text-[10px] tracking-[0.2em] uppercase font-body" style={{ color: COLORS.gold }}>Live Metric Guide</div>
+          <div className="text-[10px] tracking-[0.2em] uppercase font-body" style={{ color: COLORS.gold }}>数值口径说明</div>
           <div className="font-display text-lg font-semibold" style={{ color: COLORS.ink }}>当前数值口径对照</div>
           <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>
             先记一句：商品利润看“赚不赚”，月度排期看“什么时候赚到”，账上现金看“钱包最后剩多少”。所以红框里的数字本来就不一定相等。
@@ -749,8 +1237,46 @@ const LoginGate = ({ children, lang, setLang }) => {
 // ============================================================
 // 主组件
 // ============================================================
-export default function App() {
+export default function App({
+  initialData = null,
+  initialProjectName = "",
+  initialDataVersion = "",
+  readOnly = false,
+  sourceLabel = "",
+  editCopyHref = "",
+  cloudEditHref = "",
+  cloudMode = false,
+  cloudProjects = [],
+  currentCloudProjectId = "",
+  onCloudProjectChange = null,
+  onCloudSave = null,
+  onCloudShare = null,
+  onCloudOpenLibrary = null,
+}) {
   const [lang, setLang] = useState(() => localStorage.getItem("ru_calc_lang") || "zh");
+  if (readOnly || initialData) {
+    return (
+      <AppContent
+        lang={lang}
+        setLang={setLang}
+        initialData={initialData}
+        initialProjectName={initialProjectName}
+        initialDataVersion={initialDataVersion}
+        readOnly={readOnly}
+        sourceLabel={sourceLabel}
+        editCopyHref={editCopyHref}
+        cloudEditHref={cloudEditHref}
+        cloudMode={cloudMode}
+        cloudProjects={cloudProjects}
+        currentCloudProjectId={currentCloudProjectId}
+        onCloudProjectChange={onCloudProjectChange}
+        onCloudSave={onCloudSave}
+        onCloudShare={onCloudShare}
+        onCloudOpenLibrary={onCloudOpenLibrary}
+      />
+    );
+  }
+
   return (
     <LoginGate lang={lang} setLang={setLang}>
       <AppContent lang={lang} setLang={setLang} />
@@ -758,7 +1284,24 @@ export default function App() {
   );
 }
 
-function AppContent({ lang, setLang }) {
+function AppContent({
+  lang,
+  setLang,
+  initialData = null,
+  initialProjectName = "",
+  initialDataVersion = "",
+  readOnly = false,
+  sourceLabel = "",
+  editCopyHref = "",
+  cloudEditHref = "",
+  cloudMode = false,
+  cloudProjects = [],
+  currentCloudProjectId = "",
+  onCloudProjectChange = null,
+  onCloudSave = null,
+  onCloudShare = null,
+  onCloudOpenLibrary = null,
+}) {
   const [params, setParams] = useState(DEFAULT_PARAMS);
   const [products, setProducts] = useState(SAMPLE_PRODUCTS);
   const [scheduleStore, setScheduleStore] = useState({});
@@ -775,7 +1318,10 @@ function AppContent({ lang, setLang }) {
 
   // --- 多项目管理状态 ---
   const [projectName, setProjectName] = useState("");  // 启动时从 localStorage 读取
+  const [currentProjectFile, setCurrentProjectFile] = useState(null);
   const [showProjectPanel, setShowProjectPanel] = useState(false);
+  const [showSharePanel, setShowSharePanel] = useState(false);
+  const [showMobileMore, setShowMobileMore] = useState(false);
   const baseHref = import.meta.env.BASE_URL || "/";
   const guideHref = `${baseHref}usage-guide.html`;
 
@@ -821,8 +1367,22 @@ function AppContent({ lang, setLang }) {
     setProjectMeta(data.projectMeta || {});
   };
 
+  useEffect(() => {
+    if (!initialData) return;
+    applyData(initialData);
+    setCurrentProjectFile(null);
+    setProjectName(initialProjectName || initialData.projectName || t("projectUntitled"));
+    setLoaded(true);
+    if (sourceLabel && !readOnly) {
+      setStorageStatus(sourceLabel);
+      setTimeout(() => setStorageStatus(""), 3000);
+    }
+  }, [initialData, initialProjectName, initialDataVersion, readOnly, sourceLabel]);
+
   // --- 启动时加载数据：优先从分享链接 hash，其次 localStorage ---
   useEffect(() => {
+    if (initialData) return;
+
     const loadProjectFile = async (projectFile) => {
       try {
         const safeFile = decodeURIComponent(projectFile || "").trim().replace(/^\.\/+/, "");
@@ -852,6 +1412,7 @@ function AppContent({ lang, setLang }) {
         };
         applyData(data);
         const loadedName = parsed.projectName || safeFile.replace(/\.json$/i, "");
+        setCurrentProjectFile(safeFile);
         setProjectName(loadedName);
         setStorageStatus(t("projectLoaded", { name: loadedName }));
         setTimeout(() => setStorageStatus(""), 3000);
@@ -866,11 +1427,23 @@ function AppContent({ lang, setLang }) {
 
     const loadShared = async (b64) => {
       try {
-        const bin = atob(decodeURIComponent(b64));
-        const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
-        const ds = new DecompressionStream('gzip');
-        const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
-        const json = await decompressed.text();
+        const token = decodeURIComponent(b64 || "");
+        if (!token) throw new Error("Empty share token");
+
+        let json = "";
+        if (token.startsWith("plain:")) {
+          const bytes = decodeBase64ToBytes(token.slice(6));
+          json = textDecoder.decode(bytes);
+        } else {
+          const compressed = token.startsWith("gz:") ? token.slice(3) : token;
+          if (typeof DecompressionStream !== "function") {
+            throw new Error("Compressed share links are not supported in this browser");
+          }
+          const bytes = decodeBase64ToBytes(compressed);
+          const ds = new DecompressionStream('gzip');
+          const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
+          json = await decompressed.text();
+        }
         const parsed = JSON.parse(json);
         // 支持精简格式(p/pr/pj)和完整格式(params/products)
         const pp = parsed.p || parsed.params;
@@ -884,6 +1457,7 @@ function AppContent({ lang, setLang }) {
         const pj = parsed.pj || parsed.projection;
         if (pj) setProjection({ ...DEFAULT_PROJECTION, ...pj });
         setProjectMeta(parsed.pm || parsed.projectMeta || {});
+        setCurrentProjectFile(null);
         setProjectName(parsed.projectName || t("projectUntitled"));
         setStorageStatus(t("loadedShare"));
         setTimeout(() => setStorageStatus(""), 3000);
@@ -909,6 +1483,7 @@ function AppContent({ lang, setLang }) {
       if (lastProject && index[lastProject]) {
         // 加载上次打开的项目
         applyData(index[lastProject].data);
+        setCurrentProjectFile(null);
         setProjectName(lastProject);
         setStorageStatus(t("projectLoaded", { name: lastProject }));
         setTimeout(() => setStorageStatus(""), 2200);
@@ -916,6 +1491,7 @@ function AppContent({ lang, setLang }) {
         // 有项目但没有 last_project，加载第一个
         const firstName = Object.keys(index)[0];
         applyData(index[firstName].data);
+        setCurrentProjectFile(null);
         setProjectName(firstName);
         setStorageStatus(t("projectLoaded", { name: firstName }));
         setTimeout(() => setStorageStatus(""), 2200);
@@ -926,6 +1502,7 @@ function AppContent({ lang, setLang }) {
           const parsed = JSON.parse(oldSaved);
           applyData(parsed);
           const migrateName = t("projectUntitled");
+          setCurrentProjectFile(null);
           setProjectName(migrateName);
           // 自动保存到新格式
           const newIndex = {};
@@ -939,11 +1516,13 @@ function AppContent({ lang, setLang }) {
           setStorageStatus(t("loadedLocal"));
           setTimeout(() => setStorageStatus(""), 2200);
         } else {
+          setCurrentProjectFile(null);
           setProjectName(t("projectUntitled"));
         }
       }
     } catch (e) {
       console.error("Failed to load projects:", e);
+      setCurrentProjectFile(null);
       setProjectName(t("projectUntitled"));
     }
     setLoaded(true);
@@ -951,6 +1530,7 @@ function AppContent({ lang, setLang }) {
 
   // --- 数据变化时自动保存到 localStorage（保持自动保存到当前项目）---
   useEffect(() => {
+    if (readOnly || initialData) return;
     if (!loaded || !projectName) return;
     try {
       const index = getProjectIndex();
@@ -987,8 +1567,83 @@ function AppContent({ lang, setLang }) {
     finally { setStorageBusy(false); setTimeout(() => setStorageStatus(""), 2200); }
   };
 
-  const saveToCloud = () => saveProject(projectName);
+  const buildNamedProjectData = () => ({ projectName, ...getCurrentData() });
+
+  const saveToCloud = async () => {
+    if (cloudMode && onCloudSave) {
+      setStorageBusy(true);
+      try {
+        const result = await onCloudSave({
+          name: projectName,
+          data: buildNamedProjectData(),
+        });
+        if (result?.name) setProjectName(result.name);
+        setStorageStatus(result?.message || "Cloud saved");
+      } catch (e) {
+        console.error("Cloud save failed:", e);
+        setStorageStatus(e?.message || "Cloud save failed");
+      } finally {
+        setStorageBusy(false);
+        setTimeout(() => setStorageStatus(""), 2600);
+      }
+      return;
+    }
+
+    saveProject(projectName);
+  };
   const publicProjectHref = (file) => `${baseHref}?project=${encodeURIComponent(file)}`;
+  const currentPublicProject = PUBLIC_PROJECTS.find(item => item.file === currentProjectFile)
+    || PUBLIC_PROJECTS.find(item => item.name === projectName)
+    || null;
+  const textEncoder = new TextEncoder();
+  const textDecoder = new TextDecoder();
+
+  const encodeBytesToBase64 = (bytes) => {
+    let binStr = "";
+    for (let i = 0; i < bytes.length; i += 8192) {
+      binStr += String.fromCharCode(...bytes.subarray(i, i + 8192));
+    }
+    return btoa(binStr);
+  };
+
+  const decodeBase64ToBytes = (input) => {
+    const bin = atob(input);
+    return Uint8Array.from(bin, (char) => char.charCodeAt(0));
+  };
+
+  const copyText = async (text, successKey = "shareCopied") => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        textarea.style.pointerEvents = "none";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const copied = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (!copied) throw new Error("execCommand copy failed");
+      }
+      setStorageStatus(t(successKey));
+      setTimeout(() => setStorageStatus(""), 3000);
+      return true;
+    } catch (e) {
+      console.error("Copy failed:", e);
+      setStorageStatus(t("shareFail"));
+      setTimeout(() => setStorageStatus(""), 3000);
+      return false;
+    }
+  };
+
+  const copyPublicProjectLink = async (file) => {
+    const url = `${window.location.origin}${publicProjectHref(file)}`;
+    return copyText(url, "publicLinkCopied");
+  };
 
   const saveAsProject = () => {
     const newName = prompt(t("projectSaveAsPrompt"), projectName + " " + t("projectDuplicate"));
@@ -1004,10 +1659,12 @@ function AppContent({ lang, setLang }) {
     if (!index[name]) return;
     if (!confirm(t("projectOpenConfirm", { name }))) return;
     applyData(index[name].data);
+    setCurrentProjectFile(null);
     setProjectName(name);
     localStorage.setItem("ru_calc_last_project", name);
     setStorageStatus(t("projectLoaded", { name }));
     setTimeout(() => setStorageStatus(""), 2200);
+    window.history.replaceState(null, "", window.location.pathname);
     setShowProjectPanel(false);
     setExpandedRow(null);
   };
@@ -1024,7 +1681,7 @@ function AppContent({ lang, setLang }) {
         loadProject(remaining[0]); // 这里不弹 confirm
       }
     }
-    setStorageStatus(t("projectSaved", { name: "✓" }));
+    setStorageStatus(t("projectSaved", { name: "OK" }));
     setTimeout(() => setStorageStatus(""), 2200);
   };
 
@@ -1058,6 +1715,7 @@ function AppContent({ lang, setLang }) {
     setProjection(DEFAULT_PROJECTION);
     setProjectMeta({});
     setExpandedRow(null);
+    setCurrentProjectFile(null);
     setProjectName(trimmed);
     // 立即保存空项目
     const index = getProjectIndex();
@@ -1068,6 +1726,7 @@ function AppContent({ lang, setLang }) {
     };
     localStorage.setItem(PROJECTS_KEY, JSON.stringify(index));
     localStorage.setItem("ru_calc_last_project", trimmed);
+    window.history.replaceState(null, "", window.location.pathname);
     setShowProjectPanel(false);
     setStorageStatus(t("projectSaved", { name: trimmed }));
     setTimeout(() => setStorageStatus(""), 2200);
@@ -1086,7 +1745,7 @@ function AppContent({ lang, setLang }) {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setStorageStatus("✓ JSON " + t("projectExportJson"));
+    setStorageStatus("已导出 JSON：" + t("projectExportJson"));
     setTimeout(() => setStorageStatus(""), 2200);
   };
 
@@ -1100,7 +1759,7 @@ function AppContent({ lang, setLang }) {
       reader.onload = (ev) => {
         try {
           const parsed = JSON.parse(ev.target.result);
-          // 验证基本结构
+          // 楠岃瘉鍩烘湰缁撴瀯
           if (!parsed.params && !parsed.products && !parsed.p && !parsed.pr) {
             setStorageStatus(t("projectImportFail"));
             setTimeout(() => setStorageStatus(""), 3000);
@@ -1119,6 +1778,7 @@ function AppContent({ lang, setLang }) {
 
           applyData(data);
           const importName = parsed.projectName || file.name.replace(/\.json$/i, "");
+          setCurrentProjectFile(null);
           setProjectName(importName);
 
           // 保存到项目索引
@@ -1130,6 +1790,7 @@ function AppContent({ lang, setLang }) {
           };
           localStorage.setItem(PROJECTS_KEY, JSON.stringify(index));
           localStorage.setItem("ru_calc_last_project", importName);
+          window.history.replaceState(null, "", window.location.pathname);
           setStorageStatus(t("projectImportSuccess", { name: importName }));
           setTimeout(() => setStorageStatus(""), 3000);
           setShowProjectPanel(false);
@@ -1145,47 +1806,95 @@ function AppContent({ lang, setLang }) {
     input.click();
   };
 
+  const buildShareUrl = async (data, name) => {
+    const shareParams = data?.params || DEFAULT_PARAMS;
+    const shareProducts = Array.isArray(data?.products) ? data.products : [];
+    const shareScheduleStore = data?.scheduleStore || {};
+    const sharePriceScheduleStore = data?.priceScheduleStore || {};
+    const shareRestockStore = data?.restockStore || {};
+    const shareWithdrawalStore = data?.withdrawalStore || { amounts: [] };
+    const shareProjection = data?.projection || DEFAULT_PROJECTION;
+    const shareProjectMeta = data?.projectMeta || {};
+
+    const minParams = {};
+    for (const [k, v] of Object.entries(shareParams)) {
+      if (v !== DEFAULT_PARAMS[k]) minParams[k] = v;
+    }
+    const minProducts = shareProducts.map((p) => {
+      const mp = {};
+      for (const [k, v] of Object.entries(p)) {
+        if (v !== 0 && v !== "" && v != null) mp[k] = v;
+      }
+      return mp;
+    });
+
+    const compact = { p: minParams, pr: minProducts, pj: shareProjection };
+    if (Object.keys(shareScheduleStore).length) compact.ss = shareScheduleStore;
+    if (Object.keys(sharePriceScheduleStore).length) compact.ps = sharePriceScheduleStore;
+    if (Object.keys(shareRestockStore).length) compact.rs = shareRestockStore;
+    if (shareWithdrawalStore?.amounts?.some(v => v > 0)) compact.ws = shareWithdrawalStore;
+    if (shareProjectMeta && Object.keys(shareProjectMeta).length) compact.pm = shareProjectMeta;
+    if (name) compact.projectName = name;
+
+    const json = JSON.stringify(compact);
+    const plainBase64 = encodeBytesToBase64(textEncoder.encode(json));
+    let sharePayload = `plain:${plainBase64}`;
+
+    if (plainBase64.length > 6000 && typeof CompressionStream === "function") {
+      const blob = new Blob([json]);
+      const cs = new CompressionStream("gzip");
+      const compressedBlob = await new Response(blob.stream().pipeThrough(cs)).blob();
+      const buf = await compressedBlob.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      sharePayload = `gz:${encodeBytesToBase64(bytes)}`;
+    }
+    return `${window.location.origin}${window.location.pathname}#share=${encodeURIComponent(sharePayload)}`;
+  };
+
+  const copyStoredProjectShareLink = async (name, data) => {
+    try {
+      const url = await buildShareUrl(data, name);
+      await copyText(url, "shareCopied");
+    } catch (e) {
+      console.error("Share failed:", e);
+      setStorageStatus(t("shareFail"));
+      setTimeout(() => setStorageStatus(""), 3000);
+    }
+  };
+
   // === 分享链接：压缩精简后的状态到 URL hash ===
   const shareLink = async () => {
     try {
-      // 精简数据：去掉默认值参数，去掉空 store，缩短产品字段名
-      const minParams = {};
-      for (const [k, v] of Object.entries(params)) {
-        if (v !== DEFAULT_PARAMS[k]) minParams[k] = v;
-      }
-      const minProducts = products.map(p => {
-        const mp = {};
-        for (const [k, v] of Object.entries(p)) { if (v !== 0 && v !== '' && v != null) mp[k] = v; }
-        return mp;
-      });
-      const compact = { p: minParams, pr: minProducts, pj: projection };
-      if (Object.keys(scheduleStore).length) compact.ss = scheduleStore;
-      if (Object.keys(priceScheduleStore).length) compact.ps = priceScheduleStore;
-      if (Object.keys(restockStore).length) compact.rs = restockStore;
-      if (withdrawalStore?.amounts?.some(v => v > 0)) compact.ws = withdrawalStore;
-      if (projectMeta && Object.keys(projectMeta).length) compact.pm = projectMeta;
-
-      const data = JSON.stringify(compact);
-      const blob = new Blob([data]);
-      const cs = new CompressionStream('gzip');
-      const compressedBlob = await new Response(blob.stream().pipeThrough(cs)).blob();
-      const buf = await compressedBlob.arrayBuffer();
-      // 分块转 base64，避免 spread 爆栈
-      const bytes = new Uint8Array(buf);
-      let binStr = '';
-      for (let i = 0; i < bytes.length; i += 8192) {
-        binStr += String.fromCharCode(...bytes.subarray(i, i + 8192));
-      }
-      const b64 = btoa(binStr);
-      const url = `${window.location.origin}${window.location.pathname}#share=${encodeURIComponent(b64)}`;
-      await navigator.clipboard.writeText(url);
-      setStorageStatus(t("shareCopied"));
-      setTimeout(() => setStorageStatus(""), 3000);
+      const url = await buildShareUrl(getCurrentData(), projectName);
+      await copyText(url, "shareCopied");
     } catch (e) {
       console.error('Share failed:', e);
       setStorageStatus(t("shareFail"));
       setTimeout(() => setStorageStatus(""), 3000);
     }
+  };
+
+  const shareProjectToViewer = async () => {
+    if (cloudMode && onCloudShare) {
+      setStorageBusy(true);
+      try {
+        const result = await onCloudShare({
+          name: projectName,
+          data: buildNamedProjectData(),
+        });
+        if (result?.name) setProjectName(result.name);
+        setStorageStatus(result?.message || "Public link copied");
+      } catch (e) {
+        console.error("Cloud share failed:", e);
+        setStorageStatus(e?.message || "Public link failed");
+      } finally {
+        setStorageBusy(false);
+        setTimeout(() => setStorageStatus(""), 3000);
+      }
+      return;
+    }
+
+    setShowSharePanel(true);
   };
 
   const calcs = useMemo(() => products.map(p => ({ ...p, c: calcProduct(p, params) })), [products, params]);
@@ -1236,7 +1945,25 @@ function AppContent({ lang, setLang }) {
     let n = products.length + 1;
     let nextId = "NEW" + n.toString().padStart(3, "0");
     while (products.some(p => p.id === nextId)) { n++; nextId = "NEW" + n.toString().padStart(3, "0"); }
-    setProducts(ps => [...ps, { id: nextId, priceCNY: 10, declaredCNY: 10, qty: 100, weight: 0.3, list: 1000, platformFee: 500, warehouse: 100, mgmt: 30 }]);
+    setProducts(ps => [...ps, {
+      id: nextId,
+      priceCNY: 10,
+      declaredCNY: 10,
+      qty: 100,
+      weight: 0.3,
+      volL: 24,
+      volW: 18,
+      volH: 0.2,
+      list: 1000,
+      platformFee: 500,
+      warehouse: 100,
+      mgmt: 30,
+      platforms: {
+        ozon: { enabled: true, salesShare: 100, model: "FBO", list: 1000, platformFee: 500, warehouse: 100, mgmt: 30, useFeeDetails: true, useTariffLookup: true, ozonProductType: "Раскраска", tariffCategory: "Раскраска" },
+        wb: { enabled: false, salesShare: 0, model: "FBW", list: 1000, platformFee: 500, warehouse: 100, mgmt: 30, useFeeDetails: true, useTariffLookup: true, wbSubcategory: "Куртки", tariffCategory: "Куртки", localizationBand: "50.00-54.99", warehouseMultiplier: 1.95, acceptanceRatePct: 40 },
+        yandex: { enabled: false, salesShare: 0, model: "FBY", list: 1000, platformFee: 500, warehouse: 100, mgmt: 30, useFeeDetails: true, useTariffLookup: true, yandexCategory: "All goods", tariffCategory: "All goods", paymentFrequency: "monthly", acceptanceRatePct: 69 },
+      },
+    }]);
   };
   const deleteProduct = (idx) => {
     const id = products[idx]?.id;
@@ -1312,22 +2039,23 @@ function AppContent({ lang, setLang }) {
   };
 
   const exportCSV = () => {
-    const headers = ["产品ID","供应商报价/预估采购价（¥/销售单位）","报关申报价（¥/销售单位）","销售单位数量（件）","售价（₽/销售单位）","平台综合扣费（₽/销售单位）","海外仓费（₽/销售单位）","管理费（₽/销售单位）","总投资（₽）","总营收（₽）","进口时付的增值税（进项VAT）（₽）","卖出时产生的增值税（销项VAT）（₽）","税额（₽）","商品经营利润（₽）","税务账面利润（₽）","利润率（净利率）%","回报率（ROI/投入产出）%"];
+    const headers = ["产品ID","销售平台","供应商报价/预估采购价（¥/销售单位）","报关申报价（¥/销售单位）","销售单位数量（件）","加权平台计费价（₽/销售单位）","加权平台综合扣费（₽/销售单位）","加权海外仓费（₽/销售单位）","加权管理费（₽/销售单位）","总投资（₽）","总营收（₽）","进口时付的增值税（进项VAT）（₽）","卖出时产生的增值税（销项VAT）（₽）","税额（₽）","商品经营利润（₽）","税务账面利润（₽）","利润率（净利率）%","回报率（ROI/投入产出）%"];
     const lines = [headers.join(",")];
     calcs.forEach(r => lines.push([
-      r.id, r.priceCNY, r.declaredCNY ?? r.priceCNY, r.qty,
-      r.list, r.platformFee, r.warehouse, r.mgmt,
+      r.id, `"${(r.c.platformDetails || []).map((item) => `${item.short}${(item.weight * 100).toFixed(0)}%`).join(" / ")}"`,
+      r.priceCNY, r.declaredCNY ?? r.priceCNY, r.qty,
+      r.c.listPrice.toFixed(0), r.c.platformFee.toFixed(0), r.c.warehouse.toFixed(0), r.c.mgmt.toFixed(0),
       r.c.totalInvestment.toFixed(0), r.c.totalRevenue.toFixed(0),
       r.c.totalInputVAT.toFixed(0), r.c.totalOutputVAT.toFixed(0),
       r.c.tax.toFixed(0), r.c.netProfit.toFixed(0), r.c.bookNetProfit.toFixed(0),
       (r.c.profitMargin * 100).toFixed(1) + "%", (r.c.roi * 100).toFixed(1) + "%",
     ].join(",")));
-    lines.push(["合计","","",totals.qty,"","","","",totals.totalInvestment.toFixed(0),
+    lines.push(["合计","","","",totals.qty,"","","","",totals.totalInvestment.toFixed(0),
       totals.totalRevenue.toFixed(0), totals.totalInputVAT.toFixed(0), totals.totalOutputVAT.toFixed(0),
       totals.tax.toFixed(0), totals.netProfit.toFixed(0), totals.bookNetProfit.toFixed(0),
       (totals.profitMargin * 100).toFixed(1) + "%", (totals.roi * 100).toFixed(1) + "%"].join(","));
     lines.push(""); lines.push(["月度现金流"].join(","));
-    lines.push(["M0=还没开始卖之前先付出去的钱；M1=第1个月销售；当前SKU利润模型不含头程、清关、保险、尾程、平台仓入仓费。"].join(","));
+    lines.push(["M0=还没开始卖之前先付出去的钱；M1=第1个月销售；当前SKU利润模型不含头程、清关、保险、尾程、平台仓入仓费，除非你已单独填写。"].join(","));
     lines.push(["月份","销售件数（件）","营收金额₽","销货成本金额₽","其他费用金额₽","税额₽","本月经营利润金额₽","分给合伙人的钱₽","账上累计现金₽"].join(","));
     proj.months.forEach(m => lines.push([
       m.label, m.soldQty, m.revenue.toFixed(0), m.cogs.toFixed(0),
@@ -1365,17 +2093,22 @@ function AppContent({ lang, setLang }) {
     const totalFixedCost = proj.months.filter(m => !m.isInitial).reduce((a, b) => a + (b.fixedCost || 0), 0);
     const totalDistributed = proj.months.reduce((a, b) => a + (b.distributed || 0), 0);
     const htmlAbsR = (v) => fR(Math.abs(v));
-    const htmlCompare = (v, base) => Math.abs(v) < 0.01 ? `和${base}基本一致` : `比${base}${v >= 0 ? "多了" : "少了"} ${htmlAbsR(v)}`;
+    const htmlCompare = (v, base) =>
+      Math.abs(v) < 0.01
+        ? `和${base}基本一致`
+        : `比${base}${v >= 0 ? "多了" : "少了"} ${htmlAbsR(v)}`;
 
     // Product rows
     const prodRows = calcs.map(r => {
       const c = r.c;
+      const platformLabel = (c.platformDetails || []).map((item) => `${item.short} ${(item.weight * 100).toFixed(0)}%`).join(" / ");
       return `<tr>
         <td class="mono">${r.id}</td>
+        <td class="mono">${platformLabel || "Ozon 100%"}</td>
         <td class="r mono">${(r.priceCNY || 0).toFixed(2)}</td>
         <td class="r mono">${r.qty || 0} ${t("unitPieces")}</td>
-        <td class="r mono">${(r.list || 0).toLocaleString("ru-RU")} ₽</td>
-        <td class="r mono">${(r.platformFee || 0).toLocaleString("ru-RU")} ₽</td>
+        <td class="r mono">${(c.listPrice || 0).toLocaleString("ru-RU")} ₽</td>
+        <td class="r mono">${(c.platformFee || 0).toLocaleString("ru-RU")} ₽</td>
         <td class="r mono">${fR(c.totalInvestment)}</td>
         <td class="r mono">${fR(c.totalRevenue)}</td>
         <td class="r mono">${fR(c.tax)}</td>
@@ -1387,24 +2120,24 @@ function AppContent({ lang, setLang }) {
     // Cash flow rows
     const cfRows = proj.months.map(m => {
       const cls = m.isInitial ? 'init-row' : '';
-      const restockLabel = m.restockQty > 0 ? `+${m.restockQty} ${t("unitPieces")}` : '—';
+      const restockLabel = m.restockQty > 0 ? `+${m.restockQty} ${t("unitPieces")}` : "-";
       const restockCostLabel = m.restockCost > 0 && !m.isInitial ? `<br><small style="color:#A4193D">-${fR(m.restockCost)}</small>` : '';
       const stockCls = m.stockWarning ? 'neg' : '';
       return `<tr class="${cls}">
         <td class="mono">${m.isInitial ? t("initialRow") : m.label}</td>
         <td class="r mono" style="color:${m.restockQty > 0 ? '#A4193D' : ''}">${restockLabel}${restockCostLabel}</td>
-        <td class="r mono ${stockCls}">${m.stockEnd} ${t("unitPieces")}${m.stockWarning ? ' ⚠' : ''}</td>
-        <td class="r mono">${m.soldQty ? `${m.soldQty} ${t("unitPieces")}` : '—'}</td>
-        <td class="r mono">${m.isInitial ? '—' : fR(m.revenue)}</td>
+        <td class="r mono ${stockCls}">${m.stockEnd} ${t("unitPieces")}${m.stockWarning ? " !" : ""}</td>
+        <td class="r mono">${m.soldQty ? `${m.soldQty} ${t("unitPieces")}` : "-"}</td>
+        <td class="r mono">${m.isInitial ? "-" : fR(m.revenue)}</td>
         <td class="r mono">${m.isInitial ? fR(-proj.initialOutflow) : fR(m.cogs)}</td>
-        <td class="r mono">${m.isInitial ? '—' : fR(m.expenses + (m.fixedCost || 0))}</td>
-        <td class="r mono">${m.isInitial ? '—' : fR(m.tax)}</td>
+        <td class="r mono">${m.isInitial ? "-" : fR(m.expenses + (m.fixedCost || 0))}</td>
+        <td class="r mono">${m.isInitial ? "-" : fR(m.tax)}</td>
         <td class="r mono ${m.netProfit >= 0 ? 'pos' : 'neg'}">${fR(m.netProfit)}</td>
-        <td class="r mono" style="color:#B8860B">${m.distributed ? fR(m.distributed) : '—'}</td>
-        <td class="r mono">${m.partnerPayout ? fR(m.partnerPayout) : '—'}</td>
-        <td class="r mono">${m.ownerPayout ? fR(m.ownerPayout) : '—'}</td>
+        <td class="r mono" style="color:#B8860B">${m.distributed ? fR(m.distributed) : "-"}</td>
+        <td class="r mono">${m.partnerPayout ? fR(m.partnerPayout) : "-"}</td>
+        <td class="r mono">${m.ownerPayout ? fR(m.ownerPayout) : "-"}</td>
         <td class="r mono ${m.cumCash >= 0 ? 'pos' : 'neg'}">${fR(m.cumCash)}</td>
-        <td class="mono">${m.isInitial ? '—' : (m.vatTierKey ? t(m.vatTierKey, m.vatTierKey === "vatLabelFixedOsn" ? { rate: (m.vatRate*100).toFixed(0) } : {}) : '—')}</td>
+        <td class="mono">${m.isInitial ? "-" : (m.vatTierKey ? t(m.vatTierKey, m.vatTierKey === "vatLabelFixedOsn" ? { rate: (m.vatRate*100).toFixed(0) } : {}) : "-")}</td>
       </tr>`;
     }).join("\n");
 
@@ -1498,12 +2231,12 @@ function AppContent({ lang, setLang }) {
 
     // Cost structure bar
     const costParts = [
-      { label: lang === 'zh' ? '供应商报价/预估采购' : 'COGS', val: totals.totalInvestment, clr: '#5C1A1B' },
-      { label: lang === 'zh' ? '一次性启动费' : 'Setup', val: setupCost, clr: '#5C544A' },
-      { label: lang === 'zh' ? '平台综合扣费' : 'Platform', val: calcs.reduce((s, r) => s + (r.platformFee || 0) * (r.qty || 0), 0), clr: '#7A2A2C' },
-      { label: lang === 'zh' ? '仓储' : 'Warehouse', val: calcs.reduce((s, r) => s + (r.warehouse || 0) * (r.qty || 0), 0), clr: '#B8860B' },
-      { label: lang === 'zh' ? '管理费' : 'Mgmt', val: calcs.reduce((s, r) => s + (r.mgmt || 0) * (r.qty || 0), 0), clr: '#D4A93A' },
-      { label: lang === 'zh' ? '税' : 'Tax', val: totals.tax, clr: '#A4193D' },
+      { label: "COGS", val: totals.totalInvestment, clr: '#5C1A1B' },
+      { label: "Setup", val: setupCost, clr: '#5C544A' },
+      { label: "Platform", val: calcs.reduce((s, r) => s + (r.c.platformFee || 0) * (r.qty || 0), 0), clr: '#7A2A2C' },
+      { label: "Warehouse", val: calcs.reduce((s, r) => s + (r.c.warehouse || 0) * (r.qty || 0), 0), clr: '#B8860B' },
+      { label: "Mgmt", val: calcs.reduce((s, r) => s + (r.c.mgmt || 0) * (r.qty || 0), 0), clr: '#D4A93A' },
+      { label: "Tax", val: totals.tax, clr: '#A4193D' },
     ];
     const costTotal = costParts.reduce((s, p) => s + p.val, 0) || 1;
     const costBarHtml = `<div class="cost-bar-container">
@@ -1516,13 +2249,9 @@ function AppContent({ lang, setLang }) {
 
     // Executive summary text
     const beText = proj.breakEvenMonth
-      ? (lang === 'zh' ? `预计<span class="highlight">第${proj.breakEvenMonth}个月回本</span>` : lang === 'ru' ? `Окупаемость за <span class="highlight">${proj.breakEvenMonth} мес.</span>` : `Expected break-even at <span class="highlight">month ${proj.breakEvenMonth}</span>`)
-      : (lang === 'zh' ? '预测期内未能回本' : lang === 'ru' ? 'Не окупается в прогнозе' : 'No break-even in forecast period');
-    const summaryText = lang === 'zh'
-      ? `本批次共 <strong>${calcs.length} 个产品</strong>，总备货 <strong>${totals.qty} 个上架销售单位</strong>。商品卖家标价指页面/卖家标价，竞品买家活动价需反推至卖家标价后再进入模型；供应商报价/预估采购价、报关申报价、售价、平台综合扣费、海外仓费和管理费都按同一个上架销售单位填写，例如 6 只装按整套，L12 按整套 12 件，壶杯套装按整套。平台综合扣费包含佣金、支付/收单、平台配送、退货逆向、广告促销预留等，不是单一佣金。当前供应商报价与报关申报价为 <strong>测算假设</strong>，不是德力正式报价；到俄运费与贴标/本地化当前均为 0，拿到工厂和货代报价后再替换。只看商品经营的算法口径下，预计 ${projection.monthsHorizon} 个月产生营收 <strong>${fR(totals.totalRevenue)}</strong>，商品经营利润（不含启动费） <strong>${fR(totals.operatingNetProfit)}</strong>，经营回报率 <strong>${fP(totals.operatingRoi)}</strong>。再扣除一次性启动费 <strong>${fR(setupCost)}</strong> 后，扣启动费后利润为 <strong>${fR(projectNetAfterSetup)}</strong>。现金流口径包含首批备货与补货支出，${beText}。`
-      : lang === 'ru'
-      ? `В партии <strong>${calcs.length} SKU</strong>, всего <strong>${totals.qty} шт.</strong> Операционная прибыль без стартовых расходов: <strong>${fR(totals.operatingNetProfit)}</strong>, ROI <strong>${fP(totals.operatingRoi)}</strong>. После стартовых расходов <strong>${fR(setupCost)}</strong> проектная прибыль: <strong>${fR(projectNetAfterSetup)}</strong>. ${beText}.`
-      : `This batch contains <strong>${calcs.length} SKUs</strong> totaling <strong>${totals.qty} units</strong>. Operating net profit before setup costs is <strong>${fR(totals.operatingNetProfit)}</strong> with operating ROI <strong>${fP(totals.operatingRoi)}</strong>. After one-time setup costs of <strong>${fR(setupCost)}</strong>, project net profit is <strong>${fR(projectNetAfterSetup)}</strong>. Cash flow includes initial inventory and restocking. ${beText}.`;
+      ? `预计<span class="highlight">第${proj.breakEvenMonth}个月回本</span>`
+      : "预测期内未能回本";
+    const summaryText = `本批次共 <strong>${calcs.length} 个产品</strong>，总备货 <strong>${totals.qty} 个上架销售单位</strong>。平台计费价/折扣前售价、平台综合扣费、海外仓费和管理费都按同一个上架销售单位填写，例如 6 只装按整套，L12 按整套 12 件，壶杯套装按整套。当前供应商报价与报关申报价为 <strong>测算假设</strong>，不是正式报价；到俄运费与贴标/本地化如果仍为 0，则需要拿到工厂和货代报价后再替换。只看商品经营的算法口径下，预计 ${projection.monthsHorizon} 个月产生营收 <strong>${fR(totals.totalRevenue)}</strong>，商品经营利润（不含启动费） <strong>${fR(totals.operatingNetProfit)}</strong>，经营回报率 <strong>${fP(totals.operatingRoi)}</strong>。再扣除一次性启动费 <strong>${fR(setupCost)}</strong> 后，扣启动费后利润为 <strong>${fR(projectNetAfterSetup)}</strong>。现金流口径包含首批备货与补货支出，${beText}。`;
     const dynamicBasisHtml = `
       <div class="logic-note metric-basis-note">
         <strong>当前数值口径对照：</strong>
@@ -1538,30 +2267,14 @@ function AppContent({ lang, setLang }) {
       </div>`;
 
     // Glossary tips
-    const glossaryItems = lang === 'zh' ? [
+    const glossaryItems = [
       { t: '总营收', d: '所有商品卖出后平台打给你的总金额（已扣平台综合扣费）' },
       { t: '商品经营利润', d: '按单品逐个算税后汇总的经营利润，未扣一次性启动费' },
       { t: '最后账上还剩现金', d: '按月累计计算的实际账上余额，已扣除月固定费用、补货支出和分给合伙人的钱/提现' },
       { t: '回报率（ROI/投入产出）', d: '每投入 1 元预计能赚回多少钱，内部公式为利润 ÷ 投资 × 100%' },
       { t: '回本月份', d: '账上累计现金从负变正的月份' },
-      { t: '最缺钱的时候', d: '预测期内账上现金最低的时刻；专业口径也叫最大资金压力/最大回撤' },
-      { t: 'M0/M1', d: 'M0 = 还没开始卖之前先付出去的钱；M1 = 第 1 个月销售' },
-      { t: '增值税（VAT）', d: '俄罗斯税制里的增值税；进口时付的是“进口时付的增值税（进项VAT）”，卖出时产生的是“卖出时产生的增值税（销项VAT）”' },
-      { t: '平台综合扣费', d: '平台每笔订单的综合扣减，不只是佣金，也包含支付、平台配送/退货、广告促销预留等' },
-    ] : lang === 'ru' ? [
-      { t: 'Выручка', d: 'Выплаты площадки за все товары (после комиссии)' },
-      { t: 'Чист. прибыль', d: 'Прибыль после налога, по каждому SKU' },
-      { t: 'Итоговый кэш', d: 'Баланс помесячно (налог в совокупности, обычно чуть выше прибыли)' },
-      { t: 'ROI', d: 'Возврат инвестиций = Прибыль ÷ Инвестиции × 100%' },
-      { t: 'Окупаемость', d: 'Месяц, когда накопленный кэш становится положительным' },
-    ] : [
-      { t: 'Revenue', d: 'Total platform payouts for all products sold (after fees)' },
-      { t: 'Net Profit', d: 'Per-SKU tax-adjusted profit, summed up' },
-      { t: 'Final Cash After Partner Payout', d: 'Monthly cash balance after fixed costs, restocking, and partner payout/withdrawal' },
-      { t: 'ROI', d: 'Return on Investment = Profit ÷ Investment × 100%' },
-      { t: 'Break-even', d: 'Month when cumulative cash turns positive' },
     ];
-    const glossaryHtml = glossaryItems.map(g => `<div class="glossary-item"><strong>${g.t}</strong> — ${g.d}</div>`).join('\n');
+    const glossaryHtml = glossaryItems.map(g => `<div class="glossary-item"><strong>${g.t}</strong> - ${g.d}</div>`).join('\n');
 
     // Build the HTML
     const html = `<!DOCTYPE html>
@@ -1569,7 +2282,7 @@ function AppContent({ lang, setLang }) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${t("htmlReportTitle")} — ${date}</title>
+<title>${t("htmlReportTitle")} -${date}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
@@ -1681,7 +2394,7 @@ function AppContent({ lang, setLang }) {
 </head>
 <body>
 <div class="header">
-  <div class="sub">Cross-border P&L · ${t("brandSub")}</div>
+  <div class="sub">${t("brandSub")}</div>
   <h1>${t("htmlReportTitle")}</h1>
   <div class="date">${t("htmlGenDate")}: ${date} · ${t("htmlExchangeRate")}: 1¥ = ${params.exchangeRate.toFixed(2)}₽</div>
 </div>
@@ -1701,7 +2414,7 @@ function AppContent({ lang, setLang }) {
   </div>
   ${dynamicBasisHtml}
   <div class="logic-note">
-    <strong>计算口径说明：</strong>当前供应商报价/预估采购价和报关申报价为测算假设，且均按“上架销售单位”计算：6只装、12件套、壶杯套装都按整套计，不按单只杯子计。若到俄运费留空为 0，则当前结果不包含中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用；贴标/本地化当前也设为 0，不进入利润测算。需待工厂 EXW/FOB 正式报价、装箱尺寸、毛重和货代报价确认后替换。商品经营利润（不含启动费） = 商品销售回款 - 已填写的采购/物流成本 - 海外仓费用 - 管理费 - 破损 - 税；
+    <strong>计算口径说明：</strong>当前供应商报价/预估采购价和报关申报价为测算假设，且均按“上架销售单位”计算：6 只装、12 件套、壶杯套装都按整套计，不按单只杯子计。若到俄运费留空为 0，则当前结果不包含中国至俄罗斯头程、清关、保险、尾程派送和平台仓入仓费用；贴标/本地化当前也认为 0，不进入利润测算。需待工厂 EXW/FOB 正式报价、装箱尺寸、毛重和货代报价确认后替换。商品经营利润（不含启动费） = 商品销售回款 - 已填写的采购/物流成本 - 海外仓费用 - 管理费 - 破损 - 税；
     扣启动费后利润 = 商品经营利润 - 一次性启动费；
     最后账上还剩现金 = 扣启动费后利润再叠加首批备货、补货节奏、现金回收时间，并扣除分给合伙人的钱/提现后的账上余额。三者口径不同，不能混读。
   </div>
@@ -1723,18 +2436,18 @@ function AppContent({ lang, setLang }) {
       <div class="sub">${fC(totals.totalCostBasis / params.exchangeRate)}</div>
     </div>
     <div class="card accent">
-      <div class="label">商品经营利润（不含启动费）</div>
+      <div class="label">商品经营利润（未扣启动费）</div>
       <div class="value ${totals.operatingNetProfit >= 0 ? 'pos' : 'neg'}">${fR(totals.operatingNetProfit)}</div>
-      <div class="sub">还没扣启动费 · ${fC(totals.operatingNetProfitCNY)}</div>
+      <div class="sub">未扣启动费 - ${fC(totals.operatingNetProfitCNY)}</div>
     </div>
     <div class="card">
       <div class="label">扣启动费后利润</div>
       <div class="value ${totals.netProfit >= 0 ? 'pos' : 'neg'}">${fR(totals.netProfit)}</div>
-      <div class="sub">已扣启动费 · ${lang === 'zh' ? '回报率' : 'ROI'} ${fP(totals.roi)}</div>
+      <div class="sub">已扣启动费 - 回报率 ${fP(totals.roi)}</div>
     </div>
   </div>
 
-  <!-- Investor Metrics -->
+  <!-- 投资人关注 -->
   <div class="cards" style="grid-template-columns:repeat(4,1fr)">
     <div class="card">
       <div class="label">一次性启动费</div>
@@ -1758,17 +2471,17 @@ function AppContent({ lang, setLang }) {
     </div>
   </div>
 
-  <!-- Cost Structure Bar -->
+  <!-- 成本结构 -->
   <div class="section">
-    <div class="kicker">COST BREAKDOWN</div>
-    <h2>${lang === 'zh' ? '成本结构分析' : lang === 'ru' ? 'Структура затрат' : 'Cost Structure Analysis'}</h2>
+    <div class="kicker">成本结构</div>
+    <h2>成本结构分析</h2>
   </div>
   ${costBarHtml}
 
-  <!-- Charts Side by Side -->
+  <!-- 趋势图 -->
   <div class="section page-break">
-    <div class="kicker">TRENDS</div>
-    <h2>${lang === 'zh' ? '趋势图表' : lang === 'ru' ? 'Графики' : 'Trend Charts'}</h2>
+    <div class="kicker">趋势图</div>
+    <h2>现金流和利润趋势</h2>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
     <div class="chart-box">
@@ -1776,28 +2489,28 @@ function AppContent({ lang, setLang }) {
       ${svgChart}
     </div>
     <div class="chart-box">
-      <div class="chart-title">${lang === 'zh' ? '月度利润' : lang === 'ru' ? 'Ежемесячная прибыль' : 'Monthly Net Profit'}</div>
+      <div class="chart-title">本月经营利润</div>
       ${barChart}
     </div>
   </div>
 
   <!-- TOP / BOTTOM SKU -->
   <div class="section">
-    <div class="kicker">${lang === 'zh' ? 'PRODUCT RANKING' : 'SKU RANKING'}</div>
-    <h2>${lang === 'zh' ? '商品排名' : lang === 'ru' ? 'Рейтинг товаров' : 'Product Ranking'}</h2>
+    <div class="kicker">SKU RANKING</div>
+    <h2>Product Ranking</h2>
   </div>
   <div class="rank-grid">
     <div class="rank-box">
-      <h3 style="color:#1F4F2E">🏆 TOP ${topN} ${lang === 'zh' ? '最赚钱' : lang === 'ru' ? 'Лучшие' : 'Best Performers'}</h3>
+      <h3 style="color:#1F4F2E">TOP ${topN} Best Performers</h3>
       <table>
-        <thead><tr><th>#</th><th>${lang === 'zh' ? '产品型号' : 'SKU'}</th><th class="r">${lang === 'zh' ? '利润' : 'Profit'}</th><th class="r">${lang === 'zh' ? '回报率（ROI）' : 'ROI'}</th></tr></thead>
+        <thead><tr><th>#</th><th>SKU</th><th class="r">Profit</th><th class="r">ROI</th></tr></thead>
         <tbody>${topRows}</tbody>
       </table>
     </div>
     <div class="rank-box">
-      <h3 style="color:#A4193D">⚠️ ${lang === 'zh' ? '需关注（低利润/亏损）' : lang === 'ru' ? 'Требуют внимания' : 'Needs Attention'}</h3>
+      <h3 style="color:#A4193D">Needs Attention</h3>
       <table>
-        <thead><tr><th>#</th><th>${lang === 'zh' ? '产品型号' : 'SKU'}</th><th class="r">${lang === 'zh' ? '利润' : 'Profit'}</th><th class="r">${lang === 'zh' ? '回报率（ROI）' : 'ROI'}</th></tr></thead>
+        <thead><tr><th>#</th><th>SKU</th><th class="r">Profit</th><th class="r">ROI</th></tr></thead>
         <tbody>${bottomRows}</tbody>
       </table>
     </div>
@@ -1806,12 +2519,13 @@ function AppContent({ lang, setLang }) {
   <!-- Full Product Table -->
   <div class="section page-break">
     <div class="kicker">${t("htmlProductDetail")}</div>
-    <h2>${t("productsTitle")} · ${calcs.length} ${lang === 'zh' ? '个产品' : 'SKUs'}</h2>
+    <h2>${t("productsTitle")} - ${calcs.length} SKUs</h2>
   </div>
   <div style="overflow-x:auto">
     <table>
       <thead><tr>
         <th>${t("productId")}</th>
+        <th>Sales Platform</th>
         <th class="r">${t("costCny")}</th>
         <th class="r">${t("qty")}</th>
         <th class="r">${t("listPrice")}</th>
@@ -1820,16 +2534,17 @@ function AppContent({ lang, setLang }) {
         <th class="r">${t("revenue")}</th>
         <th class="r">${t("tax")}</th>
         <th class="r">${t("netProfitCol")}</th>
-        <th class="r">${lang === 'zh' ? '回报率（ROI）' : 'ROI'}</th>
+        <th class="r">ROI</th>
       </tr></thead>
       <tbody>
         ${prodRows}
         <tr class="total-row">
           <td>${t("totalRow")}</td>
-          <td class="r">—</td>
+          <td class="r">-</td>
+          <td class="r">-</td>
           <td class="r mono">${totals.qty} ${t("unitPieces")}</td>
-          <td class="r">—</td>
-          <td class="r">—</td>
+          <td class="r">-</td>
+          <td class="r">-/td>
           <td class="r mono">${fR(totals.totalInvestment)}</td>
           <td class="r mono">${fR(totals.totalRevenue)}</td>
           <td class="r mono">${fR(totals.tax)}</td>
@@ -1871,7 +2586,7 @@ function AppContent({ lang, setLang }) {
 
   <!-- Glossary Tips -->
   <div class="glossary-box">
-    <h3>${lang === 'zh' ? '📖 术语小贴士' : lang === 'ru' ? '📖 Глоссарий' : '📖 Quick Glossary'}</h3>
+    <h3>Quick Glossary</h3>
     ${glossaryHtml}
   </div>
 
@@ -1887,7 +2602,7 @@ function AppContent({ lang, setLang }) {
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const filename = `PL-Report-${date}.html`;
 
-    // 现代浏览器：弹出"另存为"对话框
+    // 现代浏览器：弹出“另存为”对话框
     if (window.showSaveFilePicker) {
       try {
         const handle = await window.showSaveFilePicker({
@@ -1918,12 +2633,25 @@ function AppContent({ lang, setLang }) {
   const tabs = [
     { id: "dashboard", label: t("tabDashboard") },
     { id: "products", label: t("tabProducts") },
+    { id: "tariffs", label: t("tabTariffs") },
     { id: "schedule", label: t("tabSchedule") },
     { id: "projection", label: t("tabProjection") },
     { id: "settings", label: t("tabSettings") },
     { id: "help", label: t("tabHelp") },
     { id: "glossary", label: t("tabGlossary") },
   ];
+  const cloudProjectOptions = Array.isArray(cloudProjects) ? cloudProjects : [];
+  const cloudSelectedProject = cloudProjectOptions.find(item => item.id === currentCloudProjectId) || null;
+  const cloudSaveLabel = cloudMode && cloudSelectedProject?.visibility === "public" ? "\u4fdd\u5b58\u5e76\u53d1\u5e03" : "\u4fdd\u5b58";
+  const handleProjectNameCommit = (v) => {
+    const trimmed = (v || "").trim();
+    if (!trimmed || trimmed === projectName) return;
+    if (cloudMode) {
+      setProjectName(trimmed);
+      return;
+    }
+    renameProject(projectName, trimmed);
+  };
 
   return (
     <div className="min-h-screen font-body grain" style={{ background: COLORS.cream, color: COLORS.ink }}>
@@ -1940,24 +2668,30 @@ function AppContent({ lang, setLang }) {
                 <div className="flex items-center gap-2">
                   <h1 className="font-display text-lg sm:text-2xl font-bold">{t("brandTitle")}</h1>
                   <span className="text-[10px] sm:text-xs" style={{ color: COLORS.inkSoft }}>·</span>
-                  <DebouncedTextInput
-                    value={projectName}
-                    onCommit={(v) => {
-                      const trimmed = (v || "").trim();
-                      if (!trimmed || trimmed === projectName) return;
-                      renameProject(projectName, trimmed);
-                    }}
-                    className="font-display text-sm sm:text-base font-semibold bg-transparent border-b border-dashed px-1 py-0.5 max-w-[200px] sm:max-w-[300px]"
-                    style={{ color: COLORS.oxblood, borderColor: COLORS.gold + "80" }}
-                    title={t("projectCurrentLabel")}
-                  />
+                  {readOnly ? (
+                    <span
+                      className="font-display text-sm sm:text-base font-semibold px-1 py-0.5 max-w-[240px] sm:max-w-[360px] truncate"
+                      style={{ color: COLORS.oxblood }}
+                      title={projectName}
+                    >
+                      {projectName}
+                    </span>
+                  ) : (
+                    <DebouncedTextInput
+                      value={projectName}
+                      onCommit={handleProjectNameCommit}
+                      className="font-display text-sm sm:text-base font-semibold bg-transparent border-b border-dashed px-1 py-0.5 max-w-[200px] sm:max-w-[300px]"
+                      style={{ color: COLORS.oxblood, borderColor: COLORS.gold + "80" }}
+                      title={t("projectCurrentLabel")}
+                    />
+                  )}
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               {/* Live rate indicator */}
               <span className="text-[10px] font-mono hidden sm:inline" style={{ color: rateSource === 'live' ? COLORS.emerald : COLORS.inkSoft }}>
-                {rateSource === 'live' ? '● ' : '○ '}1¥={effectiveRate.toFixed(2)}₽ · 1$={effectiveUsdRate.toFixed(1)}₽
+                {rateSource === 'live' ? '●' : '○'} 1¥={effectiveRate.toFixed(2)}₽ · 1$={effectiveUsdRate.toFixed(1)}₽
               </span>
               {/* Language switcher */}
               <div className="flex gap-0 border rounded-sm overflow-hidden" style={{ borderColor: COLORS.line }}>
@@ -1970,68 +2704,206 @@ function AppContent({ lang, setLang }) {
                 ))}
               </div>
               {storageStatus && <span className="text-xs font-mono" style={{ color: COLORS.gold }}>{storageStatus}</span>}
+              {readOnly && (
+                <span
+                  className="px-2.5 py-1.5 text-[11px] font-medium rounded-sm border"
+                  style={{ borderColor: COLORS.emerald, color: COLORS.emerald, background: "rgba(31,79,46,0.08)" }}
+                >
+                  {sourceLabel || "只读查看"}
+                </span>
+              )}
+              {readOnly && (cloudEditHref || editCopyHref) && (
+                <a
+                  href={cloudEditHref || editCopyHref}
+                  className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                  style={{ borderColor: COLORS.oxblood, color: COLORS.oxblood, background: "rgba(92,26,27,0.04)" }}
+                  title={cloudEditHref ? "打开后台编辑器" : "打开可编辑副本"}
+                >
+                  <Edit3 size={14} />
+                  <span className="hidden sm:inline">{cloudEditHref ? "在线编辑" : "编辑副本"}</span>
+                </a>
+              )}
+              {cloudMode && !readOnly && (
+                <div
+                  className="flex items-center gap-1.5 px-2 py-1.5 border rounded-sm"
+                  style={{ borderColor: COLORS.gold, color: COLORS.ink }}
+                   title="切换后台项目"
+                >
+                  <FolderOpen size={14} style={{ color: COLORS.gold }} />
+                  <select
+                    value={currentCloudProjectId || ""}
+                    onChange={(event) => onCloudProjectChange?.(event.target.value)}
+                    disabled={storageBusy || cloudProjectOptions.length === 0}
+                    className="bg-transparent text-xs font-medium max-w-[190px] sm:max-w-[280px]"
+                    style={{ color: COLORS.ink }}
+                  >
+                    {cloudProjectOptions.map(item => (
+                      <option key={item.id} value={item.id}>
+                        {item.name}{item.visibility === "public" ? " - 已公开" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               {/* 项目列表 */}
-              <button onClick={() => setShowProjectPanel(true)}
-                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
-                style={{ borderColor: COLORS.gold, color: COLORS.gold }} title={t("projectList")}>
-                <FolderOpen size={14} /> <span className="hidden sm:inline">{t("projectList")}</span>
-              </button>
+              {!readOnly && !cloudMode && (
+                <button onClick={() => setShowProjectPanel(true)}
+                  className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                  style={{ borderColor: COLORS.gold, color: COLORS.gold }} title={t("projectList")}>
+                  <FolderOpen size={14} /> <span className="hidden sm:inline">{t("projectList")}</span>
+                </button>
+              )}
+              {cloudMode && !readOnly && onCloudOpenLibrary && (
+                <button onClick={onCloudOpenLibrary}
+                  className="btn-interact hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                    style={{ borderColor: COLORS.inkSoft, color: COLORS.inkSoft }} title="项目库">
+                  <FolderOpen size={14} /> <span className="hidden lg:inline">项目库</span>
+                </button>
+              )}
               {/* 保存 */}
-              <button onClick={saveToCloud} disabled={storageBusy}
-                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border disabled:opacity-50 rounded-sm"
-                style={{ borderColor: COLORS.oxblood, color: COLORS.oxblood }}>
-                <Save size={14} /> <span className="hidden sm:inline">{storageBusy ? t("saving") : t("projectSave")}</span>
-              </button>
+              {!readOnly && (
+                <button onClick={saveToCloud} disabled={storageBusy}
+                  className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border disabled:opacity-50 rounded-sm"
+                  style={{ borderColor: COLORS.oxblood, color: COLORS.oxblood }}>
+                  <Save size={14} /> <span className={cloudMode ? "inline" : "hidden sm:inline"}>{storageBusy ? t("saving") : (cloudMode ? cloudSaveLabel : t("projectSave"))}</span>
+                </button>
+              )}
               {/* 另存为 */}
-              <button onClick={saveAsProject}
-                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
-                style={{ borderColor: COLORS.inkSoft, color: COLORS.inkSoft }} title={t("projectSaveAs")}>
-                <Copy size={14} /> <span className="hidden lg:inline">{t("projectSaveAs")}</span>
-              </button>
+              {!readOnly && !cloudMode && (
+                <button onClick={saveAsProject}
+                  className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                  style={{ borderColor: COLORS.inkSoft, color: COLORS.inkSoft }} title={t("projectSaveAs")}>
+                  <Copy size={14} /> <span className="hidden lg:inline">{t("projectSaveAs")}</span>
+                </button>
+              )}
               {/* 导入 JSON */}
-              <button onClick={importProjectJSON}
-                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
-                style={{ borderColor: COLORS.inkSoft, color: COLORS.inkSoft }} title={t("projectImportJson")}>
-                <Upload size={14} /> <span className="hidden lg:inline">{t("projectImportJson")}</span>
-              </button>
+              {!readOnly && !cloudMode && (
+                <button onClick={importProjectJSON}
+                  className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                  style={{ borderColor: COLORS.inkSoft, color: COLORS.inkSoft }} title={t("projectImportJson")}>
+                  <Upload size={14} /> <span className="hidden lg:inline">{t("projectImportJson")}</span>
+                </button>
+              )}
               {/* 导出 JSON */}
               <button onClick={exportProjectJSON}
-                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                className={`btn-interact ${cloudMode ? "hidden sm:flex" : "flex"} items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm`}
                 style={{ borderColor: COLORS.inkSoft, color: COLORS.inkSoft }} title={t("projectExportJson")}>
                 <FileDown size={14} /> <span className="hidden lg:inline">JSON</span>
               </button>
               {/* 导出 CSV */}
               <button onClick={exportCSV}
-                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-sm"
+                className={`btn-interact ${cloudMode ? "hidden sm:flex" : "flex"} items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-sm`}
                 style={{ background: COLORS.oxblood, color: COLORS.cream }}>
                 <FileDown size={14} /> <span className="hidden sm:inline">{t("exportCSV")}</span>
               </button>
               {/* 导出 HTML */}
               <button onClick={exportHTML}
-                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-sm"
+                className={`btn-interact ${cloudMode ? "hidden sm:flex" : "flex"} items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-sm`}
                 style={{ background: COLORS.emerald, color: COLORS.cream }}>
                 <FileDown size={14} /> <span className="hidden sm:inline">{t("exportHTML")}</span>
               </button>
-              {/* 分享链接 */}
-              <button onClick={shareLink}
-                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
-                style={{ borderColor: COLORS.gold, color: COLORS.gold }}>
-                <Share2 size={14} /> <span className="hidden sm:inline">{t("shareLink")}</span>
-              </button>
+              {/* 给别人看 */}
+              {!readOnly && (
+                <button onClick={shareProjectToViewer}
+                  disabled={storageBusy}
+                  className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                  style={{ borderColor: COLORS.gold, color: COLORS.gold }}>
+                  <Send size={14} /> <span className={cloudMode ? "inline" : "hidden sm:inline"}>{cloudMode ? "分享" : t("shareProject")}</span>
+                </button>
+              )}
               {/* 使用说明 */}
               <a href={guideHref} target="_blank" rel="noopener noreferrer"
-                className="btn-interact flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm"
+                className={`btn-interact ${cloudMode ? "hidden sm:flex" : "flex"} items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-medium border rounded-sm`}
                 style={{ borderColor: COLORS.line, color: COLORS.inkSoft }}>
                 <BookOpen size={14} /> <span className="hidden sm:inline">{t("usageGuide")}</span>
               </a>
+              {cloudMode && (
+                <div className="relative sm:hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowMobileMore(v => !v)}
+                    className="btn-interact flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium border rounded-sm"
+                    style={{ borderColor: COLORS.inkSoft, color: COLORS.inkSoft }}
+                    title="更多"
+                  >
+                    <MoreHorizontal size={14} />
+                    <span>更多</span>
+                  </button>
+                  {showMobileMore && (
+                    <div
+                      className="absolute right-0 mt-2 w-44 border rounded-sm shadow-lg overflow-hidden"
+                      style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.98)", zIndex: 60 }}
+                    >
+                      {onCloudOpenLibrary && (
+                        <button
+                          type="button"
+                          onClick={() => { setShowMobileMore(false); onCloudOpenLibrary(); }}
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-left"
+                          style={{ color: COLORS.ink }}
+                        >
+                          <FolderOpen size={14} /> 项目库
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => { setShowMobileMore(false); exportProjectJSON(); }}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-left"
+                        style={{ color: COLORS.ink }}
+                      >
+                        <FileDown size={14} /> 导出 JSON
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowMobileMore(false); exportCSV(); }}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-left"
+                        style={{ color: COLORS.ink }}
+                      >
+                        <FileDown size={14} /> 导出 CSV
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowMobileMore(false); exportHTML(); }}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-left"
+                        style={{ color: COLORS.ink }}
+                      >
+                        <FileDown size={14} /> 导出报告
+                      </button>
+                      <a
+                        href={guideHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setShowMobileMore(false)}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-left"
+                        style={{ color: COLORS.ink, textDecoration: "none" }}
+                      >
+                        <BookOpen size={14} /> 使用说明
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
               {/* 重置 */}
-              <button onClick={resetSample}
-                className="btn-interact flex items-center gap-1.5 px-2 py-2 text-xs rounded-sm"
-                style={{ color: COLORS.inkSoft }} title={t("resetSample")}>
-                <RotateCcw size={14} />
-              </button>
+              {!readOnly && !cloudMode && (
+                <button onClick={resetSample}
+                  className="btn-interact flex items-center gap-1.5 px-2 py-2 text-xs rounded-sm"
+                  style={{ color: COLORS.inkSoft }} title={t("resetSample")}>
+                  <RotateCcw size={14} />
+                </button>
+              )}
             </div>
           </div>
+          {cloudMode && !readOnly && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]" style={{ color: COLORS.inkSoft }}>
+              <span className="hidden sm:inline-flex px-2 py-1 rounded-sm border" style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.5)" }}>
+                后台工作台：切换项目、保存到服务器、复制公开链接都在这一排。
+              </span>
+              {cloudSelectedProject?.visibility === "public" && (
+                <span className="px-2 py-1 rounded-sm" style={{ background: "rgba(31,79,46,0.08)", color: COLORS.emerald }}>
+                  当前项目已公开，复制公开链接会先保存并发布最新版本。
+                </span>
+              )}
+            </div>
+          )}
           <div className="mt-3 sm:mt-5 flex gap-0 border-b -mb-[1px] overflow-x-auto" style={{ borderColor: COLORS.line }}>
             {tabs.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
@@ -2048,19 +2920,20 @@ function AppContent({ lang, setLang }) {
 
       <main className="max-w-[1500px] mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div key={tab} className="page-enter">
-        {tab === "dashboard" && <Dashboard totals={totals} params={params} calcs={calcs} proj={proj} projection={projection} projectMeta={projectMeta} t={t} lang={lang} fmt={fmt} />}
+        {tab === "dashboard" && <Dashboard totals={totals} params={params} calcs={calcs} proj={proj} projection={projection} projectMeta={projectMeta} t={t} lang={lang} fmt={fmt} readOnly={readOnly} />}
         {tab === "products" && <ProductsTab calcs={calcs} expandedRow={expandedRow} setExpandedRow={setExpandedRow}
-          onUpdate={updateProduct} onDelete={deleteProduct} onAdd={addProduct} onClear={clearAllProducts} params={params} t={t} lang={lang} fmt={fmt} />}
+          onUpdate={updateProduct} onDelete={deleteProduct} onAdd={addProduct} onClear={clearAllProducts} params={params} t={t} lang={lang} fmt={fmt} readOnly={readOnly} />}
+        {tab === "tariffs" && <TariffTablesPanel />}
         {tab === "schedule" && <ScheduleTab products={products} projection={projection} setProjection={setProjection}
           scheduleStore={scheduleStore} updateSchedule={updateSchedule} applyCurve={applyScheduleCurve}
           priceScheduleStore={priceScheduleStore} setPriceScheduleStore={setPriceScheduleStore}
           restockStore={restockStore} updateRestock={updateRestock} setRestockStore={setRestockStore}
           withdrawalStore={withdrawalStore} setWithdrawalStore={setWithdrawalStore}
-          t={t} lang={lang} />}
+          t={t} lang={lang} readOnly={readOnly} />}
         {tab === "projection" && <ProjectionTab proj={proj} projection={projection} setProjection={setProjection}
-          params={params} totals={totals} withdrawalStore={withdrawalStore} setWithdrawalStore={setWithdrawalStore} t={t} lang={lang} fmt={fmt} />}
+          params={params} totals={totals} withdrawalStore={withdrawalStore} setWithdrawalStore={setWithdrawalStore} t={t} lang={lang} fmt={fmt} readOnly={readOnly} />}
         {tab === "settings" && <SettingsTab params={params} setParams={setParams} t={t} lang={lang}
-          rateSource={rateSource} setRateSource={setRateSource} liveRate={liveRate} effectiveRate={effectiveRate} fetchRate={fetchRate} />}
+          rateSource={rateSource} setRateSource={setRateSource} liveRate={liveRate} effectiveRate={effectiveRate} fetchRate={fetchRate} readOnly={readOnly} />}
         {tab === "help" && <HelpPanel t={t} lang={lang} />}
         {tab === "glossary" && <GlossaryPanel totals={totals} params={params} proj={proj} projection={projection} fmt={fmt} t={t} lang={lang} />}
         </div>
@@ -2073,7 +2946,7 @@ function AppContent({ lang, setLang }) {
         </div>
       </footer>
 
-      {/* ============ 项目管理面板（Modal） ============ */}
+      {/* ============ 项目管理面板（Modal）============ */}
       {showProjectPanel && (
         <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(31,27,22,0.5)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowProjectPanel(false); }}>
@@ -2101,7 +2974,7 @@ function AppContent({ lang, setLang }) {
                 </button>
               </div>
             </div>
-            {/* Panel Body — scrollable project list */}
+            {/* Panel Body -scrollable project list */}
             <div style={{ overflowY: "auto", flex: 1, padding: "16px 20px" }}>
               <section className="mb-5">
                 <div className="flex items-start gap-2 mb-2">
@@ -2113,16 +2986,27 @@ function AppContent({ lang, setLang }) {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {PUBLIC_PROJECTS.map(item => (
-                    <a key={item.file} href={publicProjectHref(item.file)}
+                    <div key={item.file}
                       className="ledger-row rounded-sm border px-3 py-3 flex items-start justify-between gap-3"
-                      style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.72)", textDecoration: "none" }}
-                      onClick={() => setShowProjectPanel(false)}>
-                      <div className="min-w-0">
+                      style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.72)" }}>
+                      <div className="min-w-0 flex-1">
                         <div className="font-display font-semibold text-sm truncate" style={{ color: COLORS.ink }}>{item.name}</div>
                         <div className="text-[11px] leading-5 mt-1" style={{ color: COLORS.inkSoft }}>{item.desc}</div>
                       </div>
-                      <span className="text-[11px] font-medium flex-shrink-0" style={{ color: COLORS.emerald }}>{t("projectOpen")}</span>
-                    </a>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button onClick={() => copyPublicProjectLink(item.file)}
+                          className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
+                          style={{ color: COLORS.gold }} title={t("publicProjectCopyLink")}>
+                          <Copy size={13} />
+                        </button>
+                        <a href={publicProjectHref(item.file)}
+                          className="btn-interact px-2.5 py-1.5 text-[11px] font-medium rounded-sm"
+                          style={{ background: COLORS.emerald, color: COLORS.cream, textDecoration: "none" }}
+                          onClick={() => setShowProjectPanel(false)}>
+                          {t("projectOpen")}
+                        </a>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </section>
@@ -2133,6 +3017,7 @@ function AppContent({ lang, setLang }) {
                   <div>
                     <div className="font-semibold text-sm" style={{ color: COLORS.ink }}>{t("localProjects")}</div>
                     <div className="text-[11px] leading-5" style={{ color: COLORS.inkSoft }}>{t("localProjectsHint")}</div>
+                    <div className="text-[11px] leading-5 mt-1" style={{ color: COLORS.inkSoft }}>{t("localProjectsMissingHint")}</div>
                   </div>
                 </div>
                 {(() => {
@@ -2151,7 +3036,7 @@ function AppContent({ lang, setLang }) {
                     const proj = index[name];
                     const isCurrent = name === projectName;
                     const savedDate = proj.savedAt ? new Date(proj.savedAt) : null;
-                    const timeStr = savedDate ? savedDate.toLocaleString() : "—";
+                    const timeStr = savedDate ? savedDate.toLocaleString() : "-";
                     return (
                       <div key={name} className="flex items-center justify-between gap-3 py-3 px-3 rounded-sm mb-2 ledger-row"
                         style={{
@@ -2203,6 +3088,11 @@ function AppContent({ lang, setLang }) {
                             style={{ color: COLORS.gold }} title={t("projectExportJson")}>
                             <FileDown size={13} />
                           </button>
+                          <button onClick={() => copyStoredProjectShareLink(name, proj.data)}
+                            className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
+                            style={{ color: COLORS.emerald }} title={t("shareStoredProject")}>
+                            <Share2 size={13} />
+                          </button>
                           <button onClick={() => deleteProject(name)}
                             className="btn-interact px-2 py-1.5 text-[11px] rounded-sm"
                             style={{ color: COLORS.crimson }} title={t("projectDelete")}>
@@ -2218,6 +3108,108 @@ function AppContent({ lang, setLang }) {
           </div>
         </div>
       )}
+
+      {showSharePanel && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(31,27,22,0.5)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowSharePanel(false); }}>
+          <div className="glass-card anim-in" style={{ width: "90%", maxWidth: 720, maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column", borderRadius: 4 }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: COLORS.line }}>
+              <div className="flex items-center gap-2">
+                <Send size={20} style={{ color: COLORS.gold }} />
+                <div>
+                  <div className="font-display text-lg font-bold" style={{ color: COLORS.ink }}>{t("sharePanelTitle")}</div>
+                  <div className="text-[11px] leading-5" style={{ color: COLORS.inkSoft }}>{t("sharePanelHint")}</div>
+                </div>
+              </div>
+              <button onClick={() => setShowSharePanel(false)}
+                className="btn-interact p-2 rounded-sm" style={{ color: COLORS.inkSoft }}>
+                <X size={16} />
+              </button>
+            </div>
+            <div style={{ overflowY: "auto", flex: 1, padding: "16px 20px" }}>
+              <section className="mb-4 rounded-sm border p-4" style={{ borderColor: COLORS.gold + "55", background: "rgba(184,134,11,0.06)" }}>
+                <div className="flex items-start gap-3">
+                  <LinkIcon size={18} style={{ color: COLORS.gold, flexShrink: 0, marginTop: 2 }} />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-sm" style={{ color: COLORS.ink }}>{t("sharePanelCurrentTitle")}</div>
+                    <div className="text-[11px] leading-5 mt-1" style={{ color: COLORS.inkSoft }}>{t("sharePanelCurrentDesc")}</div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button onClick={shareLink}
+                        className="btn-interact flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-sm"
+                        style={{ background: COLORS.gold, color: COLORS.cream }}>
+                        <LinkIcon size={14} /> {t("shareCurrentVersion")}
+                      </button>
+                      <button onClick={exportProjectJSON}
+                        className="btn-interact flex items-center gap-1.5 px-3 py-2 text-xs font-medium border rounded-sm"
+                        style={{ borderColor: COLORS.line, color: COLORS.inkSoft }}>
+                        <FileDown size={14} /> {t("sharePanelExportJson")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="mb-4 rounded-sm border p-4" style={{ borderColor: COLORS.emerald + "55", background: "rgba(31,79,46,0.05)" }}>
+                <div className="flex items-start gap-3">
+                  <Globe size={18} style={{ color: COLORS.emerald, flexShrink: 0, marginTop: 2 }} />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-sm" style={{ color: COLORS.ink }}>{t("sharePanelPublicTitle")}</div>
+                    <div className="text-[11px] leading-5 mt-1" style={{ color: COLORS.inkSoft }}>{t("sharePanelPublicDesc")}</div>
+                    {currentPublicProject ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <div className="text-xs font-medium" style={{ color: COLORS.emeraldSoft }}>{currentPublicProject.name}</div>
+                        <button onClick={() => copyPublicProjectLink(currentPublicProject.file)}
+                          className="btn-interact flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-sm"
+                          style={{ background: COLORS.emerald, color: COLORS.cream }}>
+                          <Copy size={14} /> {t("publicProjectCopyLink")}
+                        </button>
+                        <a href={publicProjectHref(currentPublicProject.file)}
+                          className="btn-interact flex items-center gap-1.5 px-3 py-2 text-xs font-medium border rounded-sm"
+                          style={{ borderColor: COLORS.emerald, color: COLORS.emerald, textDecoration: "none" }}
+                          onClick={() => setShowSharePanel(false)}>
+                          <Globe size={14} /> {t("projectOpen")}
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="mt-3 text-[11px] leading-5" style={{ color: COLORS.inkSoft }}>
+                        {t("sharePanelPublishDesc")}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-sm border p-4" style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.55)" }}>
+                <div className="flex items-start gap-3">
+                  <Info size={18} style={{ color: COLORS.oxblood, flexShrink: 0, marginTop: 2 }} />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-sm" style={{ color: COLORS.ink }}>{t("sharePanelPublishTitle")}</div>
+                    <div className="text-[11px] leading-5 mt-1" style={{ color: COLORS.inkSoft }}>{t("sharePanelPublishDesc")}</div>
+                    <div className="text-[11px] leading-5 mt-2" style={{ color: COLORS.inkSoft }}>{t("sharePanelMissingHint")}</div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button onClick={() => {
+                          setShowSharePanel(false);
+                          setShowProjectPanel(true);
+                        }}
+                        className="btn-interact flex items-center gap-1.5 px-3 py-2 text-xs font-medium border rounded-sm"
+                        style={{ borderColor: COLORS.line, color: COLORS.inkSoft }}>
+                        <FolderOpen size={14} /> {t("sharePanelOpenProjects")}
+                      </button>
+                      <a href={guideHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-interact flex items-center gap-1.5 px-3 py-2 text-xs font-medium border rounded-sm"
+                        style={{ borderColor: COLORS.line, color: COLORS.inkSoft, textDecoration: "none" }}>
+                        <BookOpen size={14} /> {t("sharePanelOpenGuide")}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2225,7 +3217,9 @@ function AppContent({ lang, setLang }) {
 // ============================================================
 // 仪表盘
 // ============================================================
-const Dashboard = ({ totals, params, calcs, proj, projection, projectMeta = {}, t, lang, fmt }) => {
+const Dashboard = ({ totals, params, calcs, proj, projection, projectMeta = {}, t, lang, fmt, readOnly = false }) => {
+  const [audienceView, setAudienceView] = useState("boss");
+  const [showOpsDetail, setShowOpsDetail] = useState(false);
   const showBookDiff = params.taxScheme === "osn" && Math.abs(totals.netProfit - totals.bookNetProfit) > 1;
   const F = fmt.fmtPrimary, Fs = fmt.fmtSecondary;
   const peakMonth = proj.months
@@ -2239,6 +3233,27 @@ const Dashboard = ({ totals, params, calcs, proj, projection, projectMeta = {}, 
   const paybackPct = operatingInput > 0 ? projectedShare / operatingInput : 0;
   return (
     <div className="space-y-6">
+      <DecisionSummaryPanel
+        totals={totals}
+        params={params}
+        calcs={calcs}
+        proj={proj}
+        projection={projection}
+        fmt={fmt}
+        readOnly={readOnly}
+      />
+
+      <AudienceViewPanel
+        activeView={audienceView}
+        setActiveView={setAudienceView}
+        totals={totals}
+        params={params}
+        calcs={calcs}
+        proj={proj}
+        projection={projection}
+        fmt={fmt}
+      />
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
           <Metric label={t("totalInvestment")} value={F(totals.totalCostBasis)} sub={Fs(totals.totalCostBasis)} big />
@@ -2247,107 +3262,135 @@ const Dashboard = ({ totals, params, calcs, proj, projection, projectMeta = {}, 
           <Metric label={t("totalRevenue")} value={F(totals.totalRevenue)} sub={fmtRubShort(totals.totalRevenue)} big />
         </div>
         <div className="p-4 sm:p-5 card-hover rounded-sm border-2" style={{ borderColor: totals.operatingNetProfit >= 0 ? COLORS.emerald : COLORS.crimson, background: "rgba(255,255,255,0.7)" }}>
-          <Metric label="商品经营利润（不含启动费）"
+          <Metric
+            label="商品经营利润（未扣启动费）"
             value={F(totals.operatingNetProfit)}
-            sub={`还没扣启动费 · 回报率 ${fmtPct(totals.operatingRoi)}`}
-            color={totals.operatingNetProfit >= 0 ? COLORS.emerald : COLORS.crimson} big />
+            sub={`未扣启动费 · 回报率 ${fmtPct(totals.operatingRoi)}`}
+            color={totals.operatingNetProfit >= 0 ? COLORS.emerald : COLORS.crimson}
+            big
+          />
         </div>
         <div className="p-4 sm:p-5 glass-card card-hover rounded-sm">
-          <Metric label="扣启动费后利润" value={F(totals.netProfit)} sub={`已扣启动费 · 回报率 ${fmtPct(totals.roi)}`} color={totals.netProfit >= 0 ? COLORS.emerald : COLORS.gold} big />
+          <Metric
+            label="扣启动费后利润"
+            value={F(totals.netProfit)}
+            sub={`已扣启动费 · 回报率 ${fmtPct(totals.roi)}`}
+            color={totals.netProfit >= 0 ? COLORS.emerald : COLORS.gold}
+            big
+          />
         </div>
       </div>
-
-      <AudienceQuickGuide />
 
       <MetricBasisNote totals={totals} params={params} proj={proj} projection={projection} fmt={fmt} />
 
       {operatingInput > 0 && (
-        <Card kicker="Cooperation Decision" title="合作运营投入回收">
+        <Card kicker="合作决策" title="合作运营回本">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
               <Metric label="合作运营投入" value={F(operatingInput)} sub={Fs(operatingInput)} color={COLORS.oxblood} />
             </div>
             <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
-              <Metric label={`${projection.monthsHorizon}个月预计分回来的钱`} value={F(projectedShare)} sub={`${sharePct}% 利润分配`} color={COLORS.gold} />
+              <Metric label={`${projection.monthsHorizon} 个月预计分成利润`} value={F(projectedShare)} sub={`${sharePct}% 分润`} color={COLORS.gold} />
             </div>
             <div className="p-4 border rounded-sm" style={{ borderColor: inputGap >= 0 ? COLORS.emerald : COLORS.crimson, background: "white" }}>
-              <Metric label="离回本还差多少钱" value={F(inputGap)} sub={`回收率 ${fmtPct(paybackPct)}`} color={inputGap >= 0 ? COLORS.emerald : COLORS.crimson} />
+              <Metric label="距回本差额" value={F(inputGap)} sub={`回本进度 ${fmtPct(paybackPct)}`} color={inputGap >= 0 ? COLORS.emerald : COLORS.crimson} />
             </div>
             <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "rgba(31,79,46,0.06)" }}>
-              <Metric label="建议结构" value="服务费/投流共担" sub="商品经营利润为正，运营投入需单独约定" color={COLORS.emerald} />
+              <Metric label="建议结构" value="服务费 + 流量成本共担" sub="商品经营利润为正，运营投入建议单独合同约定" color={COLORS.emerald} />
             </div>
           </div>
           <div className="mt-3 text-xs leading-6" style={{ color: COLORS.inkSoft }}>
-            {projectMeta.basis || "只看商品经营的算法口径不把运营投入压入扣启动费后利润。"} {projectMeta.recommendation || ""}
+            {projectMeta.basis || "商品经营视角会把运营投入和扣启动费后利润分开看。"} {projectMeta.recommendation || ""}
           </div>
         </Card>
       )}
 
       {operatingInput <= 0 && metaMonthlyFixedCost > 0 && (
-        <Card kicker="Operating Cost Basis" title="店铺月租口径">
+        <Card kicker="固定月费口径" title="店铺月租口径">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
               <Metric label="每月店铺月租" value={F(metaMonthlyFixedCost)} sub={Fs(metaMonthlyFixedCost)} color={COLORS.oxblood} />
             </div>
             <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "white" }}>
-              <Metric label={`${projection.monthsHorizon}个月店铺月租`} value={F(metaMonthlyFixedCost * projection.monthsHorizon)} sub="单店3000 RMB/月" color={COLORS.gold} />
+              <Metric label={`${projection.monthsHorizon} 个月店铺月租`} value={F(metaMonthlyFixedCost * projection.monthsHorizon)} sub="单店 3000 元/月" color={COLORS.gold} />
             </div>
             <div className="p-4 border rounded-sm" style={{ borderColor: COLORS.line, background: "rgba(31,79,46,0.06)" }}>
-              <Metric label="广告口径" value="平台费用已预留" sub="不再重复作为启动投入扣除" color={COLORS.emerald} />
+              <Metric label="广告费口径" value="已在平台扣费里预留" sub="不再作为启动投入重复扣除" color={COLORS.emerald} />
             </div>
           </div>
           <div className="mt-3 text-xs leading-6" style={{ color: COLORS.inkSoft }}>
-            {projectMeta.basis || "不设置大额一次性启动费，店铺月租按月进入现金流预测。"} {projectMeta.recommendation || ""}
+            {projectMeta.basis || "当前没有设置大额一次性启动费，店铺月租进入月度现金流预测。"} {projectMeta.recommendation || ""}
           </div>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card kicker={t("cumCashKicker")} title={t("cumCashTitle")} className="lg:col-span-2">
-          <CashFlowChart proj={proj} t={t} fmt={fmt} />
-          {proj.breakEvenMonth ? (
-            <div className="mt-3 flex items-center gap-2 text-sm">
-              <span className="w-2 h-2 rounded-full" style={{ background: COLORS.emerald }}></span>
-              <span style={{ color: COLORS.emeraldSoft }}>{t("breakEvenMsg", { n: proj.breakEvenMonth })}</span>
-            </div>
-          ) : (
-            <div className="mt-3 flex items-center gap-2 text-sm">
-              <AlertCircle size={14} style={{ color: COLORS.crimson }} />
-              <span style={{ color: COLORS.crimson }}>{t("noBreakEven")}</span>
-            </div>
-          )}
-        </Card>
-        <Card kicker={t("investorKicker")} title={t("investorTitle")}>
-          <div className="space-y-4">
-            <Metric label={t("initialOutflow")} value={F(-proj.initialOutflow)}
-              sub={Fs(-proj.initialOutflow)} color={COLORS.crimson} />
-            <Metric label={t("maxDrawdown")} value={F(proj.maxDrawdown)}
-              sub={Fs(proj.maxDrawdown)} color={COLORS.crimson} />
-            <Metric label={t("finalCash")} value={F(proj.finalCash)}
-              sub={Fs(proj.finalCash)}
-              color={proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson} />
-            <Metric label={t("peakMonthly")} value={F(peakMonth.revenue)}
-              sub={`${peakMonth.label || `${t("monthLabel")}${peakMonth.monthIdx || 0}`} · ${Fs(peakMonth.revenue)}`} color={COLORS.gold} />
+      <section className="border rounded-sm overflow-hidden" style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.72)" }}>
+        <button
+          type="button"
+          onClick={() => setShowOpsDetail(v => !v)}
+          className="w-full flex items-center justify-between gap-4 px-4 sm:px-5 py-4 text-left"
+          style={{ color: COLORS.ink }}
+        >
+          <div>
+            <div className="text-[10px] uppercase" style={{ color: COLORS.emerald, letterSpacing: 0 }}>经营明细</div>
+            <div className="font-display text-lg sm:text-xl font-bold">完整经营明细</div>
+            <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>这里查看现金流图、月度利润、成本结构、税务结构和商品盈利排行。</div>
           </div>
-        </Card>
-      </div>
+          {showOpsDetail ? <ChevronDown size={18} style={{ color: COLORS.gold }} /> : <ChevronRight size={18} style={{ color: COLORS.gold }} />}
+        </button>
+        {showOpsDetail && (
+          <div className="px-4 sm:px-5 pb-5 space-y-6">
+            <AudienceQuickGuide />
 
-      <Card kicker={t("monthlyPnLKicker")} title={t("monthlyPnL")}>
-        <MonthlyPnLChart proj={proj} t={t} fmt={fmt} />
-      </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card kicker={t("cumCashKicker")} title={t("cumCashTitle")} className="lg:col-span-2">
+                <CashFlowChart proj={proj} t={t} fmt={fmt} />
+                {proj.breakEvenMonth ? (
+                  <div className="mt-3 flex items-center gap-2 text-sm">
+                    <span className="w-2 h-2 rounded-full" style={{ background: COLORS.emerald }}></span>
+                    <span style={{ color: COLORS.emeraldSoft }}>{t("breakEvenMsg", { n: proj.breakEvenMonth })}</span>
+                  </div>
+                ) : (
+                  <div className="mt-3 flex items-center gap-2 text-sm">
+                    <AlertCircle size={14} style={{ color: COLORS.crimson }} />
+                    <span style={{ color: COLORS.crimson }}>{t("noBreakEven")}</span>
+                  </div>
+                )}
+              </Card>
+              <Card kicker={t("investorKicker")} title={t("investorTitle")}>
+                <div className="space-y-4">
+                  <Metric label={t("initialOutflow")} value={F(-proj.initialOutflow)}
+                    sub={Fs(-proj.initialOutflow)} color={COLORS.crimson} />
+                  <Metric label={t("maxDrawdown")} value={F(proj.maxDrawdown)}
+                    sub={Fs(proj.maxDrawdown)} color={COLORS.crimson} />
+                  <Metric label={t("finalCash")} value={F(proj.finalCash)}
+                    sub={Fs(proj.finalCash)}
+                    color={proj.finalCash >= 0 ? COLORS.emerald : COLORS.crimson} />
+                  <Metric label={t("peakMonthly")} value={F(peakMonth.revenue)}
+                    sub={`${peakMonth.label || `${t("monthLabel")}${peakMonth.monthIdx || 0}`} · ${Fs(peakMonth.revenue)}`} color={COLORS.gold} />
+                </div>
+              </Card>
+            </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card kicker={t("costKicker")} title={t("costStructure")}>
-          <CostBar totals={totals} params={params} t={t} fmt={fmt} />
-        </Card>
-        <Card kicker={`税制 · ${t(TAX_SCHEMES[params.taxScheme].labelKey)}`} title={t("taxStructure")}>
-          <TaxBreakdown totals={totals} params={params} t={t} fmt={fmt} />
-        </Card>
-      </div>
+            <Card kicker={t("monthlyPnLKicker")} title={t("monthlyPnL")}>
+              <MonthlyPnLChart proj={proj} t={t} fmt={fmt} />
+            </Card>
 
-      <Card kicker={t("rankingKicker")} title={t("rankingTitle")}>
-        <ProductRanking calcs={calcs} t={t} fmt={fmt} />
-      </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card kicker={t("costKicker")} title={t("costStructure")}>
+                <CostBar totals={totals} params={params} t={t} fmt={fmt} />
+              </Card>
+              <Card kicker={`税制 · ${t(TAX_SCHEMES[params.taxScheme].labelKey)}`} title={t("taxStructure")}>
+                <TaxBreakdown totals={totals} params={params} t={t} fmt={fmt} />
+              </Card>
+            </div>
+
+            <Card kicker={t("rankingKicker")} title={t("rankingTitle")}>
+              <ProductRanking calcs={calcs} t={t} fmt={fmt} />
+            </Card>
+          </div>
+        )}
+      </section>
     </div>
   );
 };
@@ -2391,8 +3434,8 @@ const CashFlowChart = ({ proj, t, fmt }) => {
     );
   };
   return (
-    <div style={{ width: "100%", height: 280 }}>
-      <ResponsiveContainer>
+    <div style={{ width: "100%", minWidth: 0, height: 280 }}>
+      <ResponsiveContainer width="100%" height={280}>
         <LineChart data={data} margin={{ top: 30, right: 20, left: 0, bottom: 5 }}>
           <CartesianGrid stroke={COLORS.line} strokeDasharray="3 3" />
           <XAxis dataKey="label" stroke={COLORS.inkSoft} fontSize={11} />
@@ -2416,8 +3459,8 @@ const MonthlyPnLChart = ({ proj, t, fmt }) => {
   const _F = fmt ? fmt.fmtPrimary : fmtRubShort;
   const data = proj.months.slice(1);
   return (
-    <div style={{ width: "100%", height: 240 }}>
-      <ResponsiveContainer>
+    <div style={{ width: "100%", minWidth: 0, height: 240 }}>
+      <ResponsiveContainer width="100%" height={240}>
         <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
           <CartesianGrid stroke={COLORS.line} strokeDasharray="3 3" />
           <XAxis dataKey="label" stroke={COLORS.inkSoft} fontSize={11} />
@@ -2553,7 +3596,7 @@ const ProductRanking = ({ calcs, t, fmt }) => {
 // ============================================================
 // 商品 Tab
 // ============================================================
-const ProductsTab = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, onAdd, onClear, params, t, lang, fmt }) => (
+const ProductsTab = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, onAdd, onClear, params, t, lang, fmt, readOnly = false }) => (
   <div className="space-y-4 anim-in">
     <div className="flex items-center justify-between flex-wrap gap-3">
       <div>
@@ -2562,29 +3605,107 @@ const ProductsTab = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, o
           {t("productsHint")}
         </p>
       </div>
-      <div className="flex gap-2">
-        <button onClick={onClear} disabled={!calcs.length}
-          className="flex items-center gap-1.5 px-3 py-2 text-xs border disabled:opacity-30"
-          style={{ borderColor: COLORS.crimson, color: COLORS.crimson }}>
-          <Trash2 size={14} /> {t("clearAll")}
-        </button>
-        <button onClick={onAdd}
-          className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium"
-          style={{ background: COLORS.oxblood, color: COLORS.cream }}>
-          <Plus size={14} /> {t("addProduct")}
-        </button>
-      </div>
+      {!readOnly && (
+        <div className="flex gap-2">
+          <button onClick={onClear} disabled={!calcs.length}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs border disabled:opacity-30"
+            style={{ borderColor: COLORS.crimson, color: COLORS.crimson }}>
+            <Trash2 size={14} /> {t("clearAll")}
+          </button>
+          <button onClick={onAdd}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium"
+            style={{ background: COLORS.oxblood, color: COLORS.cream }}>
+            <Plus size={14} /> {t("addProduct")}
+          </button>
+        </div>
+      )}
     </div>
     <ProductTable calcs={calcs} expandedRow={expandedRow} setExpandedRow={setExpandedRow}
-      onUpdate={onUpdate} onDelete={onDelete} params={params} t={t} fmt={fmt} />
+      onUpdate={onUpdate} onDelete={onDelete} params={params} t={t} fmt={fmt} lang={lang} readOnly={readOnly} />
   </div>
 );
 
-const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, params, t, fmt }) => {
+const PlatformChips = ({ details = [] }) => (
+  <div className="flex flex-wrap gap-1 mt-1">
+    {(details || []).map((detail) => (
+      <span
+        key={detail.platformId}
+        className="px-1.5 py-0.5 text-[10px] rounded-sm border"
+        style={{ borderColor: COLORS.line, color: COLORS.inkSoft, background: COLORS.paper }}
+      >
+        {detail.short}{detail.weight ? ` ${(detail.weight * 100).toFixed(0)}%` : ""}
+      </span>
+    ))}
+  </div>
+);
+
+const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, params, t, fmt, lang, readOnly = false }) => {
   const F = fmt.fmtPrimary;
   const showDeclared = params.taxScheme === "osn";
   return (
-    <div className="border overflow-x-auto" style={{ borderColor: COLORS.line, background: "white" }}>
+    <>
+    <div className="md:hidden space-y-3">
+      {calcs.map((r, idx) => {
+        const isOpen = expandedRow === idx;
+        const profitable = r.c.netProfit > 0;
+        const declaredDiffers = (r.declaredCNY ?? r.priceCNY) !== r.priceCNY;
+        return (
+          <div key={idx} className="border bg-white" style={{ borderColor: COLORS.line }}>
+            <button
+              type="button"
+              onClick={() => setExpandedRow(isOpen ? null : idx)}
+              className="w-full p-3 text-left"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    {isOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+                    <div className="font-mono text-xs font-semibold break-all" style={{ color: COLORS.ink }}>{r.id}</div>
+                  </div>
+                  <PlatformChips details={r.c.platformDetails} />
+                </div>
+                <div className="text-right font-mono text-sm font-semibold" style={{ color: profitable ? COLORS.emerald : COLORS.crimson }}>
+                  {fmtPct(r.c.roi)}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
+                <MiniMetric label={t("costCny")} value={fmtCny(r.priceCNY)} />
+                {showDeclared && <MiniMetric label="Declared value" value={fmtCny(r.declaredCNY ?? r.priceCNY)} color={declaredDiffers ? COLORS.oxblood : COLORS.ink} />}
+                <MiniMetric label={t("qty")} value={`${r.qty} ${t("unitPieces")}`} />
+                <MiniMetric label={t("listPrice")} value={`${(r.c.listPrice || 0).toLocaleString("ru-RU")} RUB`} />
+                <MiniMetric label={t("platformFee")} value={`${(r.c.platformFee || 0).toLocaleString("ru-RU")} RUB`} />
+                <MiniMetric label={t("netProfitCol")} value={F(r.c.netProfit)} color={profitable ? COLORS.emerald : COLORS.crimson} />
+              </div>
+            </button>
+            {isOpen && (
+              <div className="border-t p-3" style={{ borderColor: COLORS.line, background: "rgba(184,134,11,0.04)" }}>
+                <ProductEditor product={r} idx={idx} onUpdate={onUpdate} calc={r.c} params={params} t={t} fmt={fmt} lang={lang} readOnly={readOnly} />
+                {!readOnly && (
+                  <button
+                    type="button"
+                    onClick={() => { if (confirm(t("confirmDeleteProd", { id: r.id }))) onDelete(idx); }}
+                    className="mt-3 inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium border"
+                    style={{ borderColor: COLORS.crimson, color: COLORS.crimson, background: "rgba(164,25,61,0.05)" }}
+                  >
+                    <Trash2 size={11} /> {t("deleteBtn")}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {calcs.length > 0 && (
+        <div className="border bg-white p-3 grid grid-cols-2 gap-2 text-xs font-semibold" style={{ borderColor: COLORS.line }}>
+          <MiniMetric label={t("totalRow")} value={`${calcs.reduce((a, b) => a + (b.qty || 0), 0)} ${t("unitPieces")}`} />
+          <MiniMetric label={t("investment")} value={F(calcs.reduce((a, b) => a + b.c.totalInvestment, 0))} />
+          <MiniMetric label={t("revenue")} value={F(calcs.reduce((a, b) => a + b.c.totalRevenue, 0))} />
+          <MiniMetric label={t("netProfitCol")} value={F(calcs.reduce((a, b) => a + b.c.netProfit, 0))} color={COLORS.emerald} />
+        </div>
+      )}
+    </div>
+
+    <div className="hidden md:block border overflow-x-auto" style={{ borderColor: COLORS.line, background: "white" }}>
       <table className="w-full text-sm" style={{ minWidth: showDeclared ? "1280px" : "1200px" }}>
         <thead style={{ background: COLORS.paper }}>
           <tr className="text-[11px] tracking-wider uppercase" style={{ color: COLORS.inkSoft }}>
@@ -2602,7 +3723,7 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
             <th className="text-right p-2 font-medium">{t("tax")}</th>
             <th className="text-right p-2 font-medium">{t("netProfitCol")}</th>
             <th className="text-right p-2 font-medium">{t("roi")}</th>
-            <th className="text-center p-2 font-medium" style={{ width: "70px" }}>{t("action")}</th>
+            {!readOnly && <th className="text-center p-2 font-medium" style={{ width: "70px" }}>{t("action")}</th>}
           </tr>
         </thead>
         <tbody>
@@ -2615,7 +3736,10 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
                 <tr className="border-t row-glow cursor-pointer" style={{ borderColor: COLORS.line }}
                   onClick={() => setExpandedRow(isOpen ? null : idx)}>
                   <td className="p-2">{isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</td>
-                  <td className="p-2 font-mono text-xs">{r.id}</td>
+                  <td className="p-2 font-mono text-xs">
+                    <div>{r.id}</div>
+                    <PlatformChips details={r.c.platformDetails} />
+                  </td>
                   <td className="p-2 text-right font-mono text-xs">{fmtCny(r.priceCNY)}</td>
                   {showDeclared && (
                     <td className="p-2 text-right font-mono text-xs" style={{ color: declaredDiffers ? COLORS.oxblood : COLORS.inkSoft }}>
@@ -2623,27 +3747,29 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
                     </td>
                   )}
                   <td className="p-2 text-right font-mono text-xs">{r.qty} {t("unitPieces")}</td>
-                  <td className="p-2 text-right font-mono text-xs">{r.list?.toLocaleString("ru-RU")} ₽</td>
-                  <td className="p-2 text-right font-mono text-xs">{r.platformFee?.toLocaleString("ru-RU")} ₽</td>
-                  <td className="p-2 text-right font-mono text-xs">{r.warehouse} ₽</td>
-                  <td className="p-2 text-right font-mono text-xs">{r.mgmt} ₽</td>
+                  <td className="p-2 text-right font-mono text-xs">{(r.c.listPrice || 0).toLocaleString("ru-RU")} RUB</td>
+                  <td className="p-2 text-right font-mono text-xs">{(r.c.platformFee || 0).toLocaleString("ru-RU")} RUB</td>
+                  <td className="p-2 text-right font-mono text-xs">{(r.c.warehouse || 0).toLocaleString("ru-RU")} RUB</td>
+                  <td className="p-2 text-right font-mono text-xs">{(r.c.mgmt || 0).toLocaleString("ru-RU")} RUB</td>
                   <td className="p-2 text-right font-mono text-xs border-l" style={{ borderColor: COLORS.line }}>{F(r.c.totalInvestment)}</td>
                   <td className="p-2 text-right font-mono text-xs">{F(r.c.totalRevenue)}</td>
                   <td className="p-2 text-right font-mono text-xs" style={{ color: COLORS.crimson }}>{F(r.c.tax)}</td>
                   <td className="p-2 text-right font-mono text-xs font-semibold" style={{ color: profitable ? COLORS.emerald : COLORS.crimson }}>{F(r.c.netProfit)}</td>
                   <td className="p-2 text-right font-mono text-xs font-semibold" style={{ color: r.c.roi > 0.3 ? COLORS.emerald : r.c.roi > 0.1 ? COLORS.gold : COLORS.crimson }}>{fmtPct(r.c.roi)}</td>
-                  <td className="p-2 text-center">
-                    <button onClick={(e) => { e.stopPropagation(); if (confirm(t("confirmDeleteProd", { id: r.id }))) onDelete(idx); }}
-                      className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium border"
-                      style={{ borderColor: COLORS.crimson, color: COLORS.crimson, background: "rgba(164,25,61,0.05)" }}>
-                      <Trash2 size={11} /> {t("deleteBtn")}
-                    </button>
-                  </td>
+                  {!readOnly && (
+                    <td className="p-2 text-center">
+                      <button onClick={(e) => { e.stopPropagation(); if (confirm(t("confirmDeleteProd", { id: r.id }))) onDelete(idx); }}
+                        className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium border"
+                        style={{ borderColor: COLORS.crimson, color: COLORS.crimson, background: "rgba(164,25,61,0.05)" }}>
+                        <Trash2 size={11} /> {t("deleteBtn")}
+                      </button>
+                    </td>
+                  )}
                 </tr>
                 {isOpen && (
                   <tr style={{ background: "rgba(184,134,11,0.04)" }}>
-                    <td colSpan={showDeclared ? 15 : 14} className="p-4">
-                      <ProductEditor product={r} idx={idx} onUpdate={onUpdate} calc={r.c} params={params} t={t} fmt={fmt} />
+                    <td colSpan={(showDeclared ? 14 : 13) + (readOnly ? 0 : 1)} className="p-4">
+                      <ProductEditor product={r} idx={idx} onUpdate={onUpdate} calc={r.c} params={params} t={t} fmt={fmt} lang={lang} readOnly={readOnly} />
                     </td>
                   </tr>
                 )}
@@ -2666,28 +3792,439 @@ const ProductTable = ({ calcs, expandedRow, setExpandedRow, onUpdate, onDelete, 
               <td className="p-2 text-right font-mono text-xs">{F(calcs.reduce((a, b) => a + b.c.totalRevenue, 0))}</td>
               <td className="p-2 text-right font-mono text-xs" style={{ color: COLORS.crimson }}>{F(calcs.reduce((a, b) => a + b.c.tax, 0))}</td>
               <td className="p-2 text-right font-mono text-xs" style={{ color: COLORS.emerald }}>{F(calcs.reduce((a, b) => a + b.c.netProfit, 0))}</td>
-              <td colSpan={2}></td>
+              <td colSpan={readOnly ? 1 : 2}></td>
             </tr>
           </tfoot>
         )}
       </table>
     </div>
+    </>
   );
 };
 
-const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
-  const Ff = (v, d = 0) => fmtRub(v, d);  // 计算明细面板统一用₽显示（这些值都是卢布单位）
+const PlatformSettingsPanel = ({ product, idx, onUpdate, calc, params, fmt, readOnly = false }) => {
+  const [openDetails, setOpenDetails] = useState({});
+  const [openAdvanced, setOpenAdvanced] = useState({});
+  const productVolumeLiters = ((Number(product.volL) || 0) * (Number(product.volW) || 0) * (Number(product.volH) || 0)) / 1000;
+  const hasProductDimensions = productVolumeLiters > 0;
+  const platformConfigs = getProductPlatformConfigs(product);
+  const platformRows = SALES_PLATFORMS.map((platform) => {
+    const config = calcPlatformUnitEconomics(platformConfigs[platform.id]);
+    const activeDetail = (calc.platformDetails || []).find((detail) => detail.platformId === platform.id);
+    const effectiveQty = (product.qty || 0) * (1 - params.damageRate);
+    const taxPerUnit = calc.effectiveQty > 0 ? calc.tax / calc.effectiveQty : 0;
+    const unitNet = config.unitPayout - calc.unitCost - (config.warehouse || 0) - (config.mgmt || 0) - taxPerUnit;
+    const totalNet = unitNet * effectiveQty * (activeDetail?.weight ?? 0);
+    return {
+      platform,
+      config,
+      activeDetail,
+      effectiveQty,
+      unitNet,
+      totalNet,
+      roi: calc.unitCost > 0 ? unitNet / calc.unitCost : 0,
+    };
+  });
+
+  const updatePlatformFields = (platformId, patch) => {
+    const configs = getProductPlatformConfigs(product);
+    const next = {
+      ...(product.platforms || {}),
+      [platformId]: {
+        ...configs[platformId],
+        ...patch,
+      },
+    };
+    onUpdate(idx, "platforms", next);
+
+    if (platformId === "ozon") {
+      ["list", "platformFee", "warehouse", "mgmt"].forEach((field) => {
+        if (Object.prototype.hasOwnProperty.call(patch, field)) onUpdate(idx, field, patch[field]);
+      });
+    }
+  };
+
+  const updatePlatform = (platformId, field, value) => updatePlatformFields(platformId, { [field]: value });
+
+  const togglePlatform = (platformId, enabled) => {
+    updatePlatformFields(platformId, {
+      enabled,
+      salesShare: enabled && !platformConfigs[platformId]?.salesShare ? (platformId === "ozon" ? 100 : 10) : platformConfigs[platformId]?.salesShare,
+    });
+  };
+
+  const rub = (value, digits = 0) => fmtRub(value, digits);
+  const pct = (value, digits = 2) => `${(((value || 0) * 100)).toFixed(digits)}%`;
+  const feeSourceText = (config) => {
+    if (!config.useFeeDetails) return "手动填写平台扣费";
+    if (config.feeSource === "tariff") return "按平台费率表计算";
+    if (config.feeSource === "manualRateDetails") return "按手动费率明细计算";
+    if (config.feeSource === "manualFallback") return "缺少参数，暂用手动平台扣费";
+    return "手动填写平台扣费";
+  };
+  const feeSourceColor = (config) => (config.feeSource === "tariff" ? COLORS.emerald : (config.feeSource === "manualRateDetails" ? COLORS.gold : COLORS.crimson));
+  const primaryFeeFields = [
+    ["acceptanceRatePct", "入库/承接率调整", "%pt"],
+    ["adRate", "广告促销预留比例", "%"],
+  ];
+  const advancedFeeFields = {
+    ozon: [
+      ["commissionRate", "佣金兜底比例", "%"],
+      ["paymentRate", "支付手续费比例", "%"],
+      ["baseFreight", "基础物流费", "RUB"],
+      ["nonLocalRate", "跨区销售费率", "%"],
+      ["fbsParcelHandling", "FBS 包裹处理费", "RUB"],
+      ["returnHandling", "退货处理费", "RUB"],
+      ["otherFee", "其他费用", "RUB"],
+    ],
+    wb: [
+      ["commissionRate", "佣金兜底比例", "%"],
+      ["paymentRate", "支付手续费比例", "%"],
+      ["baseRate", "基础物流费", "RUB"],
+      ["overLiterRate", "超过 1L 每升费率", "RUB"],
+      ["warehouseMultiplier", "FBW 仓库系数", "x"],
+      ["fwbStoragePerLiterDay", "FBW 每升每天仓储费", "RUB"],
+      ["penaltyRate", "WB 罚款预留比例", "%"],
+      ["otherFee", "其他费用", "RUB"],
+    ],
+    yandex: [
+      ["commissionRate", "佣金兜底比例", "%"],
+      ["acquiringFee", "收单费", "RUB"],
+      ["paymentTransferRate", "回款转账费率", "%"],
+      ["orderProcessing", "FBS 订单处理费", "RUB"],
+      ["returnHandling", "退货处理费", "RUB"],
+      ["returnDelivery", "退货配送费", "RUB"],
+      ["fbyStorage", "FBY 仓储费", "RUB"],
+      ["otherFee", "其他费用", "RUB"],
+    ],
+  };
+  const formatFieldValue = (field, suffix, config) => {
+    if (suffix === "%") return (config[field] || 0) * 100;
+    return config[field] ?? 0;
+  };
+  const parseFieldValue = (value, suffix) => (suffix === "%" ? value / 100 : value);
+  const inputSuffix = (suffix) => (suffix === "%pt" ? "%" : suffix);
+  const categoryOptionsFor = (platformId) => {
+    if (platformId === "ozon") return TARIFF_META.ozonCommissionCategories || [];
+    if (platformId === "wb") return TARIFF_META.wbCommissionCategories || [];
+    return TARIFF_META.yandexCommissionCategories || [];
+  };
+  const categoryInput = (platform, value, onCommit, placeholder = "") => {
+    const options = categoryOptionsFor(platform.id);
+    const listId = `platform-category-${idx}-${platform.id}`;
+    return (
+      <>
+        <DebouncedTextInput
+          value={value || ""}
+          onCommit={onCommit}
+          placeholder={placeholder}
+          list={listId}
+          className="w-full px-2 py-2 bg-white border text-[11px]"
+          style={{ borderColor: COLORS.line, color: COLORS.ink }}
+          readOnly={readOnly}
+        />
+        <datalist id={listId}>
+          {options.map((option, optionIndex) => (
+            <option key={`${platform.id}-${optionIndex}-${option}`} value={option} />
+          ))}
+        </datalist>
+        <div className="mt-1 text-[10px] leading-4" style={{ color: COLORS.inkSoft }}>
+          可直接输入关键词；下拉建议来自平台费率品类表（{options.length.toLocaleString("zh-CN")} 个选项）。
+        </div>
+      </>
+    );
+  };
+  const selectInput = (value, onChange, options) => (
+    <select
+      value={value || ""}
+      disabled={readOnly}
+      onChange={(event) => onChange(event.target.value)}
+      className="w-full px-2 py-2 border bg-white text-[11px]"
+      style={{ borderColor: COLORS.line, color: COLORS.ink }}
+    >
+      {options.map((option) => <option key={option} value={option}>{option}</option>)}
+    </select>
+  );
+  const tariffFields = (platform, config) => {
+    if (platform.id === "ozon") {
+      return (
+        <>
+          <div className="col-span-2">
+            <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>Ozon 佣金品类</div>
+            {categoryInput(platform, config.ozonProductType, (value) => updatePlatformFields(platform.id, { ozonProductType: value, tariffCategory: value }), "例如：mask")}
+          </div>
+          <div>
+            <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>发货集群</div>
+            {selectInput(config.supplyCluster, (value) => updatePlatform(platform.id, "supplyCluster", value), TARIFF_META.ozonClusters)}
+          </div>
+          <div>
+            <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>配送集群</div>
+            {selectInput(config.deliveryCluster, (value) => updatePlatform(platform.id, "deliveryCluster", value), TARIFF_META.ozonClusters)}
+          </div>
+        </>
+      );
+    }
+    if (platform.id === "wb") {
+      return (
+        <>
+          <div className="col-span-2">
+            <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>WB 佣金子品类</div>
+            {categoryInput(platform, config.wbSubcategory, (value) => updatePlatformFields(platform.id, { wbSubcategory: value, tariffCategory: value }), "例如：brush")}
+          </div>
+          <div className="col-span-2">
+            <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>本地化指数档位</div>
+            {selectInput(config.localizationBand, (value) => updatePlatform(platform.id, "localizationBand", value), TARIFF_META.wbLocalizationBands)}
+          </div>
+        </>
+      );
+    }
+    return (
+      <>
+        <div className="col-span-2">
+          <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>Yandex 品类路径</div>
+          {categoryInput(platform, config.yandexCategory, (value) => updatePlatformFields(platform.id, { yandexCategory: value, tariffCategory: value }), "例如：household goods")}
+        </div>
+        <div className="col-span-2">
+          <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>回款频率</div>
+          {selectInput(config.paymentFrequency, (value) => updatePlatform(platform.id, "paymentFrequency", value), TARIFF_META.yandexPaymentFrequencies)}
+        </div>
+      </>
+    );
+  };
+  return (
+    <div className="lg:col-span-4 border p-3 space-y-3" style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.68)" }}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.gold }}>销售平台</div>
+          <div className="text-[11px] leading-5 mt-1" style={{ color: COLORS.inkSoft }}>
+            按客户方案启用 Ozon、WB 或 Yandex。利润会按已启用平台的销售占比加权；展开平台可调整费率明细。
+          </div>
+        </div>
+        <Tag color={COLORS.emerald}>当前 {calc.platformDetails?.map((item) => item.short).join(" / ") || "Ozon"}</Tag>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-3">
+        {platformRows.map(({ platform, config, unitNet, totalNet, roi }) => {
+          const isOpen = !!openDetails[platform.id];
+          const enabled = !!config.enabled;
+          const effectiveShare = enabled ? ((calc.platformDetails || []).find((detail) => detail.platformId === platform.id)?.weight || 0) : 0;
+          const missingInputs = config.detailBreakdown?.missingInputs || [];
+          const isAdvancedOpen = !!openAdvanced[platform.id];
+          return (
+            <div
+              key={platform.id}
+              className="border bg-white"
+              style={{
+                borderColor: enabled ? COLORS.oxblood + "66" : COLORS.line,
+                opacity: enabled ? 1 : 0.72,
+              }}
+            >
+              <div className="p-3 border-b" style={{ borderColor: COLORS.line, background: enabled ? "rgba(92,26,27,0.035)" : COLORS.paper }}>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: COLORS.ink }}>
+                    <input
+                      type="checkbox"
+                      checked={enabled}
+                      disabled={readOnly}
+                      onChange={(event) => togglePlatform(platform.id, event.target.checked)}
+                    />
+                    {platform.label}
+                  </label>
+                  <select
+                    value={config.model}
+                    disabled={readOnly}
+                    onChange={(event) => updatePlatform(platform.id, "model", event.target.value)}
+                    className="px-2 py-1 border bg-white text-[11px]"
+                    style={{ borderColor: COLORS.line, color: COLORS.inkSoft }}
+                  >
+                    {(platform.id === "ozon" ? ["FBO", "FBS", "RFBS"] : platform.id === "wb" ? ["FBW", "FBS", "DBW", "DBS"] : ["FBY", "FBS", "DBS", "Express"]).map((mode) => (
+                      <option key={mode} value={mode}>{mode}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+                  <div>
+                    <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>平台计费价/折扣前售价</div>
+                    <NumInput value={config.list} onChange={(value) => updatePlatform(platform.id, "list", value)} suffix="RUB" readOnly={readOnly} />
+                    <div className="mt-1 text-[10px] leading-4" style={{ color: COLORS.inkSoft }}>佣金、支付手续费和广告预留按这个价格计算。</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>销售占比</div>
+                    <NumInput value={config.salesShare} onChange={(value) => updatePlatform(platform.id, "salesShare", value)} suffix="%" readOnly={readOnly} />
+                  </div>
+                  <div>
+                    <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>平台综合扣费</div>
+                    <NumInput value={config.platformFee} onChange={(value) => updatePlatform(platform.id, "platformFee", value)} suffix="RUB" readOnly={readOnly || (config.useFeeDetails && config.canUseTariffFee)} />
+                    <div className="mt-1 text-[10px] leading-4" style={{ color: feeSourceColor(config) }}>
+                      {feeSourceText(config)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                  <MiniMetric label="单位回款" value={rub(config.unitPayout)} sub={`${rub(config.platformFee)} 扣费`} color={COLORS.gold} />
+                  <MiniMetric label="单位利润" value={rub(unitNet)} sub={fmtPct(roi)} color={unitNet >= 0 ? COLORS.emerald : COLORS.crimson} />
+                  <MiniMetric label="平台利润" value={rub(totalNet)} sub={enabled ? `实际占比 ${(effectiveShare * 100).toFixed(0)}%` : "未启用"} color={totalNet >= 0 ? COLORS.emerald : COLORS.crimson} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>海外仓费</div>
+                    <NumInput value={config.warehouse} onChange={(value) => updatePlatform(platform.id, "warehouse", value)} suffix="RUB" readOnly={readOnly} />
+                  </div>
+                  <div>
+                    <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>管理费</div>
+                    <NumInput value={config.mgmt} onChange={(value) => updatePlatform(platform.id, "mgmt", value)} suffix="RUB" readOnly={readOnly} />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setOpenDetails((current) => ({ ...current, [platform.id]: !current[platform.id] }))}
+                  className="w-full flex items-center justify-between px-2 py-2 border text-[11px]"
+                  style={{ borderColor: COLORS.line, color: COLORS.inkSoft, background: COLORS.paper }}
+                >
+                  <span>扣费明细</span>
+                  {isOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                </button>
+
+                {isOpen && (
+                  <div className="grid grid-cols-2 gap-2 p-2 border" style={{ borderColor: COLORS.line, background: COLORS.cream }}>
+                    <label className="col-span-2 inline-flex items-center gap-2 text-[11px]" style={{ color: COLORS.inkSoft }}>
+                      <input
+                        type="checkbox"
+                        checked={config.useFeeDetails}
+                        disabled={readOnly}
+                        onChange={(event) => updatePlatform(platform.id, "useFeeDetails", event.target.checked)}
+                      />
+                      按费率参数自动计算平台扣费
+                    </label>
+                    <label className="col-span-2 inline-flex items-center gap-2 text-[11px]" style={{ color: COLORS.inkSoft }}>
+                      <input
+                        type="checkbox"
+                        checked={config.useTariffLookup !== false}
+                        disabled={readOnly}
+                        onChange={(event) => updatePlatform(platform.id, "useTariffLookup", event.target.checked)}
+                      />
+                      优先使用 Excel 费率表匹配佣金和物流费
+                    </label>
+                    {tariffFields(platform, config)}
+                    {primaryFeeFields.map(([field, label, suffix]) => (
+                      <div key={field}>
+                        <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>{label}</div>
+                        <NumInput
+                          value={formatFieldValue(field, suffix, config)}
+                          onChange={(value) => updatePlatform(platform.id, field, parseFieldValue(value, suffix))}
+                          suffix={inputSuffix(suffix)}
+                          step={suffix === "%" ? 0.1 : 1}
+                          readOnly={readOnly}
+                        />
+                      </div>
+                    ))}
+                    <div className="col-span-2 border px-2 py-2 text-[11px] leading-5" style={{ borderColor: COLORS.line, background: "white", color: COLORS.inkSoft }}>
+                      <div>
+                        自动体积：<span className="font-mono" style={{ color: hasProductDimensions ? COLORS.emerald : COLORS.crimson }}>
+                          {hasProductDimensions ? `${productVolumeLiters.toFixed(3)} L / ${(productVolumeLiters / 1000).toFixed(4)} m3` : "请先填写长、宽、高"}
+                        </span>
+                      </div>
+                      <div>
+                        当前扣费来源：<span className="font-semibold" style={{ color: feeSourceColor(config) }}>{feeSourceText(config)}</span>
+                      </div>
+                      {config.detailBreakdown?.tariffSource && (
+                        <div>匹配依据：{config.detailBreakdown.tariffSource}</div>
+                      )}
+                      {config.detailBreakdown?.commissionMatchSource && (
+                        <div>
+                          佣金类目匹配：{config.detailBreakdown.commissionMatched
+                            ? `${config.detailBreakdown.commissionMatchSource}: ${config.detailBreakdown.commissionMatchValue}`
+                            : `${config.detailBreakdown.commissionMatchSource} 未找到：${config.detailBreakdown.commissionMatchInput || "空白"}`}
+                        </div>
+                      )}
+                      {missingInputs.length > 0 && (
+                        <div style={{ color: COLORS.crimson }}>缺少参数：{missingInputs.join(", ")}</div>
+                      )}
+                    </div>
+                    <div className="col-span-2 flex justify-between text-[11px] font-mono border-t pt-2" style={{ borderColor: COLORS.line }}>
+                      <span style={{ color: COLORS.inkSoft }}>费率表计算扣费</span>
+                      <span style={{ color: COLORS.oxblood }}>{rub(config.detailFee, 2)}</span>
+                    </div>
+                    <div className="col-span-2 flex justify-between text-[11px] font-mono">
+                      <span style={{ color: COLORS.inkSoft }}>当前实际使用扣费</span>
+                      <span style={{ color: feeSourceColor(config) }}>{rub(config.platformFee, 2)}</span>
+                    </div>
+                    <div className="col-span-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] font-mono border-t pt-2" style={{ borderColor: COLORS.line, color: COLORS.inkSoft }}>
+                      <span>类目佣金率</span><span className="text-right">{pct(config.detailBreakdown?.commissionRate)}</span>
+                      <span>类目是否匹配</span><span className="text-right">{config.detailBreakdown?.commissionMatched ? "已匹配" : "未匹配"}</span>
+                      {platform.id === "ozon" && (
+                        <>
+                          <span>基础物流费</span><span className="text-right">{rub(config.detailBreakdown?.baseFreight, 2)}</span>
+                          <span>物流费是否匹配</span><span className="text-right">{config.detailBreakdown?.freightMatched ? "已匹配" : "未匹配"}</span>
+                        </>
+                      )}
+                      {platform.id === "wb" && (
+                        <>
+                          <span>本地化指数</span><span className="text-right">{config.detailBreakdown?.localizationMatched ? "已匹配" : "未匹配"}</span>
+                          <span>销售分布系数</span><span className="text-right">{pct(config.detailBreakdown?.salesDistributionRate, 3)}</span>
+                          <span>物流费用合计</span><span className="text-right">{rub(config.detailBreakdown?.logisticsTotal, 2)}</span>
+                        </>
+                      )}
+                      {platform.id === "yandex" && (
+                        <>
+                          <span>付款频率</span><span className="text-right">{config.detailBreakdown?.paymentFrequencyMatched ? "已匹配" : "未匹配"}</span>
+                          <span>尾程费用</span><span className="text-right">{rub(config.detailBreakdown?.lastMile, 2)}</span>
+                          <span>平均配送费</span><span className="text-right">{rub(config.detailBreakdown?.avgDelivery, 2)}</span>
+                        </>
+                      )}
+                    </div>
+                    {config.detailBreakdown?.note && (
+                      <div className="col-span-2 text-[10px] leading-4" style={{ color: COLORS.crimson }}>
+                        {config.detailBreakdown.note}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setOpenAdvanced((current) => ({ ...current, [platform.id]: !current[platform.id] }))}
+                      className="col-span-2 flex items-center justify-between px-2 py-2 border text-[11px]"
+                      style={{ borderColor: COLORS.line, color: COLORS.inkSoft, background: "white" }}
+                    >
+                      <span>高级兜底参数</span>
+                      {isAdvancedOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                    </button>
+                    {isAdvancedOpen && (advancedFeeFields[platform.id] || []).map(([field, label, suffix]) => (
+                      <div key={field}>
+                        <div className="text-[10px]" style={{ color: COLORS.inkSoft }}>{label}</div>
+                        <NumInput
+                          value={formatFieldValue(field, suffix, config)}
+                          onChange={(value) => updatePlatform(platform.id, field, parseFieldValue(value, suffix))}
+                          suffix={inputSuffix(suffix)}
+                          step={suffix === "%" ? 0.1 : 1}
+                          readOnly={readOnly}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt, lang, readOnly = false }) => {
+  const Ff = (v, d = 0) => fmtRub(v, d);
   const fields = [
     { label: t("fieldProductId"), k: "id", type: "text" },
-    { label: t("fieldActualCost"), k: "priceCNY", suffix: "¥", step: 0.01 },
-    { label: t("fieldDeclaredCost"), k: "declaredCNY", suffix: "¥", step: 0.01, highlight: true },
+    { label: t("fieldActualCost"), k: "priceCNY", suffix: "CNY", step: 0.01 },
+    { label: t("fieldDeclaredCost"), k: "declaredCNY", suffix: "CNY", step: 0.01, highlight: true },
     { label: t("fieldQty"), k: "qty", suffix: "pcs" },
     { label: t("fieldWeight"), k: "weight", suffix: "kg", step: 0.01 },
-    { label: t("fieldListPrice"), k: "list", suffix: "₽" },
-    { label: t("fieldPlatformFee"), k: "platformFee", suffix: "₽" },
-    { label: t("fieldWarehouse"), k: "warehouse", suffix: "₽" },
-    { label: t("fieldMgmt"), k: "mgmt", suffix: "₽" },
   ];
+  const productVolumeLiters = ((Number(product.volL) || 0) * (Number(product.volW) || 0) * (Number(product.volH) || 0)) / 1000;
   const declaredDiffers = (product.declaredCNY ?? product.priceCNY) !== product.priceCNY;
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -2703,13 +4240,32 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
               {f.type === "text" ? (
                 <DebouncedTextInput value={product[f.k] || ""} onCommit={(v) => onUpdate(idx, f.k, v)}
                   className="px-2 py-1.5 bg-white border font-mono text-sm"
-                  style={{ borderColor: COLORS.line, color: COLORS.ink }} />
+                  style={{ borderColor: COLORS.line, color: COLORS.ink }}
+                  readOnly={readOnly} />
               ) : (
                 <NumInput value={product[f.k] ?? (f.k === "declaredCNY" ? product.priceCNY : 0)}
-                  onChange={(v) => onUpdate(idx, f.k, v)} suffix={f.suffix} step={f.step || 1} />
+                  onChange={(v) => onUpdate(idx, f.k, v)} suffix={f.suffix} step={f.step || 1} readOnly={readOnly} />
               )}
             </div>
           ))}
+        </div>
+        <div className="p-2.5 border" style={{ borderColor: COLORS.line, background: "rgba(255,255,255,0.72)" }}>
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.gold }}>商品尺寸</div>
+            <span className="text-[10px] font-mono" style={{ color: productVolumeLiters > 0 ? COLORS.emerald : COLORS.crimson }}>
+              {productVolumeLiters > 0 ? `${productVolumeLiters.toFixed(3)} L` : "未填完整"}
+            </span>
+          </div>
+          <div className="flex gap-1.5 items-center">
+            <NumInput value={product.volL || 0} onChange={(v) => onUpdate(idx, "volL", v)} suffix="cm" step={0.1} className="flex-1" readOnly={readOnly} />
+            <span className="text-xs">x</span>
+            <NumInput value={product.volW || 0} onChange={(v) => onUpdate(idx, "volW", v)} suffix="cm" step={0.1} className="flex-1" readOnly={readOnly} />
+            <span className="text-xs">x</span>
+            <NumInput value={product.volH || 0} onChange={(v) => onUpdate(idx, "volH", v)} suffix="cm" step={0.1} className="flex-1" readOnly={readOnly} />
+          </div>
+          <div className="mt-1 text-[10px] font-mono" style={{ color: COLORS.inkSoft }}>
+            自动体积：{productVolumeLiters.toFixed(3)} L / {(productVolumeLiters / 1000).toFixed(4)} m3。Ozon/WB/Yandex 物流费会优先用这个体积匹配。
+          </div>
         </div>
         {/* Shipping mode per product */}
         <div className="mt-2 p-2.5 border" style={{ borderColor: COLORS.line, background: COLORS.paper }}>
@@ -2717,6 +4273,7 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
           <div className="flex gap-1 mb-2">
             {["manual", "gray", "white"].map(m => (
               <button key={m} onClick={() => onUpdate(idx, "shippingMode", m)}
+                disabled={readOnly}
                 className="px-2.5 py-1.5 text-[11px] font-medium rounded-sm border"
                 style={{
                   borderColor: (product.shippingMode || "manual") === m ? COLORS.oxblood : COLORS.line,
@@ -2730,23 +4287,13 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
           {(product.shippingMode || "manual") === "gray" && (
             <div className="flex items-center gap-2">
               <label className="text-[11px] whitespace-nowrap" style={{ color: COLORS.inkSoft }}>{t("weightKg")}:</label>
-              <NumInput value={product.weightKg || 0} onChange={(v) => onUpdate(idx, "weightKg", v)} suffix="kg" step={0.01} className="flex-1" />
-              <span className="text-[10px] font-mono" style={{ color: COLORS.gold }}>→ {fmtRub(calcShipping(product, params))}/件</span>
+              <NumInput value={product.weightKg || 0} onChange={(v) => onUpdate(idx, "weightKg", v)} suffix="kg" step={0.01} className="flex-1" readOnly={readOnly} />
+              <span className="text-[10px] font-mono" style={{ color: COLORS.gold }}>-&gt; {fmtRub(calcShipping(product, params))}/pc</span>
             </div>
           )}
           {(product.shippingMode || "manual") === "white" && (
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <label className="text-[11px] whitespace-nowrap" style={{ color: COLORS.inkSoft }}>{t("volumeLWH")}:</label>
-              </div>
-              <div className="flex gap-1.5 items-center">
-                <NumInput value={product.volL || 0} onChange={(v) => onUpdate(idx, "volL", v)} suffix="cm" step={0.1} className="flex-1" />
-                <span className="text-xs">×</span>
-                <NumInput value={product.volW || 0} onChange={(v) => onUpdate(idx, "volW", v)} suffix="cm" step={0.1} className="flex-1" />
-                <span className="text-xs">×</span>
-                <NumInput value={product.volH || 0} onChange={(v) => onUpdate(idx, "volH", v)} suffix="cm" step={0.1} className="flex-1" />
-              </div>
-              <span className="text-[10px] font-mono" style={{ color: COLORS.gold }}>→ {((product.volL || 0) * (product.volW || 0) * (product.volH || 0) / 1e6).toFixed(4)} m³ · {fmtRub(calcShipping(product, params))}/件</span>
+              <span className="text-[10px] font-mono" style={{ color: COLORS.gold }}>By product dimensions -&gt; {((product.volL || 0) * (product.volW || 0) * (product.volH || 0) / 1e6).toFixed(4)} m3 - {fmtRub(calcShipping(product, params))}/pc</span>
             </div>
           )}
           {(product.shippingMode || "manual") === "gray" && params.taxScheme === "osn" && (
@@ -2754,6 +4301,7 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
           )}
         </div>
       </div>
+      <PlatformSettingsPanel product={product} idx={idx} onUpdate={onUpdate} calc={calc} params={params} fmt={fmt} readOnly={readOnly} />
       <div className="lg:col-span-2 space-y-3">
         <div className="text-[10px] tracking-widest uppercase" style={{ color: COLORS.gold }}>{t("editorCalcDetail")}</div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono p-3" style={{ background: "white", border: `1px solid ${COLORS.line}` }}>
@@ -2797,16 +4345,313 @@ const ProductEditor = ({ product, idx, onUpdate, calc, params, t, fmt }) => {
   );
 };
 
+const tariffRate = (value, digits = 1) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "-";
+  const rate = Math.abs(n) > 1 ? n : n * 100;
+  return `${rate.toFixed(digits)}%`;
+};
+
+const tariffMoney = (value, digits = 2) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "-";
+  return `${n.toLocaleString("ru-RU", { maximumFractionDigits: digits })} RUB`;
+};
+
+const compactRateBands = (rates, buckets = []) => {
+  if (!Array.isArray(rates)) return tariffRate(rates);
+  return rates.map((rate, index) => {
+    const bucket = Number(buckets[index]);
+    const label = Number.isFinite(bucket) ? `${bucket.toLocaleString("ru-RU")}+` : `Band ${index + 1}`;
+    return `${label} ${tariffRate(rate, 0)}`;
+  }).join(" / ");
+};
+
+const matchTariffQuery = (row, query, columns) => {
+  if (!query) return true;
+  return columns.some((column) => String(column.render(row) ?? "").toLocaleLowerCase().includes(query));
+};
+
+const TariffDataTable = ({ rows, columns, query, maxRows = 200, emptyText = "没有匹配行" }) => {
+  const visibleRows = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase();
+    return rows.filter((row) => matchTariffQuery(row, q, columns)).slice(0, maxRows);
+  }, [rows, columns, query, maxRows]);
+  const totalMatches = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase();
+    if (!q) return rows.length;
+    return rows.reduce((count, row) => count + (matchTariffQuery(row, q, columns) ? 1 : 0), 0);
+  }, [rows, columns, query]);
+
+  return (
+    <div className="border bg-white overflow-hidden" style={{ borderColor: COLORS.line }}>
+      <div className="flex items-center justify-between gap-3 px-3 py-2 border-b text-[11px]" style={{ borderColor: COLORS.line, color: COLORS.inkSoft, background: COLORS.paper }}>
+        <span>{totalMatches.toLocaleString("zh-CN")} 行匹配</span>
+        {totalMatches > maxRows && <span>当前只显示前 {maxRows} 行，请搜索缩小范围。</span>}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs" style={{ minWidth: columns.length * 180 }}>
+          <thead style={{ background: COLORS.paper }}>
+            <tr>
+              {columns.map((column) => (
+                <th key={column.key} className={`p-2 text-[10px] font-semibold ${column.align === "right" ? "text-right" : "text-left"}`} style={{ color: COLORS.inkSoft, minWidth: column.width || 150 }}>
+                  {column.header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {visibleRows.map((row, rowIndex) => (
+              <tr key={row.key || rowIndex} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
+                {columns.map((column) => (
+                  <td key={column.key} className={`p-2 align-top ${column.align === "right" ? "text-right font-mono" : ""}`} style={{ color: column.color || COLORS.ink }}>
+                    {column.render(row)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+            {visibleRows.length === 0 && (
+              <tr>
+                <td colSpan={columns.length} className="p-6 text-center text-xs" style={{ color: COLORS.inkSoft }}>
+                  {emptyText}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const TariffTablesPanel = () => {
+  const [platformId, setPlatformId] = useState("ozon");
+  const [sectionId, setSectionId] = useState("commissions");
+  const [query, setQuery] = useState("");
+
+  const tableData = useMemo(() => {
+    const ozonFreight = PLATFORM_TARIFFS.ozon?.freight || {};
+    const ozonVolumeBands = ozonFreight.volumeBands || [];
+    const ozonClusters = ozonFreight.clusters || PLATFORM_TARIFFS.ozon?.clusters || [];
+    const ozonFreightRows = Array.isArray(ozonFreight)
+      ? ozonFreight.map((row, index) => ({
+          key: `ozon-freight-${index}`,
+          volume: row[1],
+          supply: row[2],
+          delivery: row[3],
+          fee: row[5],
+        }))
+      : (ozonFreight.rows || []).map((row, index) => ({
+          key: `ozon-freight-${index}`,
+          volume: ozonVolumeBands[row[0]]?.[1] || row[0],
+          supply: ozonClusters[row[1]] || row[1],
+          delivery: ozonClusters[row[2]] || row[2],
+          fee: row[3],
+        }));
+
+    return {
+      ozonFreightRows,
+      ozonCommissions: PLATFORM_TARIFFS.ozon?.commissions || [],
+      ozonNonLocal: (PLATFORM_TARIFFS.ozon?.nonLocal || []).map((row, index) => ({ key: `ozon-nonlocal-${index}`, cluster: row[0], rate: row[1] })),
+      wbCommissions: PLATFORM_TARIFFS.wb?.commissions || [],
+      wbLocalization: (PLATFORM_TARIFFS.wb?.localization || []).map((row, index) => ({ key: `wb-localization-${index}`, band: row[0], coefficient: row[1], distribution: row[2] })),
+      yandexCommissions: PLATFORM_TARIFFS.yandex?.commissions || [],
+      yandexPayments: (PLATFORM_TARIFFS.yandex?.paymentFrequencies || []).map((row, index) => ({ key: `yandex-payment-${index}`, frequency: row[0], rate: row[1] })),
+    };
+  }, []);
+
+  const sectionsByPlatform = {
+    ozon: [
+      {
+        id: "commissions",
+        label: "佣金（原表 B列：Тип товара）",
+        hint: "对照 Excel 工作表“佣金”：选品类时主要看 B 列 Тип товара；后面费率按原表 FBO/FBS/RFBS 分段合并展示。",
+        rows: tableData.ozonCommissions,
+        columns: [
+          { key: "type", header: "B列：Тип товара", width: 280, render: (row) => row[0] || "-" },
+          { key: "fbo", header: "C-H列：FBO", width: 360, render: (row) => compactRateBands(row[1], PLATFORM_TARIFFS.ozon?.priceBuckets) },
+          { key: "fbs", header: "O-T列：FBS", width: 360, render: (row) => compactRateBands(row[2], PLATFORM_TARIFFS.ozon?.priceBuckets) },
+          { key: "rfbs", header: "U-X列：RFBS", width: 300, render: (row) => compactRateBands(row[3], PLATFORM_TARIFFS.ozon?.rfbsPriceBuckets) },
+        ],
+      },
+      {
+        id: "freight",
+        label: "最新基本运费",
+        hint: "对照 Excel 工作表“最新基本运费”：按 B 列体积、C 列 Кластер поставки、D 列 Кластер доставки 匹配；当前程序使用 F 列 Для товаров свыше 300 руб.。",
+        rows: tableData.ozonFreightRows,
+        columns: [
+          { key: "volume", header: "B列：Объём товара", width: 220, render: (row) => row.volume || "-" },
+          { key: "supply", header: "C列：Кластер поставки", width: 260, render: (row) => row.supply || "-" },
+          { key: "delivery", header: "D列：Кластер доставки", width: 260, render: (row) => row.delivery || "-" },
+          { key: "fee", header: "F列：Для товаров свыше 300 руб.", align: "right", width: 220, render: (row) => tariffMoney(row.fee) },
+        ],
+      },
+      {
+        id: "nonLocal",
+        label: "非本地销售",
+        hint: "对照 Excel 工作表“非本地销售”：A 列是 Кластер доставки，B 列是 Наценка за нелокальную продажу от вашей цены товара。",
+        rows: tableData.ozonNonLocal,
+        columns: [
+          { key: "cluster", header: "A列：Кластер доставки", width: 320, render: (row) => row.cluster || "-" },
+          { key: "rate", header: "B列：Наценка за нелокальную продажу", align: "right", width: 260, render: (row) => tariffRate(row.rate, 2) },
+        ],
+      },
+    ],
+    wb: [
+      {
+        id: "commissions",
+        label: "类目佣金-2026（原表 B列：子类目）",
+        hint: "对照 Excel 工作表“类目佣金-2026”：选品类时主要看 B 列 子类目；费率列保持原表 FBW/FBS/DBW/DBS。",
+        rows: tableData.wbCommissions,
+        columns: [
+          { key: "subcategory", header: "B列：子类目", width: 300, render: (row) => row[0] || "-" },
+          { key: "fbw", header: "C列：FBW", align: "right", render: (row) => tariffRate(row[1]) },
+          { key: "fbs", header: "D列：FBS", align: "right", render: (row) => tariffRate(row[2]) },
+          { key: "dbw", header: "E列：DBW", align: "right", render: (row) => tariffRate(row[3]) },
+          { key: "dbs", header: "F列：DBS", align: "right", render: (row) => tariffRate(row[4]) },
+        ],
+      },
+      {
+        id: "localization",
+        label: "本地化指数",
+        hint: "对照 Excel 工作表“本地化指数”：A 列本地化指数，B 列地域分配系数，C 列销售分布系数。",
+        rows: tableData.wbLocalization,
+        columns: [
+          { key: "band", header: "A列：本地化指数", width: 240, render: (row) => row.band || "-" },
+          { key: "coefficient", header: "B列：地域分配系数", align: "right", width: 180, render: (row) => Number(row.coefficient || 0).toFixed(3) },
+          { key: "distribution", header: "C列：销售分布系数", align: "right", width: 180, render: (row) => tariffRate(row.distribution, 3) },
+        ],
+      },
+    ],
+    yandex: [
+      {
+        id: "commissions",
+        label: "Yandex 佣金表（Категория / Тариф）",
+        hint: "对照 Yandex-4月佣金.xlsx：A-G 列是 Категория (Уровень 1-7)，H 列是 Тариф с 1.04.2026；这里把层级合成一列方便搜索。",
+        rows: tableData.yandexCommissions,
+        columns: [
+          { key: "path", header: "A-G列：Категория (Уровень 1-7)", width: 420, render: (row) => row[0] || "-" },
+          { key: "fby", header: "FBY：Тариф с 1.04.2026", align: "right", width: 190, render: (row) => tariffRate(row[1]) },
+          { key: "fbs", header: "FBS：Тариф с 1.04.2026", align: "right", width: 190, render: (row) => tariffRate(row[2]) },
+          { key: "express", header: "Экспресс：Тариф с 1.04.2026", align: "right", width: 220, render: (row) => tariffRate(row[3]) },
+          { key: "dbs", header: "DBS：Тариф с 1.04.2026", align: "right", width: 190, render: (row) => tariffRate(row[4]) },
+        ],
+      },
+      {
+        id: "payments",
+        label: "参考（付款频率）",
+        hint: "对照星哈酷 Yandex 单位经济效益表的“参考”工作表：A 列 付款频率，B 列 %。",
+        rows: tableData.yandexPayments,
+        columns: [
+          { key: "frequency", header: "A列：付款频率", width: 240, render: (row) => row.frequency || "-" },
+          { key: "rate", header: "B列：%", align: "right", render: (row) => tariffRate(row.rate, 2) },
+        ],
+      },
+    ],
+  };
+
+  const platformTabs = [
+    { id: "ozon", label: "Ozon", count: tableData.ozonCommissions.length },
+    { id: "wb", label: "Wildberries", count: tableData.wbCommissions.length },
+    { id: "yandex", label: "Yandex Market", count: tableData.yandexCommissions.length },
+  ];
+  const activeSections = sectionsByPlatform[platformId] || sectionsByPlatform.ozon;
+  const activeSection = activeSections.find((section) => section.id === sectionId) || activeSections[0];
+  const sourceMap = PLATFORM_TARIFFS.sources || {};
+
+  const switchPlatform = (nextPlatformId) => {
+    setPlatformId(nextPlatformId);
+    setSectionId("commissions");
+    setQuery("");
+  };
+
+  return (
+    <div className="space-y-5 anim-in">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="font-display text-2xl font-semibold">Excel 定价表原始字段核对</h2>
+          <p className="text-xs mt-1 max-w-3xl leading-5" style={{ color: COLORS.inkSoft }}>
+            这里尽量保留 Excel 原工作表名、原列名和列号；括号里的说明只帮助核对，不参与计算。
+          </p>
+        </div>
+        <div className="text-[11px] leading-5 text-right" style={{ color: COLORS.inkSoft }}>
+          <div>生成时间：{PLATFORM_TARIFFS.generatedAt || "未加载"}</div>
+          <div>来源：{sourceMap[platformId] || "platform-tariffs.json"}</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {platformTabs.map((platform) => (
+          <button
+            key={platform.id}
+            type="button"
+            onClick={() => switchPlatform(platform.id)}
+            className="text-left border px-4 py-3"
+            style={{
+              borderColor: platformId === platform.id ? COLORS.oxblood : COLORS.line,
+              background: platformId === platform.id ? "rgba(92,26,27,0.06)" : "white",
+              color: COLORS.ink,
+            }}
+          >
+            <div className="font-display text-lg font-semibold">{platform.label}</div>
+            <div className="text-[11px] mt-1" style={{ color: COLORS.inkSoft }}>
+              {platform.count.toLocaleString("zh-CN")} 行原表数据
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2 items-center justify-between">
+        <div className="flex flex-wrap gap-2">
+          {activeSections.map((section) => (
+            <button
+              key={section.id}
+              type="button"
+              onClick={() => { setSectionId(section.id); setQuery(""); }}
+              className="px-3 py-2 text-xs border"
+              style={{
+                borderColor: activeSection.id === section.id ? COLORS.oxblood : COLORS.line,
+                background: activeSection.id === section.id ? COLORS.oxblood : "white",
+                color: activeSection.id === section.id ? COLORS.cream : COLORS.inkSoft,
+              }}
+            >
+              {section.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center border bg-white px-2 py-1.5 min-w-[260px]" style={{ borderColor: COLORS.line }}>
+          <Search size={14} style={{ color: COLORS.inkSoft }} />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="搜索原表里的类目、集群、区间..."
+            className="ml-2 flex-1 bg-transparent text-xs"
+            style={{ color: COLORS.ink }}
+          />
+        </div>
+      </div>
+
+      <div className="border-l-2 px-3 py-2 text-xs leading-5" style={{ borderColor: COLORS.gold, background: COLORS.paper, color: COLORS.inkSoft }}>
+        <strong style={{ color: COLORS.ink }}>{activeSection.label}</strong>
+        <span className="ml-2">{activeSection.hint}</span>
+      </div>
+
+      <TariffDataTable rows={activeSection.rows} columns={activeSection.columns} query={query} />
+    </div>
+  );
+};
+
 // ============================================================
 // 销售排期 Tab（含售价/平台综合扣费排期）
 // ============================================================
 const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updateSchedule, applyCurve,
   priceScheduleStore, setPriceScheduleStore, restockStore, updateRestock, setRestockStore,
-  withdrawalStore, setWithdrawalStore, t, lang }) => {
+  withdrawalStore, setWithdrawalStore, t, lang, readOnly = false }) => {
   const months = projection.monthsHorizon;
   const totalAllProducts = products.reduce((a, b) => a + (b.qty || 0), 0);
 
-  // 更新某SKU某月的售价
+  // 更新某 SKU 某月的售价
   const updatePrice = (productId, monthIdx, val) => {
     setPriceScheduleStore(s => {
       const entry = { ...(s[productId] || {}) };
@@ -2818,7 +4663,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
     });
   };
 
-  // 更新某SKU某月的平台综合扣费
+  // 更新某 SKU 某月的平台综合扣费
   const updateFee = (productId, monthIdx, val) => {
     setPriceScheduleStore(s => {
       const entry = { ...(s[productId] || {}) };
@@ -2830,7 +4675,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
     });
   };
 
-  // 重置所有售价排期
+  // 重置所有平台计费价排期
   const resetPrices = () => {
     setPriceScheduleStore(s => {
       const next = { ...s };
@@ -2922,8 +4767,8 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                   <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{totalPurchased} {t("unitPieces")}</td>
                   {sched.map((q, i) => (
                     <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
-                      <input type="number" value={q || 0} min="0"
-                        onChange={(e) => updateSchedule(p.id, i, parseInt(e.target.value) || 0)} />
+                      <InlineNumInput value={q || 0} min="0" readOnly={readOnly}
+                        onChange={(value) => updateSchedule(p.id, i, Math.round(value || 0))} />
                     </td>
                   ))}
                   <td className="p-2 text-right font-mono font-semibold" style={{ color: matches ? COLORS.emerald : COLORS.crimson }}>
@@ -2999,16 +4844,16 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                     <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
                       <td className="p-2 font-mono sticky left-0 z-10" style={{ background: 'white' }}>{p.id}</td>
                       <td className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line, background: 'rgba(164,25,61,0.04)' }}>
-                        <input type="number" value={rSched[0] || 0} min="0"
-                          onChange={(e) => updateRestock(p.id, 0, parseInt(e.target.value) || 0)}
+                        <InlineNumInput value={rSched[0] || 0} min="0" readOnly={readOnly}
+                          onChange={(value) => updateRestock(p.id, 0, Math.round(value || 0))}
                           style={{ color: COLORS.oxblood, fontWeight: 600 }} />
                       </td>
                       {Array.from({ length: months }, (_, i) => {
                         const v = rSched[i + 1] || 0;
                         return (
                           <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
-                            <input type="number" value={v || 0} min="0"
-                              onChange={(e) => updateRestock(p.id, i + 1, parseInt(e.target.value) || 0)}
+                            <InlineNumInput value={v || 0} min="0" readOnly={readOnly}
+                              onChange={(value) => updateRestock(p.id, i + 1, Math.round(value || 0))}
                               style={{ color: v > 0 ? COLORS.emerald : undefined, fontWeight: v > 0 ? 600 : undefined }} />
                           </td>
                         );
@@ -3046,7 +4891,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
         )}
       </div>
 
-      {/* ===== 售价排期表格（可折叠） ===== */}
+      {/* ===== 平台计费价排期表格（可折叠） ===== */}
       <div className="border" style={{ borderColor: COLORS.line, background: "white" }}>
         <button
           onClick={() => setShowPriceSchedule(!showPriceSchedule)}
@@ -3073,7 +4918,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
               <thead style={{ background: COLORS.paper }}>
                 <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
                   <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: "120px" }}>{t("sku")}</th>
-                  <th className="text-right p-2" style={{ minWidth: "72px" }}>{t("defaultPrice")}（₽）</th>
+                  <th className="text-right p-2" style={{ minWidth: "86px" }}>默认计费价（₽）</th>
                   {Array.from({ length: months }, (_, i) => (
                     <th key={i} className="text-center p-2 font-mono" style={{ minWidth: "70px" }}>{t("monthLabel")}{i + 1}</th>
                   ))}
@@ -3083,18 +4928,20 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                 {products.map(p => {
                   const entry = priceScheduleStore[p.id];
                   const listArr = entry?.list || [];
+                  const platformAvg = getProductPlatformAverages(p);
+                  const defaultList = platformAvg.list;
                   return (
                     <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
                       <td className="p-2 font-mono sticky left-0 z-10" style={{ background: "white" }}>{p.id}</td>
-                      <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{(p.list || 0).toLocaleString("ru-RU")} ₽</td>
+                      <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{(defaultList || 0).toLocaleString("ru-RU")} RUB</td>
                       {Array.from({ length: months }, (_, i) => {
                         const v = listArr[i] || 0;
-                        const isCustom = v > 0 && v !== (p.list || 0);
+                        const isCustom = v > 0 && v !== (defaultList || 0);
                         return (
                           <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
-                            <input type="number" value={v || ""} min="0"
-                              placeholder={String(p.list || 0)}
-                              onChange={(e) => updatePrice(p.id, i, parseInt(e.target.value) || 0)}
+                            <InlineNumInput value={v || 0} min="0" readOnly={readOnly}
+                              placeholder={String(Math.round(defaultList || 0))}
+                              onChange={(value) => updatePrice(p.id, i, Math.round(value || 0))}
                               style={{ color: isCustom ? COLORS.oxblood : undefined, fontWeight: isCustom ? 600 : undefined }} />
                           </td>
                         );
@@ -3135,7 +4982,7 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
               <thead style={{ background: COLORS.paper }}>
                 <tr className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.inkSoft }}>
                   <th className="text-left p-2 sticky left-0 z-10" style={{ background: COLORS.paper, minWidth: "120px" }}>{t("sku")}</th>
-                  <th className="text-right p-2" style={{ minWidth: "72px" }}>{t("defaultPrice")}（₽）</th>
+                  <th className="text-right p-2" style={{ minWidth: "96px" }}>默认扣费（₽）</th>
                   {Array.from({ length: months }, (_, i) => (
                     <th key={i} className="text-center p-2 font-mono" style={{ minWidth: "70px" }}>{t("monthLabel")}{i + 1}</th>
                   ))}
@@ -3145,18 +4992,20 @@ const ScheduleTab = ({ products, projection, setProjection, scheduleStore, updat
                 {products.map(p => {
                   const entry = priceScheduleStore[p.id];
                   const feeArr = entry?.fee || [];
+                  const platformAvg = getProductPlatformAverages(p);
+                  const defaultFee = platformAvg.platformFee;
                   return (
                     <tr key={p.id} className="border-t ledger-row" style={{ borderColor: COLORS.line }}>
                       <td className="p-2 font-mono sticky left-0 z-10" style={{ background: "white" }}>{p.id}</td>
-                      <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{(p.platformFee || 0).toLocaleString("ru-RU")} ₽</td>
+                      <td className="p-2 text-right font-mono" style={{ color: COLORS.inkSoft }}>{(defaultFee || 0).toLocaleString("ru-RU")} RUB</td>
                       {Array.from({ length: months }, (_, i) => {
                         const v = feeArr[i] || 0;
-                        const isCustom = v > 0 && v !== (p.platformFee || 0);
+                        const isCustom = v > 0 && v !== (defaultFee || 0);
                         return (
                           <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
-                            <input type="number" value={v || ""} min="0"
-                              placeholder={String(p.platformFee || 0)}
-                              onChange={(e) => updateFee(p.id, i, parseInt(e.target.value) || 0)}
+                            <InlineNumInput value={v || 0} min="0" readOnly={readOnly}
+                              placeholder={String(Math.round(defaultFee || 0))}
+                              onChange={(value) => updateFee(p.id, i, Math.round(value || 0))}
                               style={{ color: isCustom ? COLORS.gold : undefined, fontWeight: isCustom ? 600 : undefined }} />
                           </td>
                         );
@@ -3201,9 +5050,9 @@ const VATThresholdMonitor = ({ proj, projection, updateProj, params, t, lang }) 
             <div className="font-semibold text-sm">{t("vatAutoTrigger")}</div>
             <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>
               {t("vatAutoDesc")}
-              <strong> 0–20M</strong>{t("vatTier0Desc")};
-              <strong style={{ color: COLORS.gold }}> 20M–250M</strong>{t("vatTier1Desc")};
-              <strong style={{ color: COLORS.oxbloodSoft }}> 250M–450M</strong>{t("vatTier2Desc")};
+              <strong> 0-0M</strong>{t("vatTier0Desc")};
+              <strong style={{ color: COLORS.gold }}> 20M-50M</strong>{t("vatTier1Desc")};
+              <strong style={{ color: COLORS.oxbloodSoft }}> 250M-50M</strong>{t("vatTier2Desc")};
               <strong style={{ color: COLORS.crimson }}> 450M+</strong>{t("vatTier3Desc")}
             </div>
           </div>
@@ -3284,7 +5133,7 @@ const VATThresholdMonitor = ({ proj, projection, updateProj, params, t, lang }) 
 // ============================================================
 // 现金流 Tab
 // ============================================================
-const ProjectionTab = ({ proj, projection, setProjection, params, totals, withdrawalStore, setWithdrawalStore, t, lang, fmt }) => {
+const ProjectionTab = ({ proj, projection, setProjection, params, totals, withdrawalStore, setWithdrawalStore, t, lang, fmt, readOnly = false }) => {
   const updateProj = (k, v) => setProjection(p => ({ ...p, [k]: v }));
   const months = projection.monthsHorizon;
   const [showWithdrawalSchedule, setShowWithdrawalSchedule] = useState(false);
@@ -3302,7 +5151,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, totals, withdr
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-5 border" style={{ borderColor: COLORS.line, background: "white" }}>
           <Metric label={t("currentMonth")}
-            value={proj.breakEvenMonth ? t("monthN", { n: proj.breakEvenMonth }) : "—"}
+            value={proj.breakEvenMonth ? t("monthN", { n: proj.breakEvenMonth }) : "-"}
             sub={proj.breakEvenMonth ? t("breakEvenMsg", { n: proj.breakEvenMonth }) : t("noBreakEven")}
             color={proj.breakEvenMonth ? COLORS.emerald : COLORS.crimson} big />
         </div>
@@ -3322,21 +5171,21 @@ const ProjectionTab = ({ proj, projection, setProjection, params, totals, withdr
         </div>
       </div>
 
-      <Card kicker="增值税阈值 · 2026" title={t("vatThreshold")}>
+      <Card kicker="增值税门槛 2026" title={t("vatThreshold")}>
         <VATThresholdMonitor proj={proj} projection={projection} updateProj={updateProj} params={params} t={t} lang={lang} />
       </Card>
 
       <AudienceQuickGuide compact />
 
-      <Card kicker="Cumulative Cash" title={t("cumCashChart")}>
+      <Card kicker="累计现金" title={t("cumCashChart")}>
         <CashFlowChart proj={proj} t={t} fmt={fmt} />
       </Card>
 
-      <Card kicker="Monthly P&L" title={t("monthlyNetProfit")}>
+      <Card kicker="月度利润" title={t("monthlyNetProfit")}>
         <MonthlyPnLChart proj={proj} t={t} fmt={fmt} />
       </Card>
 
-      <Card kicker="Projection" title={t("projParams")}>
+      <Card kicker="预测参数" title={t("projParams")}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("projMonths")}</label>
@@ -3348,11 +5197,11 @@ const ProjectionTab = ({ proj, projection, setProjection, params, totals, withdr
           </div>
           <div>
             <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("fixedCost")}</label>
-            <NumInput value={projection.monthlyFixedCost} onChange={(v) => updateProj("monthlyFixedCost", Math.max(0, v))} suffix="₽" step={1000} className="mt-1" />
+            <NumInput value={projection.monthlyFixedCost} onChange={(v) => updateProj("monthlyFixedCost", Math.max(0, v))} suffix="RUB" step={1000} className="mt-1" />
           </div>
           <div>
             <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("priorRevenue")}</label>
-            <NumInput value={projection.priorYearRevenue} onChange={(v) => updateProj("priorYearRevenue", Math.max(0, v))} suffix="₽" step={100000} className="mt-1" />
+            <NumInput value={projection.priorYearRevenue} onChange={(v) => updateProj("priorYearRevenue", Math.max(0, v))} suffix="RUB" step={100000} className="mt-1" />
           </div>
         </div>
         <div className="mt-3 text-xs" style={{ color: COLORS.inkSoft }}>
@@ -3368,7 +5217,7 @@ const ProjectionTab = ({ proj, projection, setProjection, params, totals, withdr
       </Card>
 
       {/* ===== 分润排期 ===== */}
-      <Card kicker="Distribution" title={t("withdrawalTitle")}>
+      <Card kicker="分润/提现" title={t("withdrawalTitle")}>
         <div className="text-xs mb-3" style={{ color: COLORS.inkSoft }}>
           {t("withdrawalHint")}
         </div>
@@ -3390,14 +5239,14 @@ const ProjectionTab = ({ proj, projection, setProjection, params, totals, withdr
                   const v = (withdrawalStore?.amounts?.[i]) || 0;
                   return (
                     <td key={i} className="schedule-cell p-0 border-l" style={{ borderColor: COLORS.line }}>
-                      <input type="number" value={v || 0} min="0" step="1000"
-                        onChange={(e) => updateWithdrawal(i, parseInt(e.target.value) || 0)}
+                      <InlineNumInput value={v || 0} min="0" step="1000" readOnly={readOnly}
+                        onChange={(value) => updateWithdrawal(i, Math.round(value || 0))}
                         style={{ color: v > 0 ? COLORS.emerald : undefined, fontWeight: v > 0 ? 600 : undefined }} />
                     </td>
                   );
                 })}
                 <td className="p-2 text-right font-mono font-semibold" style={{ color: COLORS.emerald }}>
-                  {((withdrawalStore?.amounts || []).reduce((a, b) => a + (b || 0), 0)).toLocaleString('ru-RU')} ₽
+                  {((withdrawalStore?.amounts || []).reduce((a, b) => a + (b || 0), 0)).toLocaleString('ru-RU')} RUB
                 </td>
               </tr>
             </tbody>
@@ -3412,15 +5261,15 @@ const ProjectionTab = ({ proj, projection, setProjection, params, totals, withdr
         </div>
       </Card>
 
-      <Card kicker="Monthly P&L" title={t("cashFlowDetail")}>
+      <Card kicker="月度明细" title={t("cashFlowDetail")}>
         <div className="mb-3">
           <MetricBasisNote totals={totals} params={params} proj={proj} projection={projection} fmt={fmt} compact />
         </div>
         <div className="text-xs mb-3 p-2 border-l-2" style={{ borderColor: COLORS.gold, background: COLORS.paper, color: COLORS.inkSoft }}>
           <Info size={12} className="inline mr-1" />
           <strong style={{ color: COLORS.ink }}>{t("projCashVsPnl")}</strong>
-          <br />· <strong>{t("projNetLabel")}</strong> {t("projNetDesc")}
-          <br />· <strong>{t("projCashLabel")}</strong> {t("projCashDesc")}
+          <br />- <strong>{t("projNetLabel")}</strong> {t("projNetDesc")}
+          <br />- <strong>{t("projCashLabel")}</strong> {t("projCashDesc")}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs" style={{ minWidth: "1650px" }}>
@@ -3452,28 +5301,28 @@ const ProjectionTab = ({ proj, projection, setProjection, params, totals, withdr
                     {m.label}{m.isInitial && <span className="ml-1 text-[10px]" style={{ color: COLORS.crimson }}>{t("investLabel")}</span>}
                   </td>
                   <td className="p-2 text-[10px]" style={{ color: m.vatTierKey && (m.vatTierKey === "vatLabelVat5" || m.vatTierKey === "vatLabelVat7" || m.vatTierKey === "vatLabelOsn22") ? COLORS.crimson : COLORS.inkSoft }}>
-                    {m.isInitial ? "—" : (m.vatTierKey ? t(m.vatTierKey, m.vatTierKey === "vatLabelFixedOsn" ? { rate: (m.vatRate*100).toFixed(0) } : {}) : "—")}
+                    {m.isInitial ? "-" : (m.vatTierKey ? t(m.vatTierKey, m.vatTierKey === "vatLabelFixedOsn" ? { rate: (m.vatRate*100).toFixed(0) } : {}) : "-")}
                   </td>
                   <td className="p-2 text-right font-mono text-[10px]" style={{ color: m.restockQty > 0 ? COLORS.crimson : COLORS.inkSoft }}>
-                    {m.restockQty > 0 ? `+${m.restockQty} ${t("unitPieces")}` : "—"}
+                    {m.restockQty > 0 ? `+${m.restockQty} ${t("unitPieces")}` : "-"}
                     {m.restockCost > 0 && !m.isInitial && <div className="text-[9px]" style={{ color: COLORS.crimson }}>-{F(m.restockCost)}</div>}
                   </td>
                   <td className="p-2 text-right font-mono" style={{ color: m.stockWarning ? COLORS.crimson : COLORS.inkSoft }}>
-                    {m.stockEnd} {t("unitPieces")}{m.stockWarning && <span className="ml-1 text-[9px]">⚠</span>}
+                    {m.stockEnd} {t("unitPieces")}{m.stockWarning && <span className="ml-1 text-[9px]">!</span>}
                   </td>
-                  <td className="p-2 text-right font-mono">{m.soldQty ? `${m.soldQty} ${t("unitPieces")}` : "—"}</td>
-                  <td className="p-2 text-right font-mono">{m.revenue ? F(m.revenue) : "—"}</td>
-                  <td className="p-2 text-right font-mono">{m.cogs ? F(m.cogs) : (m.isInitial ? F(-(proj.initialOutflow - (m.importVAT || 0))) : "—")}</td>
-                  <td className="p-2 text-right font-mono">{m.expenses ? F(m.expenses) : "—"}</td>
-                  <td className="p-2 text-right font-mono">{m.fixedCost ? F(m.fixedCost) : "—"}</td>
-                  <td className="p-2 text-right font-mono" style={{ color: m.tax > 0 ? COLORS.crimson : COLORS.inkSoft }}>{m.tax ? F(m.tax) : "—"}</td>
-                  <td className="p-2 text-right font-mono" style={{ color: COLORS.crimson }}>{m.damageLoss ? F(m.damageLoss) : "—"}</td>
+                  <td className="p-2 text-right font-mono">{m.soldQty ? `${m.soldQty} ${t("unitPieces")}` : "-"}</td>
+                  <td className="p-2 text-right font-mono">{m.revenue ? F(m.revenue) : "-"}</td>
+                  <td className="p-2 text-right font-mono">{m.cogs ? F(m.cogs) : (m.isInitial ? F(-(proj.initialOutflow - (m.importVAT || 0))) : "-")}</td>
+                  <td className="p-2 text-right font-mono">{m.expenses ? F(m.expenses) : "-"}</td>
+                  <td className="p-2 text-right font-mono">{m.fixedCost ? F(m.fixedCost) : "-"}</td>
+                  <td className="p-2 text-right font-mono" style={{ color: m.tax > 0 ? COLORS.crimson : COLORS.inkSoft }}>{m.tax ? F(m.tax) : "-"}</td>
+                  <td className="p-2 text-right font-mono" style={{ color: COLORS.crimson }}>{m.damageLoss ? F(m.damageLoss) : "-"}</td>
                   <td className="p-2 text-right font-mono font-semibold border-l" style={{ borderColor: COLORS.line, color: m.netProfit >= 0 ? COLORS.emerald : COLORS.crimson }}>
                     {F(m.netProfit)}
                   </td>
-                  <td className="p-2 text-right font-mono" style={{ color: COLORS.gold }}>{m.distributed ? F(m.distributed) : "—"}</td>
-                  <td className="p-2 text-right font-mono">{m.partnerPayout ? F(m.partnerPayout) : "—"}</td>
-                  <td className="p-2 text-right font-mono">{m.ownerPayout ? F(m.ownerPayout) : "—"}</td>
+                  <td className="p-2 text-right font-mono" style={{ color: COLORS.gold }}>{m.distributed ? F(m.distributed) : "-"}</td>
+                  <td className="p-2 text-right font-mono">{m.partnerPayout ? F(m.partnerPayout) : "-"}</td>
+                  <td className="p-2 text-right font-mono">{m.ownerPayout ? F(m.ownerPayout) : "-"}</td>
                   <td className="p-2 text-right font-mono" style={{ color: m.cashFlow >= 0 ? COLORS.emerald : COLORS.crimson }}>{F(m.cashFlow)}</td>
                   <td className="p-2 text-right font-mono font-semibold border-l" style={{ borderColor: COLORS.line, color: m.cumCash >= 0 ? COLORS.emerald : COLORS.crimson }}>
                     {F(m.cumCash)}
@@ -3595,10 +5444,10 @@ const TaxSchemePicker = ({ params, setParams, t, lang }) => (
 
 const ParamsPanel = ({ params, setParams, t }) => {
   const items = [
-    { label: t("paramExchangeRate"), k: "exchangeRate", suffix: "₽/¥", step: 0.1 },
-    { label: t("paramUsdRate"), k: "usdRate", suffix: "₽/$", step: 0.5 },
+    { label: t("paramExchangeRate"), k: "exchangeRate", suffix: "RUB/CNY", step: 0.1 },
+    { label: t("paramUsdRate"), k: "usdRate", suffix: "RUB/USD", step: 0.5 },
     { label: t("paramDamageRate"), k: "damageRate", suffix: "%", step: 0.5, multiplier: 100 },
-    { label: t("paramOneTime"), k: "oneTimeCosts", suffix: "₽", step: 100 },
+    { label: t("paramOneTime"), k: "oneTimeCosts", suffix: "RUB", step: 100 },
   ];
   return (
     <div className="space-y-3">
@@ -3621,15 +5470,15 @@ const ParamsPanel = ({ params, setParams, t }) => {
         <div className="space-y-2">
           <div>
             <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("paramShipping")} ({t("shippingManual")})</label>
-            <NumInput value={params.shippingPerUnit} onChange={(v) => setParams(p => ({ ...p, shippingPerUnit: v }))} suffix="₽/件" step={1} className="mt-1" />
+            <NumInput value={params.shippingPerUnit} onChange={(v) => setParams(p => ({ ...p, shippingPerUnit: v }))} suffix="RUB/pc" step={1} className="mt-1" />
           </div>
           <div>
             <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("grayShipPrice")}</label>
-            <NumInput value={params.grayShipPrice} onChange={(v) => setParams(p => ({ ...p, grayShipPrice: v }))} suffix="¥/kg" step={0.5} className="mt-1" />
+            <NumInput value={params.grayShipPrice} onChange={(v) => setParams(p => ({ ...p, grayShipPrice: v }))} suffix="CNY/kg" step={0.5} className="mt-1" />
           </div>
           <div>
             <label className="text-xs" style={{ color: COLORS.inkSoft }}>{t("whiteShipPrice")}</label>
-            <NumInput value={params.whiteShipPrice} onChange={(v) => setParams(p => ({ ...p, whiteShipPrice: v }))} suffix="¥/m³" step={10} className="mt-1" />
+            <NumInput value={params.whiteShipPrice} onChange={(v) => setParams(p => ({ ...p, whiteShipPrice: v }))} suffix="CNY/m3" step={10} className="mt-1" />
           </div>
         </div>
       </div>
@@ -3642,7 +5491,7 @@ const ParamsPanel = ({ params, setParams, t }) => {
 // ============================================================
 const HelpPanel = ({ t }) => (
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 anim-in">
-    <Card kicker="2026 Reform" title={t("helpTitle")} className="lg:col-span-2">
+    <Card kicker="2026 税改" title={t("helpTitle")} className="lg:col-span-2">
       <div className="space-y-4 text-sm">
         <div>
           <div className="font-display font-semibold text-base mb-1">{t("helpVatTitle")}</div>
@@ -3651,10 +5500,10 @@ const HelpPanel = ({ t }) => (
         <div>
           <div className="font-display font-semibold text-base mb-1">{t("helpUsnTitle")}</div>
           <ul className="list-disc list-inside space-y-1" style={{ color: COLORS.inkSoft }}>
-            <li>2025: 60M ₽</li>
-            <li className="font-semibold" style={{ color: COLORS.oxblood }}>2026: 20M ₽</li>
-            <li>2027: 15M ₽</li>
-            <li>2028: 10M ₽</li>
+            <li>2025: 60M RUB</li>
+            <li className="font-semibold" style={{ color: COLORS.oxblood }}>2026: 20M RUB</li>
+            <li>2027: 15M RUB</li>
+            <li>2028: 10M RUB</li>
           </ul>
           <p className="mt-2" style={{ color: COLORS.inkSoft }}>{t("helpUsnDesc")}</p>
         </div>
@@ -3673,7 +5522,7 @@ const HelpPanel = ({ t }) => (
       </div>
     </Card>
 
-    <Card kicker="Practical Tips" title={t("helpPractical")}>
+    <Card kicker="实操提醒" title={t("helpPractical")}>
       <div className="space-y-3 text-sm">
         <div className="p-3 border-l-2" style={{ borderColor: COLORS.gold, background: COLORS.paper }}>
           <div className="font-semibold mb-1">{t("helpDeclaredTitle")}</div>
@@ -3699,116 +5548,53 @@ const HelpPanel = ({ t }) => (
 // ============================================================
 // 术语词典
 // ============================================================
+const GLOSSARY_SECTIONS = [
+  {
+    section: "总览指标",
+    items: [
+      { term: "总营收", desc: "所有销售单位扣完平台综合扣费后的平台到手回款合计。", example: "平台计费价 1249 ₽ - 平台扣费 652 ₽ = 到手回款 597 ₽/销售单位。" },
+      { term: "总投资", desc: "当前模型里已填写的采购成本、物流/清关相关字段、贴标和启动费等投入合计。", example: "单个销售单位成本 224 ₽ × 30 件 = 6720 ₽。" },
+      { term: "商品经营利润（未扣启动费）", desc: "这批商品按当前报价和税费算出来的利润，还没有扣一次性启动费。", example: "销售回款 - 商品成本 - 海外仓费 - 管理费 - 税。" },
+      { term: "最后账上还剩现金", desc: "按月度销售、固定支出、补货和分润/提现后，项目账上最后剩下的钱。", example: "M0 是先付出去的钱；后面月份再把实际现金进出加回来。" },
+    ],
+  },
+  {
+    section: "投资人关注",
+    items: [
+      { term: "M0 先付出去的钱", desc: "还没开始卖之前先垫出去的钱，通常包括首批备货和已填写的前置成本。", example: "M0 = -108万 ₽，表示销售回款进来前先垫了 108万 ₽。" },
+      { term: "回本月份", desc: "账上累计现金第一次转正的月份。", example: "M5 还是负数，M6 转正，那就是第 6 个月回本。" },
+      { term: "最缺钱的时候", desc: "预测期间账上现金最低的点，也就是最大资金压力。", example: "通常出现在 M0 或补货后、回款前。" },
+      { term: "回报率（ROI/投入产出）", desc: "利润 ÷ 投入 × 100%，看每投入 1 块钱大概能赚回多少。", example: "投资 10万 ₽，利润 4.7万 ₽，回报率就是 47%。" },
+    ],
+  },
+  {
+    section: "商品明细",
+    items: [
+      { term: "供应商报价/报关申报价", desc: "供应商报价是实际采购测算口径；报关申报价用于清关、进口 VAT 和可抵扣成本假设。", example: "实际采购 20 元，报关申报 15 元，两者可以不同。" },
+      { term: "平台综合扣费", desc: "每个销售单位被 Ozon、WB 或 Yandex 扣掉的钱，包含佣金和已纳入的平台相关费用。", example: "平台计费价 1249 ₽ - 平台扣费 652 ₽ = 到手回款 597 ₽。" },
+      { term: "有效销售数量", desc: "扣掉货损率后预计真正能卖出去的数量。", example: "100 件 × 97% = 97 件有效销售数量。" },
+    ],
+  },
+  {
+    section: "税务与现金流",
+    items: [
+      { term: "本月经营利润", desc: "某个月按销售回款、成本、费用和税算出来的经营利润。", example: "30万 ₽ 回款 - 15万 ₽ 成本 - 5万 ₽ 费用 - 2万 ₽ 税 = 8万 ₽。" },
+      { term: "账上累计现金", desc: "从 M0 到每个月末滚动计算的现金余额。", example: "负数表示还没回本，正数表示账上现金已转正。" },
+      { term: "本月适用税制", desc: "这个月实际套用的税制，包含超过门槛后触发增值税（VAT）的情况。", example: "年收入超过 20M ₽ 后，模型会提示 VAT 档变化。" },
+    ],
+  },
+];
+
 const GLOSSARY = {
-  zh: [
-    { section: "总览仪表盘", items: [
-      { term: "总营收", desc: "所有商品卖出后，平台打给你的总金额（售价 - 平台综合扣费）。", example: "商品售价 1249₽，平台综合扣费 652₽ → 单件回款 597₽。30件 → 总营收 = 597 × 30 × 97%（扣货损）= 17,373₽" },
-      { term: "总投资", desc: "测算口径下需要占用的资金：供应商报价/预估采购价 + 已填写的到俄物流费用 + 一次性费用。德力当前版本到俄运费和贴标/本地化都为 0，等工厂和货代报价后再重算。供应商报价按上架销售单位填写，正式报价后必须替换。", example: "6只装预估供应商报价18¥/套 × 汇率12.8 = 230.4₽，到俄运费和贴标暂不计 → 每套成本230.4₽。100套 → 投资 = 23,040₽" },
-      { term: "商品经营利润（不含启动费）", desc: "按每个产品单独算税后汇总的经营利润。它看的是这批商品本身赚不赚钱，还没有扣一次性启动费。= 总营收 − 总投资 − 仓储 − 管理费 − 税。", example: "营收 17,373₽ − 投资 9,354₽ − 仓 2,970₽ − 管理 1,080₽ − 税 580₽ = 商品经营利润 3,389₽" },
-      { term: "扣启动费后利润", desc: "商品经营利润再扣掉一次性启动费后的结果。适合判断这个项目把启动成本也算进去后还剩多少利润。", example: "商品经营利润 50万₽ − 一次性启动费 8万₽ = 扣启动费后利润 42万₽" },
-      { term: "最后账上还剩现金", desc: "经过N个月销售排期后，扣除月固定费用、补货支出和分给合伙人的钱/提现后，账上实际还剩多少钱。它按月度现金流累计计算。", example: "M0先付 -108万₽ → M1经营回款+15万 → M2补货/分润后+20万 → ... → M8账上余额 = +57.5万₽" },
-      { term: "利润 vs 最后账上还剩现金", desc: "两个数不一样是正常的。利润是经营结果口径；最后账上还剩现金是现金流口径，会叠加M0备货、补货节奏、月固定费用，以及分给合伙人的钱/提现。", example: "商品经营利润看这批货赚了多少；最后账上还剩现金看经过备货、补货、固定月租和分润后，账户里实际剩多少" },
-      { term: "回报率（ROI/投入产出）", desc: "每投入1块钱能赚回多少。= 利润 ÷ 总投资 × 100%", example: "投资10万₽，赚4.7万₽ → 回报率 = 47%。意思是每投1卢布赚回0.47卢布" },
-      { term: "利润率（净利率）", desc: "每赚100块营收里有多少是利润。= 利润 ÷ 总营收 × 100%", example: "营收21万₽，利润4.7万₽ → 利润率 = 22.3%。每100₽营收中22.3₽是利润" },
-    ]},
-    { section: "投资人关注", items: [
-      { term: "M0 先付出去的钱", desc: "M0（第零个月）你要一次性掏出的全部钱：所有商品的供应商报价/预估采购、已填写的运费、一次性费用和进口时付的增值税（进项VAT，如果是俄罗斯一般税制）。如果运费留空，就代表当前模型暂不含到俄头程物流。", example: "产品采购合计108万₽、到俄运费和贴标待报价 → M0 先按 -108万₽ 测算，报价后重跑" },
-      { term: "最缺钱的时候", desc: "整个预测期内，你账上现金最低的那一刻。通常就是M0刚付完货款的时候。专业口径也叫最大资金压力/最大回撤。", example: "M0付完108万₽，账上 -108万₽ → 这就是最缺钱的时候" },
-      { term: "回本月份", desc: "账上累计现金从负变正的那个月。之前都是还没回本，从这个月开始你把本钱赚回来了。", example: "M5账上累计 -5万₽，M6账上累计 +2万₽ → 第6个月回本" },
-      { term: "旺季峰值回款", desc: "销售排期里回款最高的月份。玻璃餐厨品类淡旺季明显，比平均月回款更适合判断旺季资金压力。", example: "M10-M12销量更高，若M11回款最高为45万₽，就按45万₽观察峰值库存和现金流。" },
-    ]},
-    { section: "商品明细", items: [
-      { term: "供应商报价 vs 报关申报价", desc: "当前供应商报价/预估采购价和报关申报价是测算假设，不是德力正式报价。字段按上架销售单位填写，不按单只杯子：6只装按整套，L12按12件套整套，壶杯套装按整套。拿到工厂 EXW/FOB、MOQ、装箱和毛重后，需要替换并重跑模型。俄罗斯一般税制（OSN）下，进口时付的增值税（进项VAT）按报关申报价算。", example: "TY1628 6只装预估供应商报价18¥/套，报关申报价15¥/套 → 进口时付的增值税（进项VAT）按15¥/套算；若工厂报价按单只给，需要先乘以套内数量再填入模型" },
-      { term: "平台综合扣费", desc: "Ozon/WB/Yandex 每笔订单的综合扣减，不只是佣金，还包括支付、平台配送/退货、广告促销预留等。", example: "售价1249₽，平台综合扣费652₽ → 你实际到手 597₽" },
-      { term: "海外仓费用、管理费", desc: "海外仓费用 = 俄罗斯本地仓储/处理费用。管理费 = 代运营、客服、售后处理等管理成本。两项在模型里分开填写、分开查看。", example: "例：海外仓费用99₽/销售单位，管理费36₽/销售单位，两项分别进入成本表。" },
-      { term: "有效件数", desc: "考虑货损率后的实际可售数量。默认货损3%。", example: "备货100件 × (1-3%) = 有效97件。3件在运输中损坏不能卖" },
-      { term: "单位回款", desc: "每卖出1件，平台实际打给你的钱。= 售价 − 平台综合扣费", example: "售价1249₽ − 平台综合扣费652₽ = 单位回款597₽" },
-    ]},
-    { section: "现金流预测", items: [
-      { term: "本月经营利润 vs 本月实际现金进出", desc: "本月经营利润 = 营收 − 成本 − 仓管 − 税，属于利润视角，含销货成本。本月实际现金进出 = 营收 − 仓管 − 税 − 分给合伙人的钱，属于现金视角；因为M0已付全部货款，月度不重复扣销货成本。", example: "M3营收30万₽，货物成本15万₽，仓管5万₽，税2万₽\n→ 本月经营利润 = 30-15-5-2 = 8万₽\n→ 本月实际现金进出 = 30-5-2 = 23万₽（因为15万货款M0就付了）" },
-      { term: "账上累计现金", desc: "从M0到当月，所有实际现金进出加起来的总和。负数=还没回本，正数=已回本。", example: "M0: -100万 → M1: -100+20=-80万 → M2: -80+25=-55万 → ... → M6: +5万（回本了）" },
-      { term: "本月适用税制", desc: "当月适用的俄罗斯税制。如果开了“自动增值税（VAT）”，累计营收过20M₽会自动从俄罗斯简化税制（USN）切换到“俄罗斯简化税制（USN）+ 增值税（VAT）5%”。", example: "M1~M4累计营收18M₽ → 免增值税（VAT）。M5突破20M₽ → 自动加增值税（VAT）5%" },
-    ]},
-    { section: "税制简述", items: [
-      { term: "俄罗斯简化税制（USN）6%", desc: "按总收入的6%交税，最简单。不管你赚不赚钱都要交。", example: "月营收100万₽ → 税 = 6万₽，跟利润无关" },
-      { term: "俄罗斯简化税制（USN）15%", desc: "按（收入−支出）× 15%交税。有个保底：最少交收入的1%。", example: "营收100万₽，支出80万₽ → 利润20万₽ × 15% = 3万₽。但保底 = 100万×1% = 1万₽。取高的 → 交3万₽" },
-      { term: "俄罗斯简化税制（USN）+ 增值税（VAT）5%/7%", desc: "累计营收超过20M₽后触发。在俄罗斯简化税制（USN）基础上额外交5%或7%的增值税，且不能抵扣进口时付的增值税（进项VAT）。", example: "售价含税1249₽ → 增值税（VAT）5% = 1249×5%÷105% ≈ 59.5₽/件" },
-      { term: "俄罗斯一般税制（OSN）", desc: "一般纳税制：增值税（VAT）22%（可抵扣进口时付的增值税）+ 利润税 25%。最复杂但大企业必选。", example: "进口时付的增值税按报关申报价算，卖出时产生销项增值税，两者相抵后交差额" },
-      { term: "进口时付的增值税（进项VAT） vs 卖出时产生的增值税（销项VAT）", desc: "进项VAT = 进口货物时你付的增值税（按报关申报价计算）。销项VAT = 卖出商品时向消费者收的增值税。俄罗斯一般税制（OSN）下可以用进项抵销项。", example: "进口100件，报关申报价15¥×12=180₽/件 → 进口时付的增值税（进项VAT） = 180×22% = 39.6₽/件\n卖出时售价1249₽ → 卖出时产生的增值税（销项VAT） = 1249×22%÷122% ≈ 225₽/件\n实缴 = 225-39.6 = 185.4₽/件" },
-      { term: "M0 / M1", desc: "M0 = 还没开始卖之前先付出去的钱；M1 = 第1个月销售。看现金流时先分清这两个阶段。", example: "M0 先付货款 -108万₽；M1 开始销售回款 +15万₽。" },
-    ]},
-  ],
-  en: [
-    { section: "📊 Dashboard Overview", items: [
-      { term: "Total Revenue", desc: "Total platform payout for all products sold (List Price − Platform Fees).", example: "List 1249₽, Fee 652₽ → Payout 597₽/pc. 30pcs → Revenue = 597×30×97% = 17,373₽" },
-      { term: "Total Investment", desc: "All money you put in: procurement + filled shipping/logistics fields + labeling + one-time costs. If shipping is left at 0, Russia head freight/customs/inbound is excluded.", example: "Cost 17.65¥ × rate 12 = 211.8₽, labeling 12₽, shipping 0₽ → Unit 223.8₽. 30pcs → 6,714₽" },
-      { term: "Net Profit (Cash)", desc: "Profit after tax, calculated per-SKU then summed. = Revenue − Investment − Warehouse − Mgmt − Tax.", example: "Revenue 17,373₽ − Invest 9,354₽ − WH 2,970₽ − Mgmt 1,080₽ − Tax 580₽ = 3,389₽" },
-      { term: "Final Cash After Partner Payout", desc: "Actual cash left after N months of sales, fixed monthly costs, restocking, and partner payout/withdrawal. Calculated as monthly cash flow.", example: "M0: −1.08M₽ → M1: operating cash +150K → ... → M8 ending balance after payout: +575K₽" },
-      { term: "⚠️ Net Profit vs Final Cash", desc: "They differ by design. Net profit is a profit view; final cash is a cash-flow view that includes M0 inventory, restocking timing, fixed monthly costs, and partner payout/withdrawal.", example: "Net profit answers how much the batch earns. Final cash answers how much money remains in the account after inventory, restocking, rent, and payout." },
-      { term: "ROI", desc: "Return on Investment. = Net Profit ÷ Total Investment × 100%", example: "Invest 100K₽, profit 47K₽ → ROI = 47%" },
-      { term: "Net Margin", desc: "Profit per 100₽ of revenue. = Net Profit ÷ Revenue × 100%", example: "Revenue 210K₽, profit 47K₽ → Margin = 22.3%" },
-    ]},
-    { section: "📈 Investor Metrics", items: [
-      { term: "Initial Outflow", desc: "Total upfront payment at M0: all procurement + filled shipping/logistics fields + labeling + one-time + import VAT (if OSN). If shipping is 0, RU logistics are pending quote.", example: "38 SKUs procurement/labeling 1.08M₽ and RU freight pending → Initial = −1.08M₽ before freight quote" },
-      { term: "Max Drawdown", desc: "Deepest negative cash point during the forecast. Usually at M0 right after paying.", example: "M0 paid 1.08M₽, balance −1.08M₽ → max drawdown" },
-      { term: "Break-even Month", desc: "Month when cumulative cash turns positive. Before this you're still in the red.", example: "M5: −50K₽, M6: +20K₽ → Break-even at month 6" },
-      { term: "Avg Monthly Revenue", desc: "Total Revenue ÷ forecast months.", example: "2.3M₽ ÷ 8 months = 287K₽/month" },
-    ]},
-    { section: "🏷️ Product Details", items: [
-      { term: "Actual vs Declared Cost", desc: "Actual = real factory price. Declared = customs declaration price (may be lower). Under OSN, input VAT uses declared price.", example: "Actual 20¥, declared 15¥ → input VAT on 15¥ only, 5¥ gap is non-deductible" },
-      { term: "Platform Fee", desc: "Commission deducted by Ozon/WB per order (includes logistics, ads, etc.).", example: "List 1249₽, fee 652₽ → You get 597₽" },
-      { term: "Warehouse + Mgmt Fee", desc: "Per-unit storage and operations costs.", example: "Storage 99₽/pc + Mgmt 36₽/pc = 135₽/pc extra cost" },
-      { term: "Effective Qty", desc: "Sellable units after damage rate (default 3%).", example: "100 units × 97% = 97 sellable" },
-      { term: "Unit Payout", desc: "Cash received per unit sold. = List Price − Platform Fee", example: "1249₽ − 652₽ = 597₽" },
-    ]},
-    { section: "💰 Cash Flow", items: [
-      { term: "Net Profit vs Cash Flow", desc: "Net Profit = Revenue − COGS − WH/Mgmt − Tax (accounting view). Cash Flow = Revenue − WH/Mgmt − Tax − Partner (cash view, COGS paid at M0).", example: "M3: Rev 300K₽, COGS 150K₽, WH 50K₽, Tax 20K₽\nNet = 300−150−50−20 = 80K₽\nCash = 300−50−20 = 230K₽" },
-      { term: "Cumulative Cash", desc: "Running total of all cash flows from M0. Negative = not yet recovered, positive = profitable.", example: "M0: −1M → M1: −800K → M2: −550K → ... → M6: +50K" },
-      { term: "Tax Tier", desc: "Active tax regime for the month. With auto-VAT, crossing 20M₽ triggers VAT 5%.", example: "M1-M4: <20M₽ → no VAT. M5: >20M₽ → auto VAT 5%" },
-    ]},
-    { section: "🏛️ Tax Regimes", items: [
-      { term: "STS 6% (USN)", desc: "6% on total revenue. Simple. Pay regardless of profit.", example: "Revenue 1M₽ → Tax = 60K₽" },
-      { term: "STS 15% (USN)", desc: "(Revenue − Expenses) × 15%. Minimum: 1% of revenue.", example: "Rev 1M₽, Exp 800K₽ → Profit 200K × 15% = 30K₽. Min = 1M×1% = 10K₽. Pay 30K₽" },
-      { term: "STS + VAT 5%/7%", desc: "Triggered when annual revenue exceeds 20M₽. Extra VAT on top of STS, no input credit.", example: "List 1249₽ → VAT 5% = 1249×5%/105% ≈ 59.5₽/pc" },
-      { term: "GTS (OSN)", desc: "General: VAT 22% (with input credit) + Profit Tax 25%. Complex but required for large businesses.", example: "Import VAT on declared cost, output VAT on sales, net difference remitted" },
-      { term: "Input vs Output VAT", desc: "Input = VAT paid on imported goods. Output = VAT charged to buyer. Under OSN, input offsets output.", example: "Import: 180₽×22% = 39.6₽. Sales: 1249×22%/122% ≈ 225₽. Remit = 225−39.6 = 185.4₽" },
-    ]},
-  ],
-  ru: [
-    { section: "📊 Обзор", items: [
-      { term: "Общая выручка", desc: "Сумма выплат площадки за все товары (Цена − Комиссия).", example: "Цена 1249₽, комиссия 652₽ → Выплата 597₽/шт. 30шт → 597×30×97% = 17 373₽" },
-      { term: "Инвестиции", desc: "Все вложенные деньги: закупка + доставка + разовые расходы.", example: "Закупка 17.65¥ × 12 = 211.8₽ + доставка 100₽ → 311.8₽/шт × 30 = 9 354₽" },
-      { term: "Чистая прибыль", desc: "Прибыль после налога, по каждому SKU. = Выручка − Инвестиция − Склад − Управление − Налог.", example: "17 373 − 9 354 − 2 970 − 1 080 − 580 = 3 389₽" },
-      { term: "Итоговый кэш", desc: "Остаток на счету после N месяцев продаж. Рассчитывается помесячно.", example: "М0: −1.08М₽ → М1: +150К → ... → М8: +575К₽" },
-      { term: "⚠️ Прибыль vs Кэш", desc: "Разница из-за расчёта налога: по-SKU vs помесячно. Помесячный расчёт обычно даёт меньше налога.", example: "По-SKU: каждый платит мин. 1%. Помесячно: объединённая прибыль избегает минимума → меньше налога" },
-      { term: "ROI", desc: "Возврат на инвестиции. = Прибыль ÷ Инвестиции × 100%", example: "Вложили 100К₽, заработали 47К₽ → ROI = 47%" },
-    ]},
-    { section: "📈 Метрики инвестора", items: [
-      { term: "Начальные вложения", desc: "Вся сумма в М0: закупка + доставка + разовые + вх. НДС (при ОСН).", example: "38 SKU → 1.08М₽" },
-      { term: "Макс. просадка", desc: "Самая глубокая отрицательная точка. Обычно в М0.", example: "М0: оплата 1.08М₽ → баланс −1.08М₽" },
-      { term: "Месяц окупаемости", desc: "Когда накопленный кэш становится положительным.", example: "М5: −50К₽, М6: +20К₽ → Окупаемость за 6 мес." },
-    ]},
-    { section: "🏷️ Товары", items: [
-      { term: "Факт. vs Деклар. цена", desc: "Факт. = реальная цена. Деклар. = таможенная декларация. При ОСН вх. НДС по деклар.", example: "Факт. 20¥, деклар. 15¥ → вх. НДС только с 15¥" },
-      { term: "Комиссия площадки", desc: "Удержание Ozon/WB за каждый заказ.", example: "Цена 1249₽, комиссия 652₽ → вы получаете 597₽" },
-      { term: "Эфф. количество", desc: "Продаваемые единицы после потерь (3%).", example: "100 шт × 97% = 97 шт" },
-    ]},
-    { section: "💰 Денежный поток", items: [
-      { term: "Прибыль vs Кэш", desc: "Прибыль = бух. ракурс (с себестоимостью). Кэш = денежный ракурс (себестоимость оплачена в М0).", example: "М3: Выр. 300К, Себест. 150К, Склад 50К, Налог 20К\nПрибыль = 80К. Кэш = 230К" },
-      { term: "Накопленный кэш", desc: "Сумма всех потоков от М0. Минус = не окупилось.", example: "М0: −1М → М1: −800К → М6: +50К" },
-    ]},
-    { section: "🏛️ Налоговые режимы", items: [
-      { term: "УСН 6%", desc: "6% от дохода. Просто. Платите независимо от прибыли.", example: "Доход 1М₽ → Налог = 60К₽" },
-      { term: "УСН 15%", desc: "(Доход − Расход) × 15%. Минимум: 1% от дохода.", example: "Доход 1М₽, Расход 800К₽ → 200К × 15% = 30К₽" },
-      { term: "ОСН", desc: "НДС 22% (с вычетом) + Налог на прибыль 25%.", example: "Вх. НДС при импорте, исх. НДС при продаже, разница уплачивается" },
-    ]},
-  ],
+  zh: GLOSSARY_SECTIONS,
+  en: GLOSSARY_SECTIONS,
+  ru: GLOSSARY_SECTIONS,
 };
 
 const GlossaryPanel = ({ totals, params, proj, projection, fmt, t, lang }) => {
   const data = GLOSSARY[lang] || GLOSSARY.zh;
-  const titles = { zh: "术语词典 · 指标解释与举例", en: "Glossary · Metrics Explained with Examples", ru: "Глоссарий · Метрики с примерами" };
-  const hints = { zh: "每个术语都附带真实数字举例，帮助你直观理解。", en: "Each term includes a real-number example for intuitive understanding.", ru: "Каждый термин с примером для наглядности." };
+  const titles = { zh: "术语说明 - 指标怎么读", en: "术语说明 - 指标怎么读", ru: "术语说明 - 指标怎么读" };
+  const hints = { zh: "每个指标都配了白话解释和一个小例子，方便新人、老板和供应商一起看。", en: "每个指标都配了白话解释和一个小例子，方便新人、老板和供应商一起看。", ru: "每个指标都配了白话解释和一个小例子，方便新人、老板和供应商一起看。" };
 
   return (
     <div className="space-y-6 anim-in">
@@ -3824,13 +5610,13 @@ const GlossaryPanel = ({ totals, params, proj, projection, fmt, t, lang }) => {
               <div key={ii} className="py-3 border-b last:border-b-0 row-glow" style={{ borderColor: COLORS.line }}>
                 <div className="flex items-start gap-3">
                   <div className="flex-1">
-                    <div className="font-display font-semibold text-sm" style={{ color: item.term.startsWith("⚠️") ? COLORS.crimson : COLORS.ink }}>{item.term}</div>
+                    <div className="font-display font-semibold text-sm" style={{ color: COLORS.ink }}>{item.term}</div>
                     <div className="text-xs mt-1" style={{ color: COLORS.inkSoft }}>{item.desc}</div>
                   </div>
                 </div>
                 {item.example && (
                   <div className="mt-2 p-2.5 text-xs font-mono whitespace-pre-line" style={{ background: COLORS.paper, color: COLORS.ink, borderLeft: `3px solid ${COLORS.gold}` }}>
-                    💡 {item.example}
+                    示例：{item.example}
                   </div>
                 )}
               </div>

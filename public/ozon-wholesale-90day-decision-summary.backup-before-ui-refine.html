@@ -1,0 +1,1789 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OZON本地现货供给合作 · 投资损益与热卖竞品评估</title>
+<style>
+  :root {
+    --ink: #151713;
+    --charcoal: #252923;
+    --paper: #f3efe5;
+    --panel: #fffaf0;
+    --mist: #e7ece3;
+    --line: rgba(21, 23, 19, .16);
+    --muted: #666b60;
+    --green: #2f6f4e;
+    --teal: #1f6f72;
+    --red: #b94b3b;
+    --gold: #b78931;
+    --blue: #2a5d86;
+    --shadow: 0 30px 90px rgba(21, 23, 19, .16);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html,
+  body { overflow-x: hidden; }
+
+  body {
+    margin: 0;
+    color: var(--ink);
+    background:
+      linear-gradient(90deg, rgba(21, 23, 19, .045) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(21, 23, 19, .045) 1px, transparent 1px),
+      var(--paper);
+    background-size: 36px 36px;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  }
+
+  a { color: inherit; }
+
+  .shell {
+    max-width: 1340px;
+    margin: 0 auto;
+    padding: 0 clamp(18px, 3.5vw, 52px);
+  }
+
+  .hero {
+    position: relative;
+    min-height: 92vh;
+    overflow: hidden;
+    color: #fffaf0;
+    background: var(--charcoal);
+  }
+
+  .hero img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: .58;
+    filter: saturate(.92) contrast(1.04);
+  }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(21, 23, 19, .92) 0%, rgba(21, 23, 19, .68) 48%, rgba(21, 23, 19, .22) 100%),
+      linear-gradient(0deg, rgba(21, 23, 19, .7), transparent 45%);
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    min-height: 92vh;
+    display: grid;
+    grid-template-columns: minmax(0, .98fr) minmax(390px, .72fr);
+    gap: clamp(28px, 4.2vw, 64px);
+    align-items: end;
+    padding-top: 42px;
+    padding-bottom: 42px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    color: #d7c18a;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 18px 0;
+    max-width: 720px;
+    font-size: clamp(42px, 5.4vw, 72px);
+    line-height: 1.02;
+    letter-spacing: 0;
+    word-break: keep-all;
+    text-wrap: balance;
+  }
+
+  .lead {
+    max-width: 740px;
+    color: rgba(255, 250, 240, .82);
+    font-size: clamp(16px, 1.45vw, 20px);
+    line-height: 1.82;
+  }
+
+  .hero-note {
+    margin-top: 22px;
+    max-width: 720px;
+    border-left: 4px solid var(--gold);
+    padding: 12px 0 12px 16px;
+    color: rgba(255, 250, 240, .9);
+    line-height: 1.75;
+  }
+
+  .hero-ledger {
+    align-self: end;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid rgba(255, 250, 240, .22);
+    border-radius: 8px;
+    background: rgba(21, 23, 19, .38);
+    box-shadow: 0 26px 70px rgba(0, 0, 0, .18);
+    backdrop-filter: blur(6px);
+  }
+
+  .ledger-row {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 9px;
+    align-content: space-between;
+    min-height: 116px;
+    padding: 14px;
+    border: 1px solid rgba(255, 250, 240, .18);
+    border-radius: 7px;
+    background: linear-gradient(150deg, rgba(255, 250, 240, .12), rgba(255, 250, 240, .04));
+  }
+
+  .ledger-row::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), rgba(47, 111, 78, .72));
+  }
+
+  .ledger-row span {
+    color: rgba(255, 250, 240, .64);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.35;
+    word-break: keep-all;
+  }
+
+  .ledger-row b {
+    display: grid;
+    justify-items: start;
+    gap: 4px;
+    font-size: clamp(20px, 1.42vw, 27px);
+    line-height: 1.12;
+    color: #fffaf0;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    white-space: nowrap;
+  }
+
+  .ledger-row b small {
+    color: rgba(255, 250, 240, .78);
+    font-size: clamp(13px, 1vw, 16px);
+    font-weight: 900;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 26px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 17px;
+    border: 1px solid var(--ink);
+    border-radius: 4px;
+    background: var(--ink);
+    color: #fffaf0;
+    font-size: 14px;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  .hero .btn {
+    border-color: rgba(255, 250, 240, .82);
+    background: #fffaf0;
+    color: var(--ink);
+  }
+
+  .btn.secondary {
+    background: transparent;
+    color: inherit;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    border-bottom: 1px solid var(--line);
+    background: rgba(243, 239, 229, .92);
+    backdrop-filter: blur(16px);
+  }
+
+  .nav-inner {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 10px clamp(18px, 3.5vw, 52px);
+  }
+
+  nav a {
+    flex: 0 0 auto;
+    padding: 8px 11px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: rgba(255, 250, 240, .72);
+    color: #3a4038;
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  section {
+    scroll-margin-top: 72px;
+    padding: clamp(34px, 6vw, 76px) 0 0;
+  }
+
+  .section-head {
+    display: grid;
+    grid-template-columns: minmax(0, .95fr) minmax(280px, .75fr);
+    gap: 28px;
+    align-items: end;
+    margin-bottom: 22px;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: clamp(28px, 4vw, 50px);
+    line-height: 1.05;
+    letter-spacing: 0;
+  }
+
+  .section-note {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.82;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .tile,
+  .card,
+  .evidence,
+  .product,
+  .scenario,
+  .risk {
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: rgba(255, 250, 240, .88);
+    box-shadow: 0 18px 60px rgba(21, 23, 19, .07);
+  }
+
+  .tile { padding: 18px; min-height: 150px; }
+
+  .label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .metric {
+    margin: 8px 0 7px;
+    font-size: clamp(26px, 3.4vw, 42px);
+    line-height: 1.08;
+    font-weight: 950;
+  }
+
+  .green { color: var(--green); }
+  .blue { color: var(--blue); }
+  .red { color: var(--red); }
+  .gold { color: var(--gold); }
+
+  p, li {
+    color: var(--muted);
+    line-height: 1.78;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, .95fr) minmax(360px, .85fr);
+    gap: 16px;
+  }
+
+  .photo-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: 220px;
+    gap: 10px;
+  }
+
+  figure {
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 7px;
+    border: 1px solid rgba(21, 23, 19, .18);
+    background: #ddd;
+  }
+
+  figure.large { grid-row: span 2; }
+
+  figure img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  figcaption {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    padding: 8px 10px;
+    border-radius: 5px;
+    background: rgba(255, 250, 240, .9);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .table-wrap {
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: rgba(255, 250, 240, .88);
+  }
+
+  .input-breakdown {
+    margin-top: 14px;
+  }
+
+  .input-breakdown h3 {
+    margin: 0 0 8px;
+    font-size: 20px;
+  }
+
+  .input-breakdown p {
+    margin: 0 0 12px;
+    font-size: 14px;
+  }
+
+  table {
+    width: 100%;
+    min-width: 820px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  th, td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    background: #e6eadf;
+    color: #343b32;
+    font-size: 12px;
+    letter-spacing: .04em;
+  }
+
+  tr:last-child td { border-bottom: 0; }
+
+  .market-row {
+    display: grid;
+    grid-template-columns: 170px minmax(120px, 1fr) minmax(260px, .58fr);
+    gap: 12px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .market-row:last-child { border-bottom: 0; }
+
+  .bar {
+    position: relative;
+    height: 14px;
+    border-radius: 99px;
+    overflow: hidden;
+    background: rgba(21, 23, 19, .11);
+  }
+
+  .bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--green), var(--gold));
+  }
+
+  .evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .evidence {
+    padding: 16px;
+    min-height: 238px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  .evidence-photo {
+    height: 142px;
+    margin: -16px -16px 4px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 7px 7px 0 0;
+  }
+
+  .evidence-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .evidence-photo.product-shot {
+    background:
+      linear-gradient(135deg, rgba(231, 236, 227, .5), rgba(255, 250, 240, .95));
+  }
+
+  .evidence-photo.product-shot img {
+    object-fit: contain;
+    padding: 10px;
+    background: #fff;
+  }
+
+  .evidence-photo figcaption {
+    left: 8px;
+    right: auto;
+    bottom: 8px;
+    max-width: calc(100% - 16px);
+    background: rgba(21, 23, 19, .78);
+    color: #fffaf0;
+    font-size: 11px;
+    letter-spacing: .04em;
+  }
+
+  .evidence h3,
+  .product h3,
+  .scenario h3,
+  .risk h3 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.35;
+  }
+
+  .evidence-title {
+    color: #343b32;
+    font-size: 13px;
+    line-height: 1.55;
+    min-height: 62px;
+  }
+
+  .mini-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: auto;
+  }
+
+  .mini-metrics div {
+    padding: 8px;
+    border-radius: 5px;
+    background: rgba(231, 236, 227, .72);
+  }
+
+  .mini-metrics span {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .mini-metrics b {
+    display: block;
+    margin-top: 2px;
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .source-link {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    margin-top: -2px;
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  .source-link:hover { text-decoration: underline; }
+
+  .product-grid,
+  .scenario-grid,
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .product,
+  .scenario,
+  .risk {
+    padding: 17px;
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 8px;
+    border-radius: 99px;
+    background: var(--mist);
+    color: #354137;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .scenario {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 315px;
+  }
+
+  .scenario .btn { margin-top: auto; width: fit-content; }
+
+  .evidence-theatre {
+    position: relative;
+  }
+
+  .platform-lab {
+    display: grid;
+    grid-template-columns: minmax(0, 1.32fr) minmax(320px, .68fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .data-card {
+    position: relative;
+    overflow: visible;
+    padding: 22px;
+    border: 1px solid rgba(21, 23, 19, .18);
+    border-radius: 8px;
+    background:
+      linear-gradient(135deg, rgba(255, 250, 240, .96), rgba(231, 236, 227, .76)),
+      rgba(255, 250, 240, .9);
+    box-shadow: 0 24px 70px rgba(21, 23, 19, .09);
+  }
+
+  .data-card.compact {
+    align-self: start;
+  }
+
+  .data-card h3 {
+    margin: 0 0 6px;
+    font-size: 23px;
+  }
+
+  .chart-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 14px;
+  }
+
+  .chart-head p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .chart-kpi {
+    padding: 10px 12px;
+    border-left: 3px solid var(--green);
+    color: var(--green);
+    font-size: clamp(22px, 2.3vw, 32px);
+    font-weight: 950;
+    line-height: 1.12;
+    text-align: right;
+    background: rgba(47, 111, 78, .08);
+  }
+
+  .market-proof-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .proof-tile {
+    min-height: 118px;
+    padding: 16px;
+    border: 1px solid rgba(21, 23, 19, .15);
+    border-radius: 8px;
+    background:
+      linear-gradient(145deg, rgba(21, 23, 19, .92), rgba(47, 111, 78, .82));
+    color: #fffaf0;
+    box-shadow: 0 22px 50px rgba(21, 23, 19, .14);
+  }
+
+  .proof-tile span {
+    display: block;
+    color: rgba(255, 250, 240, .64);
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .proof-tile b {
+    display: block;
+    margin-top: 7px;
+    font-size: clamp(20px, 2.2vw, 29px);
+    line-height: 1.16;
+  }
+
+  .line-chart {
+    width: 100%;
+    height: 260px;
+    display: block;
+    overflow: visible;
+  }
+
+  .axis-label {
+    fill: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .trend-matrix {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 12px;
+  }
+
+  .trend-card {
+    position: relative;
+    overflow: visible;
+    padding: 15px;
+    border: 1px solid rgba(47, 111, 78, .2);
+    border-radius: 8px;
+    background:
+      linear-gradient(180deg, rgba(255, 250, 240, .92), rgba(244, 239, 225, .82)),
+      rgba(255, 250, 240, .84);
+    min-width: 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .68), 0 12px 28px rgba(21, 23, 19, .055);
+  }
+
+  .trend-card:hover {
+    border-color: rgba(47, 111, 78, .38);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75), 0 18px 42px rgba(21, 23, 19, .1);
+  }
+
+  .trend-card-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: start;
+    margin-bottom: 10px;
+  }
+
+  .trend-card strong {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .trend-card span {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1.45;
+  }
+
+  .trend-total {
+    flex: 0 0 auto;
+    max-width: 56%;
+    padding: 5px 7px;
+    border-radius: 5px;
+    background: rgba(47, 111, 78, .08);
+    color: var(--green) !important;
+    text-align: right;
+  }
+
+  .mini-line-chart {
+    width: 100%;
+    height: 136px;
+    display: block;
+    overflow: visible;
+  }
+
+  .trend-value-label {
+    fill: #252923;
+    font-size: 8px;
+    font-weight: 950;
+    paint-order: stroke;
+    stroke: rgba(255, 250, 240, .94);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+
+  .trend-month-hit {
+    cursor: crosshair;
+  }
+
+  .trend-focus-dot {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .16s ease;
+  }
+
+  .trend-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 9px;
+  }
+
+  .trend-stat {
+    padding: 8px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(21, 23, 19, .08);
+    background: rgba(255, 250, 240, .68);
+  }
+
+  .trend-stat em {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 900;
+  }
+
+  .trend-stat b {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1.24;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  .trend-tip {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s ease;
+  }
+
+  .trend-month:hover .trend-tip,
+  .trend-month:focus-within .trend-tip,
+  .trend-month.is-active .trend-tip,
+  .trend-month:hover .trend-focus-dot,
+  .trend-month:focus-within .trend-focus-dot,
+  .trend-month.is-active .trend-focus-dot {
+    opacity: 1;
+  }
+
+  .bar-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .evidence-bar {
+    display: grid;
+    grid-template-columns: 128px minmax(0, 1fr) 230px;
+    gap: 10px;
+    align-items: center;
+    font-size: 13px;
+  }
+
+  .evidence-bar b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .rail {
+    height: 12px;
+    border-radius: 99px;
+    background: rgba(21, 23, 19, .1);
+    overflow: hidden;
+  }
+
+  .rail i {
+    display: block;
+    height: 100%;
+    min-width: 3px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--teal), var(--gold));
+  }
+
+  .bar-value {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-align: right;
+    line-height: 1.35;
+  }
+
+  .price-band-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .price-band {
+    padding: 12px;
+    border: 1px solid rgba(42, 93, 134, .22);
+    border-radius: 8px;
+    background: rgba(255, 250, 240, .7);
+  }
+
+  .price-band span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .price-band b {
+    display: block;
+    margin-top: 6px;
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  .hot-proof-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .hot-proof {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 250, 240, .68);
+  }
+
+  .hot-proof strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+
+  .hot-proof dl {
+    display: grid;
+    grid-template-columns: .82fr 1.18fr;
+    gap: 6px 10px;
+    margin: 0;
+  }
+
+  .hot-proof dt {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .hot-proof dd {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1.35;
+  }
+
+  .match-board {
+    display: grid;
+    gap: 16px;
+  }
+
+  .match-loading {
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 250, 240, .88);
+    color: var(--muted);
+    font-weight: 900;
+  }
+
+  .match-card {
+    display: grid;
+    grid-template-columns: minmax(220px, .7fr) minmax(0, 1.3fr);
+    min-height: 310px;
+    border: 1px solid rgba(21, 23, 19, .16);
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 250, 240, .92);
+    box-shadow: 0 28px 80px rgba(21, 23, 19, .11);
+  }
+
+  .match-cover {
+    position: relative;
+    min-height: 310px;
+    background: #fff;
+    border-right: 1px solid var(--line);
+  }
+
+  .match-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 18px;
+    display: block;
+  }
+
+  .match-cover::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    padding: 9px 10px;
+    border-radius: 5px;
+    background: rgba(21, 23, 19, .82);
+    color: #fffaf0;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .match-body {
+    padding: 20px;
+  }
+
+  .match-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+    margin-bottom: 14px;
+  }
+
+  .match-head h3 {
+    margin: 0 0 6px;
+    font-size: clamp(22px, 2.6vw, 34px);
+    line-height: 1.05;
+  }
+
+  .match-head p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .match-badge {
+    padding: 8px 10px;
+    border: 1px solid rgba(47, 111, 78, .22);
+    border-radius: 99px;
+    background: rgba(47, 111, 78, .09);
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 950;
+    white-space: nowrap;
+  }
+
+  .match-table {
+    display: grid;
+    gap: 8px;
+  }
+
+  .match-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) repeat(4, minmax(74px, .45fr)) 58px;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+  }
+
+  .match-row.header {
+    padding-top: 0;
+    border-top: 0;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 950;
+    letter-spacing: .03em;
+  }
+
+  .match-title {
+    min-width: 0;
+  }
+
+  .match-title b {
+    display: block;
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .match-title span {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .match-row a {
+    justify-self: start;
+    color: var(--blue);
+    font-weight: 950;
+    text-decoration: none;
+  }
+
+  .match-row a:hover { text-decoration: underline; }
+
+  .num {
+    color: #343b32;
+    font-variant-numeric: tabular-nums;
+    font-weight: 900;
+    line-height: 1.35;
+  }
+
+  .note-band {
+    margin-top: 18px;
+    padding: 18px 20px;
+    border-left: 5px solid var(--gold);
+    background: rgba(183, 137, 49, .12);
+    color: #3f3625;
+    line-height: 1.8;
+  }
+
+  .calc-clarity {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .clarity-item {
+    padding: 16px;
+    border: 1px solid rgba(42, 93, 134, .24);
+    border-radius: 7px;
+    background: rgba(42, 93, 134, .08);
+  }
+
+  .clarity-item b {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 15px;
+  }
+
+  .clarity-item span {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .verdict {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 14px;
+  }
+
+  .verdict-panel {
+    padding: 22px;
+    border: 1px solid rgba(185, 75, 59, .28);
+    border-radius: 7px;
+    background: rgba(185, 75, 59, .08);
+  }
+
+  .verdict-panel.good {
+    border-color: rgba(47, 111, 78, .28);
+    background: rgba(47, 111, 78, .10);
+  }
+
+  .verdict-panel h3 {
+    margin: 0 0 10px;
+    font-size: clamp(22px, 3vw, 34px);
+    line-height: 1.12;
+  }
+
+  .foot {
+    margin: 70px 0 36px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.75;
+  }
+
+  @media (max-width: 1020px) {
+    .hero-inner,
+    .section-head,
+    .split,
+    .match-card,
+    .platform-lab,
+    .verdict {
+      grid-template-columns: 1fr;
+    }
+    .match-cover {
+      min-height: 260px;
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .hero-ledger { align-self: end; }
+    .hero-ledger { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .ledger-row { min-height: 108px; }
+    .hero-inner { min-height: auto; }
+    .kpi-grid,
+    .calc-clarity,
+    .market-proof-grid,
+    .trend-matrix,
+    .evidence-grid,
+    .product-grid,
+    .scenario-grid,
+    .risk-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 680px) {
+    .hero,
+    .hero-inner { min-height: auto; }
+    .hero-inner { padding-top: 84px; }
+    h1 {
+      max-width: 100%;
+      font-size: clamp(36px, 12vw, 54px);
+      word-break: normal;
+      overflow-wrap: anywhere;
+    }
+    .hero-ledger {
+      grid-template-columns: 1fr;
+      width: 100%;
+    }
+    .ledger-row { grid-template-columns: 1fr; gap: 8px; min-height: 96px; }
+    .ledger-row b { justify-items: start; text-align: left; }
+    .chart-head { display: grid; }
+    .trend-card-head { display: grid; }
+    .trend-total { max-width: none; text-align: left; }
+    .kpi-grid,
+    .calc-clarity,
+    .market-proof-grid,
+    .trend-matrix,
+    .evidence-grid,
+    .product-grid,
+    .scenario-grid,
+    .risk-grid,
+    .price-band-grid,
+    .hot-proof-list,
+    .photo-stack {
+      grid-template-columns: 1fr;
+    }
+    figure.large { grid-row: span 1; }
+    .market-row { grid-template-columns: 1fr; }
+    .evidence-bar { grid-template-columns: 1fr; }
+    .match-head { grid-template-columns: 1fr; }
+    .match-row {
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 12px;
+    }
+    .match-row.header { display: none; }
+    .match-title { grid-column: 1 / -1; }
+    .bar-value { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<header class="hero">
+  <img src="./ozon-assets/plush-and-keychain-aisle.jpg" alt="俄罗斯本地批发市场货架">
+  <div class="shell hero-inner">
+    <div>
+      <div class="eyebrow">OZON Local Supply · P&L Evidence Pack</div>
+      <h1>俄罗斯本地现货供给合作评估</h1>
+      <p class="lead">基于平台内类目趋势、28天热卖竞品、现场货型与投资损益模型，评估一批俄罗斯本地现货在OZON上的试销价值、投入强度、利润爬坡和规模边界。</p>
+      <div class="hero-note">本页聚焦市场证据、产品组合、测算结果与合作条件，用于判断本地现货供给合作的投入强度、利润空间与扩展路径。</div>
+      <div class="hero-actions">
+        <a class="btn" href="./?project=ozon-wholesale-90day-standard-project.json">标准损益模型</a>
+        <a class="btn secondary" href="#hot">28天热卖竞品</a>
+        <a class="btn secondary" href="#portfolio">产品组合</a>
+      </div>
+    </div>
+    <div class="hero-ledger">
+      <div class="ledger-row"><span>单店月租固定费</span><b>3,000 RMB/月</b></div>
+      <div class="ledger-row"><span>M3买家端GMV测算</span><b>11.35万 RMB<small>147.6万 RUB</small></b></div>
+      <div class="ledger-row"><span>M3经营净利（含店租）</span><b>5960 RMB<small>7.75万 RUB</small></b></div>
+      <div class="ledger-row"><span>M3 50%权益分配</span><b>2,980 RMB</b></div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#thesis">评估结论</a>
+    <a href="#platform">平台数据</a>
+    <a href="#similar">相似竞品</a>
+    <a href="#pl">损益表结论</a>
+    <a href="#hot">28天热卖</a>
+    <a href="#market">类目空间</a>
+    <a href="#goods">现场货型</a>
+    <a href="#portfolio">产品组合</a>
+    <a href="#economics">单位经济</a>
+    <a href="#scale">规模边界</a>
+  </div>
+</nav>
+
+<main class="shell">
+  <section id="thesis">
+    <div class="section-head">
+      <h2>结论先行：有试销价值，但收益来自组合与复制</h2>
+      <p class="section-note">这批货的优势不是单品品牌力，而是本地现货、品类丰富、试错成本低。商业价值取决于能否形成可复制的“供货商 + 运营 + 组合装”模型。</p>
+    </div>
+    <div class="kpi-grid">
+      <div class="tile"><div class="label">合作判断</div><div class="metric green">可评估推进</div><p>建议以阶段化试销验证，先确认价格带、补货和售后责任。</p></div>
+      <div class="tile"><div class="label">产品方法</div><div class="metric blue">组合装</div><p>低价单件费用占比过高，需多件装/套装提升客单价。</p></div>
+      <div class="tile"><div class="label">核心价格带</div><div class="metric gold">54-77 RMB（699-999₽）</div><p>买家成交价通常低于卖家标价，需按平台折扣反推标价。</p></div>
+      <div class="tile"><div class="label">扩展逻辑</div><div class="metric">多供货商</div><p>单一供货商收入有限，模型成熟后更适合复制。</p></div>
+    </div>
+  </section>
+
+  <section id="platform" class="evidence-theatre">
+    <div class="section-head">
+      <h2>平台内数据证据：先看趋势、价格带，再看财务模型</h2>
+      <p class="section-note">数据来自《玩具+百货类目趋势分析.xlsx》，覆盖11个相关类目、2025-05至2026-04年度销售趋势，以及2026-05-28生成的28天热卖榜。这里展示的是我们接不接的核心证据，不是泛泛大盘。</p>
+    </div>
+    <div class="market-proof-grid" id="platform-kpis"></div>
+    <div class="platform-lab">
+      <div class="data-card compact">
+        <div class="chart-head">
+          <div>
+            <h3>年度销售趋势</h3>
+            <p>每个类目单独看月度GMV，避免合并曲线掩盖类目差异。12月峰值、持续爬坡和低价走量类目要分开判断。</p>
+          </div>
+          <div class="chart-kpi" id="annual-total-kpi">--</div>
+        </div>
+        <div class="trend-matrix" id="category-trend-matrix"></div>
+      </div>
+      <div class="data-card compact">
+        <div class="chart-head">
+          <div>
+            <h3>类目GMV排名</h3>
+            <p>不是只看一个商品，先看可复制的类目池。毛绒、钥匙扣、储物罐和清洁类目能支撑后续多供货商复制。</p>
+          </div>
+        </div>
+        <div class="bar-list" id="category-gmv-bars"></div>
+      </div>
+    </div>
+    <div class="platform-lab" style="margin-top:14px;">
+      <div class="data-card">
+        <div class="chart-head">
+          <div>
+            <h3>价格区间分布</h3>
+            <p>低价带负责走量，高价带贡献GMV。我们的模型选择组合装，是为了从低价需求迁移到可承接费用的卖家标价区间。</p>
+          </div>
+        </div>
+        <div class="price-band-grid" id="price-band-grid"></div>
+      </div>
+      <div class="data-card">
+        <div class="chart-head">
+          <div>
+            <h3>28天热卖强度</h3>
+            <p>热卖榜证明这些形态近期有实际成交，重点看TOP商品28天GMV、销量、均价，而不是只看“有同款”。</p>
+          </div>
+        </div>
+        <div class="hot-proof-list" id="hot-proof-list"></div>
+      </div>
+    </div>
+    <div class="note-band">证据链含义：平台数据支持“可以接来试”，但不支持盲目全量铺货。低价单件需求真实，却容易被平台费用吃掉；所以必须用组合装、套装和可复制供货商矩阵，把买家价需求转成可盈利的卖家标价模型。</div>
+  </section>
+
+  <section id="similar" class="evidence-theatre">
+    <div class="section-head">
+      <h2>相似竞品对照：看我们的货能不能找到可比成交</h2>
+      <p class="section-note">不是只证明“平台有大盘”，而是把现场货型逐类对上OZON近28天热卖SKU。重点比较28天GMV、销量、买家均价、体积和买断率，用来判断该货型是主推、补充还是谨慎测试。</p>
+    </div>
+    <div class="match-board" id="similar-competitor-board">
+      <div class="match-loading">正在读取28天热卖竞品...</div>
+    </div>
+    <div class="note-band">对照含义：钥匙扣、洗碗刷、水槽过滤网、削皮器、马桶刷能找到高度相似的热卖成交；毛绒需要避开超大体积款；储物罐、果蔬切有成交但体积和破损/售后更敏感，适合作为谨慎利润款。</div>
+  </section>
+
+  <section id="pl">
+    <div class="section-head">
+      <h2>投资损益表结论：标准情景M3进入利润爬坡</h2>
+      <p class="section-note">以下数据来自已录入本地投资损益计算器的标准、保守、放量三套项目。计算器按只看商品经营的算法口径测算；广告预留已在平台综合扣费里，单店月租3000 RMB/月作为月固定费用进入现金流预测。</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>情景</th><th>月固定费用</th><th>M1 GMV</th><th>M2 GMV</th><th>M3 GMV</th><th>M3经营净利</th><th>M3净利率</th><th>M3 50%权益分配</th></tr></thead>
+        <tbody>
+          <tr><td>A 保守试销</td><td>3,000 RMB/月</td><td>2.44万 RMB（31.7万 RUB）</td><td>4.49万 RMB（58.4万 RUB）</td><td>5.98万 RMB（77.7万 RUB）</td><td>1923 RMB（2.5万 RUB）</td><td>3.23%</td><td>966 RMB</td></tr>
+          <tr><td>B 标准启动</td><td>3,000 RMB/月</td><td>4.62万 RMB（60.1万 RUB）</td><td>8.55万 RMB（111.2万 RUB）</td><td>11.35万 RMB（147.6万 RUB）</td><td>5923 RMB（7.7万 RUB）</td><td>5.25%</td><td>2,980 RMB</td></tr>
+          <tr><td>C 放量验证</td><td>3,000 RMB/月</td><td>9.76万 RMB（126.9万 RUB）</td><td>18.02万 RMB（234.2万 RUB）</td><td>23.86万 RMB（310.2万 RUB）</td><td>1.53万 RMB（19.9万 RUB）</td><td>6.43%</td><td>7,670 RMB</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="input-breakdown card" style="padding: 18px 22px;">
+      <h3>月固定费用口径</h3>
+      <p>本次不把广告、内容、客服拆成大额前置预算。店铺一家店按3000 RMB/月月租进入计算器固定费用；广告消耗已在平台综合扣费里预留，避免重复扣费。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>费用项</th><th>当前处理方式</th><th>A保守</th><th>B标准</th><th>C放量</th></tr></thead>
+          <tbody>
+            <tr><td>店铺月租</td><td>单店固定月租，进入月固定费用</td><td>3,000 RMB/月</td><td>3,000 RMB/月</td><td>3,000 RMB/月</td></tr>
+            <tr><td>广告消耗</td><td>包含在平台综合扣费预留里，不再单独扣一笔</td><td>已预留</td><td>已预留</td><td>已预留</td></tr>
+            <tr><td>内容/客服/工具</td><td>先不作为大额启动预算，必要时计入项目管理费或按实际另行确认</td><td>按实际</td><td>按实际</td><td>按实际</td></tr>
+            <tr><td>一次性启动费</td><td>计算器不设置一次性启动费；店铺月租走月固定费用</td><td>0 RMB</td><td>0 RMB</td><td>0 RMB</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="note-band">财务含义：修正为店铺月租口径后，项目不再被大额前置预算压死；标准情景M1基本打平、M2转正、M3形成利润爬坡。真正的回报弹性来自两个变量：第一，供货价是否能稳定低于平台同类；第二，是否能从一个供货老板复制到多个本地供货商。</div>
+    <div class="calc-clarity">
+      <div class="clarity-item"><b>计算器为什么供应商报价为 0</b><span>本项目按本地供货合作建模，运营方不买断库存，所以产品供应商报价/预估采购价不作为运营方现金采购支出填写。</span></div>
+      <div class="clarity-item"><b>成本并没有消失</b><span>供货结算占位、单件处理、仓储、平台综合扣费、税费都已进入每个销售单元；后续拿到真实供货价后替换复算。</span></div>
+      <div class="clarity-item"><b>月租怎么进模型</b><span>单店月租3000 RMB/月（39,000 RUB/月），已经进入每月现金流和商品经营利润测算。</span></div>
+    </div>
+    <div class="verdict" style="margin-top:14px;">
+      <div class="verdict-panel">
+        <h3>按月租口径，可以接，但单供货商收益预期要克制。</h3>
+        <p>标准情景扣除店铺月租后，M1约-254 RMB（-0.33万 RUB），M2约3269 RMB（4.25万 RUB），M3约5960 RMB（7.75万 RUB）。50%分成下，M3可分约2,980 RMB；如果只有一个批发老板，短期更多是验证模型，不是高收益项目。</p>
+      </div>
+      <div class="verdict-panel good">
+        <h3>建议合作口径：项目账扣店租后，再按经营净利50%分成。</h3>
+        <p>广告和平台相关消耗按模型已预留，店铺月租进入项目账后再分润。是否值得接，核心看供货价、可补货、售后责任和能否复制更多供货商；若这些条件清晰，50%净利分成可以作为轻固定成本试跑方案。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="hot">
+    <div class="section-head">
+      <h2>28天热卖竞品：真实成交用于判断该卖什么形态</h2>
+      <p class="section-note">热卖表里的价格为买家端成交价/展示价口径。OZON常会给买家折扣，卖家标价通常需高于买家价；0.1 RMB（1 RUB）明星产品不作为正常售价参考。</p>
+    </div>
+    <div class="evidence-grid">
+      <div class="evidence"><figure class="evidence-photo product-shot"><img src="./ozon-assets/hot-keychain.jpg" alt="OZON钥匙扣热卖竞品"><figcaption>OZON热卖竞品图</figcaption></figure><h3>钥匙扣</h3><div class="evidence-title">Cozy Dwelling Keychain · La_Кукарача</div><a class="source-link" href="https://www.ozon.ru/product/4204152736" target="_blank" rel="noopener">查看OZON商品</a><div class="mini-metrics"><div><span>28天销售额</span><b>11.77万 RMB（153万₽）</b></div><div><span>销量</span><b>12,864</b></div><div><span>均价</span><b>9.2 RMB（119₽）</b></div></div><p>单件价格极低，适合做主题组合、角色组合或多件装。</p></div>
+      <div class="evidence"><figure class="evidence-photo product-shot"><img src="./ozon-assets/hot-plush.jpg" alt="OZON毛绒玩具热卖竞品"><figcaption>OZON热卖竞品图</figcaption></figure><h3>毛绒玩具</h3><div class="evidence-title">小型毛绒猪蝙蝠 · XYY6</div><a class="source-link" href="https://www.ozon.ru/product/3014373873" target="_blank" rel="noopener">查看OZON商品</a><div class="mini-metrics"><div><span>28天销售额</span><b>11.23万 RMB（146万₽）</b></div><div><span>销量</span><b>5,295</b></div><div><span>均价</span><b>21.2 RMB（275₽）</b></div></div><p>毛绒小件能跑量；大毛绒客单高但体积和退货风险更高。</p></div>
+      <div class="evidence"><figure class="evidence-photo product-shot"><img src="./ozon-assets/hot-sink-filter.jpg" alt="OZON水槽过滤网热卖竞品"><figcaption>OZON热卖竞品图</figcaption></figure><h3>水槽过滤网</h3><div class="evidence-title">金属水槽过滤网 · WiseBuys</div><a class="source-link" href="https://www.ozon.ru/product/1657079936" target="_blank" rel="noopener">查看OZON商品</a><div class="mini-metrics"><div><span>28天销售额</span><b>7.92万 RMB（103万₽）</b></div><div><span>销量</span><b>7,115</b></div><div><span>均价</span><b>11.2 RMB（145₽）</b></div></div><p>典型低价刚需，必须用多件装承接平台费用。</p></div>
+      <div class="evidence"><figure class="evidence-photo product-shot"><img src="./ozon-assets/hot-dish-brush.jpg" alt="OZON洗碗刷热卖竞品"><figcaption>OZON热卖竞品图</figcaption></figure><h3>洗碗刷</h3><div class="evidence-title">瓶刷/清洁刷 · BSC-opt</div><a class="source-link" href="https://www.ozon.ru/product/1580012906" target="_blank" rel="noopener">查看OZON商品</a><div class="mini-metrics"><div><span>28天销售额</span><b>9.31万 RMB（121万₽）</b></div><div><span>销量</span><b>8,723</b></div><div><span>均价</span><b>10.7 RMB（139₽）</b></div></div><p>需求真实，但单件均价低，适合2-10件套。</p></div>
+      <div class="evidence"><figure class="evidence-photo product-shot"><img src="./ozon-assets/hot-peeler.jpg" alt="OZON削皮器热卖竞品"><figcaption>OZON热卖竞品图</figcaption></figure><h3>削皮器</h3><div class="evidence-title">金属横向削皮器 · KITOME</div><a class="source-link" href="https://www.ozon.ru/product/1374583075" target="_blank" rel="noopener">查看OZON商品</a><div class="mini-metrics"><div><span>28天销售额</span><b>7.77万 RMB（101万₽）</b></div><div><span>销量</span><b>4,297</b></div><div><span>均价</span><b>18.2 RMB（236₽）</b></div></div><p>小件稳定，建议和厨房工具一起做套装。</p></div>
+      <div class="evidence"><figure class="evidence-photo product-shot"><img src="./ozon-assets/hot-storage-jar.jpg" alt="OZON储物罐热卖竞品"><figcaption>OZON热卖竞品图</figcaption></figure><h3>储物罐</h3><div class="evidence-title">Food Storage Jar 1000 ml · АРКОРИС</div><a class="source-link" href="https://www.ozon.ru/product/1564129823" target="_blank" rel="noopener">查看OZON商品</a><div class="mini-metrics"><div><span>28天销售额</span><b>28.77万 RMB（374万₽）</b></div><div><span>销量</span><b>5,544</b></div><div><span>均价</span><b>51.9 RMB（675₽）</b></div></div><p>成交空间大，但体积和破损责任需先确认。</p></div>
+      <div class="evidence"><figure class="evidence-photo product-shot"><img src="./ozon-assets/hot-vegetable-cutter.jpg" alt="OZON果蔬切热卖竞品"><figcaption>OZON热卖竞品图</figcaption></figure><h3>果蔬切</h3><div class="evidence-title">多功能切菜器 · Яндекс Фабрика</div><a class="source-link" href="https://www.ozon.ru/product/3033846259" target="_blank" rel="noopener">查看OZON商品</a><div class="mini-metrics"><div><span>28天销售额</span><b>26.38万 RMB（343万₽）</b></div><div><span>销量</span><b>1,373</b></div><div><span>均价</span><b>192.4 RMB（2,501₽）</b></div></div><p>高客单可做利润款，但体积、包装与售后复杂度更高。</p></div>
+      <div class="evidence"><figure class="evidence-photo product-shot"><img src="./ozon-assets/hot-toilet-brush.jpg" alt="OZON马桶刷热卖竞品"><figcaption>OZON热卖竞品图</figcaption></figure><h3>马桶刷</h3><div class="evidence-title">Pipolux Toilet Brush · Homelux</div><a class="source-link" href="https://www.ozon.ru/product/2104646832" target="_blank" rel="noopener">查看OZON商品</a><div class="mini-metrics"><div><span>28天销售额</span><b>38.62万 RMB（502万₽）</b></div><div><span>销量</span><b>20,588</b></div><div><span>均价</span><b>18.8 RMB（244₽）</b></div></div><p>成交量强，但低价和体积并存，需要筛小体积款。</p></div>
+      <div class="evidence"><figure class="evidence-photo product-shot"><img src="./ozon-assets/hot-egg-slicer.jpg" alt="OZON鸡蛋切热卖竞品"><figcaption>OZON热卖竞品图</figcaption></figure><h3>鸡蛋切</h3><div class="evidence-title">Яйцерезка · QJXC</div><a class="source-link" href="https://www.ozon.ru/product/3277998407" target="_blank" rel="noopener">查看OZON商品</a><div class="mini-metrics"><div><span>28天销售额</span><b>1.35万 RMB（17.5万₽）</b></div><div><span>销量</span><b>475</b></div><div><span>均价</span><b>28.3 RMB（368₽）</b></div></div><p>适合作为补充款，不适合承担主增长目标。</p></div>
+    </div>
+  </section>
+
+  <section id="market">
+    <div class="section-head">
+      <h2>类目空间：大盘足够，问题是费用结构</h2>
+      <p class="section-note">平台内年度趋势显示相关类目具备成交基础，但小件百货的核心矛盾是“均价低、费用刚性强”。</p>
+    </div>
+    <div class="card" style="padding: 18px 22px;">
+      <div class="market-row"><b>毛绒玩具</b><div class="bar"><i style="width: 100%"></i></div><span>6.87亿 RMB（89.36亿 RUB）· 均价78.5 RMB（1021₽）</span></div>
+      <div class="market-row"><b>钥匙扣</b><div class="bar"><i style="width: 51%"></i></div><span>3.48亿 RMB（45.22亿 RUB）· 均价23.6 RMB（307₽）</span></div>
+      <div class="market-row"><b>储物罐/调味罐</b><div class="bar"><i style="width: 37%"></i></div><span>2.56亿 RMB（33.30亿 RUB）· 均价91.5 RMB（1189₽）</span></div>
+      <div class="market-row"><b>削皮器</b><div class="bar"><i style="width: 12%"></i></div><span>3308万 RMB（4.30亿 RUB）· 均价27.5 RMB（358₽）</span></div>
+      <div class="market-row"><b>水槽过滤网</b><div class="bar"><i style="width: 11%"></i></div><span>2985万 RMB（3.88亿 RUB）· 均价15.5 RMB（201₽）</span></div>
+      <div class="market-row"><b>洗碗刷/餐具刷</b><div class="bar"><i style="width: 9%"></i></div><span>2408万 RMB（3.13亿 RUB）· 均价16.4 RMB（213₽）</span></div>
+    </div>
+  </section>
+
+  <section id="goods">
+    <div class="section-head">
+      <h2>现场货型：现货丰富，但首批应聚焦轻小件</h2>
+      <p class="section-note">批发市场货型覆盖毛绒、钥匙扣、厨房小工具、清洁用品。首批不应追求“全部上架”，而是选择轻、小、可组合、退货风险可控的货型。</p>
+    </div>
+    <div class="split">
+      <div class="photo-stack">
+        <figure class="large"><img src="./ozon-assets/plush-keychains-wall.jpg" alt="毛绒挂件墙"><figcaption>毛绒挂件：视觉强，适合多款测试</figcaption></figure>
+        <figure><img src="./ozon-assets/keychains-wall.jpg" alt="钥匙扣墙"><figcaption>钥匙扣：低单价，适合组合装</figcaption></figure>
+        <figure><img src="./ozon-assets/kitchen-tools-wall.jpg" alt="厨房工具"><figcaption>厨房工具：可做套装</figcaption></figure>
+        <figure><img src="./ozon-assets/cleaning-tools-wall.jpg" alt="清洁用品"><figcaption>清洁用品：刚需但需控体积</figcaption></figure>
+      </div>
+      <div class="risk-grid" style="grid-template-columns:1fr;">
+        <div class="risk"><h3>优先货型</h3><p>毛绒挂件、钥匙扣、洗碗刷、水槽过滤网、削皮器、小型厨房工具。</p><div class="tags"><span class="tag">轻小</span><span class="tag">可组合</span><span class="tag">可多款测试</span></div></div>
+        <div class="risk"><h3>谨慎货型</h3><p>大毛绒、玻璃油壶/调味瓶、长柄清洁工具、体积超过5L的低价品。</p><div class="tags"><span class="tag">仓储压力</span><span class="tag">破损责任</span><span class="tag">退货风险</span></div></div>
+        <div class="risk"><h3>补货条件</h3><p>试销需要供货价、可供数量、尺寸重量、换款周期、破损/退货责任同步明确。</p><div class="tags"><span class="tag">供货价</span><span class="tag">库存</span><span class="tag">售后</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="portfolio">
+    <div class="section-head">
+      <h2>产品组合：用9组销售单元承接首轮测算</h2>
+      <p class="section-note">计算器中不是把图片里的每个SKU逐个铺满，而是先按“可销售单元”建模。后续拿到真实供货价与尺寸重量后，可逐SKU替换。</p>
+    </div>
+    <div class="product-grid">
+      <div class="product"><h3>毛绒挂件组合</h3><p>卖家标价77 RMB（999₽），作为玩具侧主测款。</p><div class="tags"><span class="tag">主推</span><span class="tag">轻小</span><span class="tag">视觉款</span></div></div>
+      <div class="product"><h3>钥匙扣多件装</h3><p>卖家标价54 RMB（699₽），承接热卖低价需求。</p><div class="tags"><span class="tag">主推</span><span class="tag">多件装</span><span class="tag">高销量</span></div></div>
+      <div class="product"><h3>洗碗刷清洁套装</h3><p>卖家标价61 RMB（799₽），以套装摊薄履约费用。</p><div class="tags"><span class="tag">主推</span><span class="tag">刚需</span><span class="tag">套装</span></div></div>
+      <div class="product"><h3>水槽过滤网多件装</h3><p>卖家标价54 RMB（699₽），适合作为复购型小件。</p><div class="tags"><span class="tag">主推</span><span class="tag">复购</span><span class="tag">低体积</span></div></div>
+      <div class="product"><h3>削皮器/刨皮刀组合</h3><p>卖家标价61 RMB（799₽），厨房工具补充款。</p><div class="tags"><span class="tag">补充</span><span class="tag">小件</span><span class="tag">厨房</span></div></div>
+      <div class="product"><h3>果蔬切厨房组合</h3><p>卖家标价77 RMB（999₽），高客单但需控制包装。</p><div class="tags"><span class="tag">利润款</span><span class="tag">高客单</span><span class="tag">测尺寸</span></div></div>
+      <div class="product"><h3>鸡蛋切补充款</h3><p>卖家标价54 RMB（699₽），作为厨房工具补充测试。</p><div class="tags"><span class="tag">补充</span><span class="tag">小批</span><span class="tag">验证</span></div></div>
+      <div class="product"><h3>马桶刷小体积款</h3><p>卖家标价100 RMB（1299₽），只筛小体积款。</p><div class="tags"><span class="tag">谨慎</span><span class="tag">体积</span><span class="tag">高销量类目</span></div></div>
+      <div class="product"><h3>储物罐/油壶</h3><p>卖家标价115 RMB（1499₽），需先确认破损责任。</p><div class="tags"><span class="tag">谨慎</span><span class="tag">易碎</span><span class="tag">高客单</span></div></div>
+    </div>
+  </section>
+
+  <section id="economics">
+    <div class="section-head">
+      <h2>单位经济：低价单件不适合直接打</h2>
+      <p class="section-note">热卖竞品能证明需求，但也证明大量成交发生在低买家价区间。若按单件销售，平台费用、仓储履约、广告和税费会迅速吃掉毛利。</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>模型字段</th><th>当前测算口径</th><th>业务解释</th></tr></thead>
+        <tbody>
+          <tr><td>卖家标价</td><td>54-115 RMB（699-1499₽）</td><td>按组合装/套装而非单件设计，承接OZON折扣后买家价。</td></tr>
+          <tr><td>平台综合扣费</td><td>约56%-58%标价</td><td>覆盖佣金、履约/物流、支付、广告、促销、退货等综合负担。</td></tr>
+          <tr><td>供货结算占位</td><td>约25%-28%标价</td><td>真实供货价未确认前的建模口径，后续用老板报价替换。</td></tr>
+          <tr><td>本地处理/仓储</td><td>1.4-5.8 RMB/件（18-75₽/件）</td><td>按小件、中件、易碎件做区间估算。</td></tr>
+          <tr><td>净利润分配</td><td>50%权益分配情景</td><td>用于测算合作收益弹性与项目回收周期。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="scale">
+    <div class="section-head">
+      <h2>规模边界：单供货商验证，多供货商放大</h2>
+      <p class="section-note">如果只看一个批发老板，天花板有限；若模型跑通，价值在复制更多本地供货商与更多稳定SKU。</p>
+    </div>
+    <div class="scenario-grid">
+      <div class="scenario"><h3>A 保守试销</h3><div class="metric">5.98万 RMB（77.7万₽）</div><p>M3 GMV测算。适合低预算验证上架、客服和履约链路。</p><a class="btn secondary" href="./?project=ozon-wholesale-90day-conservative-project.json">查看模型</a></div>
+      <div class="scenario"><h3>B 标准启动</h3><div class="metric blue">11.35万 RMB（147.6万₽）</div><p>M3 GMV测算。建议作为默认财务测算口径。</p><a class="btn" href="./?project=ozon-wholesale-90day-standard-project.json">查看模型</a></div>
+      <div class="scenario"><h3>C 放量验证</h3><div class="metric gold">23.86万 RMB（310.2万₽）</div><p>M3 GMV测算。需要供货价、库存、补货和售后机制更稳定。</p><a class="btn secondary" href="./?project=ozon-wholesale-90day-scale-project.json">查看模型</a></div>
+    </div>
+    <div class="table-wrap" style="margin-top:14px;">
+      <table>
+        <thead><tr><th>合作成熟度</th><th>月GMV空间</th><th>收益空间</th><th>关键前提</th></tr></thead>
+        <tbody>
+          <tr><td>单供货商初期</td><td>3.85-7.69万 RMB（50-100万 RUB）</td><td>小额验证收益</td><td>SKU少，重点验证流程和选品。</td></tr>
+          <tr><td>稳定供货商</td><td>7.69-23.08万 RMB（100-300万 RUB）</td><td>形成稳定月度分配</td><td>8-12个稳定SKU，能补货换款。</td></tr>
+          <tr><td>深度供货商</td><td>23.08-61.54万 RMB（300-800万 RUB）</td><td>进入可规模化运营</td><td>专供价、库存稳定、售后责任清晰。</td></tr>
+          <tr><td>多供货商矩阵</td><td>76.92-230.77万 RMB（1000-3000万 RUB）</td><td>形成项目组合收益</td><td>3-10个供货商复制同一套运营模型。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="foot">
+    数据来源：用户提供的《玩具+百货类目趋势分析.xlsx》、其中10个相关类目的28天热卖工作表、OZON佣金表、星哈酷OZON单位经济效益表、现场货品图片、本地投资损益计算器项目文件。当前供货成本、仓储处理、平台综合扣费为测算口径，需在取得真实供货价、尺寸重量和平台物流费后替换复算。
+  </div>
+</main>
+<script type="application/json" id="embedded-platform-evidence">{"sourceFile":"玩具+百货类目趋势分析.xlsx","period":"2025-05-01 to 2026-04-30; hot list generated 2026-05-28","months":["05","06","07","08","09","10","11","12","01","02","03","04"],"totalAnnualGmv":23189576873,"annualCategories":[{"category":"毛绒玩具","sheet":"Мягкая игрушка年销售额+趋势","annualGmv":8935921417,"trendPct":89,"qty":8751789,"avgPrice":1021,"sellers":64282,"brands":2922,"buyoutPct":82.7,"top5SharePct":14.4,"monthly":[368904617,582603191,661647711,609909607,584221465,686302914,889450296,1869431429,687060295,732214052,711336905,552838933]},{"category":"钥匙扣","sheet":"Брелок年销售和趋势 ","annualGmv":4522010926,"trendPct":241,"qty":14707553,"avgPrice":307,"sellers":54426,"brands":4029,"buyoutPct":87.5,"top5SharePct":6.6,"monthly":[181105412,191060300,234738616,242932727,253813350,338865638,428212381,781732297,455760441,519748086,470075000,423966677]},{"category":"储物罐/调味罐","sheet":"Банка年销售+趋势","annualGmv":3330026845,"trendPct":88,"qty":2799974,"avgPrice":1189,"sellers":13015,"brands":1244,"buyoutPct":83.3,"top5SharePct":25.6,"monthly":[129063591,140486413,185801357,253300122,281601969,347671313,385547533,392568277,320181483,296361564,320537012,276906211]},{"category":"马桶刷","sheet":"ершик для унитаза年销售及趋势","annualGmv":1974284166,"trendPct":113,"qty":2787853,"avgPrice":708,"sellers":15073,"brands":949,"buyoutPct":87.6,"top5SharePct":24.5,"monthly":[102252296,100878172,122267487,148743475,153011560,181363958,194487285,211854649,202280338,172982636,194076514,190085795]},{"category":"清洁刷/扫把","sheet":"Щетка для уборки年度销售额+趋势","annualGmv":1709936362,"trendPct":228,"qty":3130568,"avgPrice":546,"sellers":18740,"brands":1279,"buyoutPct":89.3,"top5SharePct":24.8,"monthly":[38974484,40047005,49294497,498788966,45861714,110017440,162685311,219752919,232363066,232444869,263692877,264923214]},{"category":"果蔬切","sheet":"Фрукто-овощерезка销售趋势+年趋势","annualGmv":1366592078,"trendPct":88,"qty":2103878,"avgPrice":650,"sellers":20333,"brands":918,"buyoutPct":87.8,"top5SharePct":21.5,"monthly":[56096899,61562494,74577643,98573713,101039954,117473308,133579990,190559906,132275245,132844838,150792758,117215330]},{"category":"削皮器","sheet":"Фрукто-овощечистка年销售+趋势","annualGmv":429797961,"trendPct":101,"qty":1201869,"avgPrice":358,"sellers":9600,"brands":547,"buyoutPct":89.6,"top5SharePct":32.6,"monthly":[19441032,19316984,24587072,33806973,35651947,40440891,43916273,44860466,46517569,39842719,42385480,39030556]},{"category":"水槽过滤网","sheet":"Сетка для раковины年销售+趋势","annualGmv":388206397,"trendPct":147,"qty":1928959,"avgPrice":201,"sellers":8149,"brands":427,"buyoutPct":87.6,"top5SharePct":18.2,"monthly":[19441032,19316984,24587072,33806973,35651947,40440891,43916273,44860466,46517569,39842719,42385480,39030556]},{"category":"洗碗刷","sheet":"Щетка для посуды年度销售额+趋势","annualGmv":312885064,"trendPct":182,"qty":1466049,"avgPrice":213,"sellers":10158,"brands":595,"buyoutPct":90.4,"top5SharePct":25.4,"monthly":[12683019,11548897,15752516,17327740,16334771,20270926,21442810,35718111,39587349,37324553,42877976,42016417]},{"category":"扫把/清洁套装","sheet":"Веник年销售+趋势","annualGmv":200194867,"trendPct":101,"qty":286161,"avgPrice":700,"sellers":2340,"brands":190,"buyoutPct":85.1,"top5SharePct":36.9,"monthly":[11065257,11032420,13016902,14013254,14602569,19071059,19980991,17302630,18017936,15873738,22484201,23733910]},{"category":"鸡蛋切","sheet":"Яйцерезка年度销售额+趋势","annualGmv":19720790,"trendPct":84,"qty":68672,"avgPrice":287,"sellers":1657,"brands":106,"buyoutPct":89.2,"top5SharePct":20.6,"monthly":[1404257,1300065,1252202,1056503,1164934,1527171,1694946,2405297,1894405,1741277,2134661,2145072]}],"combinedMonthly":[940431896,1179152925,1407523075,1952260053,1522956180,1903445509,2324914089,3811046447,2182455696,2221221051,2262778864,1971892671],"priceBuckets":[{"bucket":"0-199 RUB","gmv":1331761633,"qty":10988341,"categoryCount":11},{"bucket":"200-299 RUB","gmv":1650829002,"qty":6409490,"categoryCount":11},{"bucket":"300-499 RUB","gmv":2145316999,"qty":5717940,"categoryCount":11},{"bucket":"500-749 RUB","gmv":2663520478,"qty":4344789,"categoryCount":11},{"bucket":"750-999 RUB","gmv":2442361681,"qty":2811244,"categoryCount":11},{"bucket":"1000-1499 RUB","gmv":3437836930,"qty":2843134,"categoryCount":11},{"bucket":"1500-2499 RUB","gmv":3988956587,"qty":2074011,"categoryCount":11},{"bucket":"2500 RUB+","gmv":4786614936,"qty":1259637,"categoryCount":11}],"priceByCategoryTop":{"清洁刷/扫把":[{"range":"1 000 ₽ – 1 249 ₽","gmv":246563681,"qty":216631,"bucket":"1000-1499 RUB"},{"range":"2 000 ₽ – 2 499 ₽","gmv":173513825,"qty":77663,"bucket":"1500-2499 RUB"},{"range":"0 ₽ – 199 ₽","gmv":163973268,"qty":1459342,"bucket":"0-199 RUB"},{"range":"2 500 ₽ – 2 999 ₽","gmv":142518713,"qty":52553,"bucket":"2500 RUB+"},{"range":"1 500 ₽ – 1 999 ₽","gmv":140131912,"qty":81303,"bucket":"1500-2499 RUB"}],"洗碗刷":[{"range":"0 ₽ – 199 ₽","gmv":107474701,"qty":891322,"bucket":"0-199 RUB"},{"range":"200 ₽ – 299 ₽","gmv":84638467,"qty":340554,"bucket":"200-299 RUB"},{"range":"500 ₽ – 749 ₽","gmv":35750169,"qty":59493,"bucket":"500-749 RUB"},{"range":"300 ₽ – 399 ₽","gmv":32955924,"qty":99679,"bucket":"300-499 RUB"},{"range":"400 ₽ – 499 ₽","gmv":21399884,"qty":47379,"bucket":"300-499 RUB"}],"鸡蛋切":[{"range":"0 ₽ – 199 ₽","gmv":4297649,"qty":30517,"bucket":"0-199 RUB"},{"range":"200 ₽ – 299 ₽","gmv":4139677,"qty":16157,"bucket":"200-299 RUB"},{"range":"300 ₽ – 399 ₽","gmv":3603117,"qty":10698,"bucket":"300-499 RUB"},{"range":"500 ₽ – 749 ₽","gmv":2688243,"qty":4374,"bucket":"500-749 RUB"},{"range":"750 ₽ – 999 ₽","gmv":1894277,"qty":2204,"bucket":"750-999 RUB"}],"果蔬切":[{"range":"1 500 ₽ – 1 999 ₽","gmv":153272160,"qty":90073,"bucket":"1500-2499 RUB"},{"range":"0 ₽ – 199 ₽","gmv":128020785,"qty":962758,"bucket":"0-199 RUB"},{"range":"2 500 ₽ – 2 999 ₽","gmv":126215888,"qty":46438,"bucket":"2500 RUB+"},{"range":"2 000 ₽ – 2 499 ₽","gmv":111850117,"qty":49890,"bucket":"1500-2499 RUB"},{"range":"3 000 ₽ – 3 499 ₽","gmv":103450802,"qty":31494,"bucket":"2500 RUB+"}],"削皮器":[{"range":"500 ₽ – 749 ₽","gmv":12027138,"qty":21385,"bucket":"500-749 RUB"},{"range":"0 ₽ – 199 ₽","gmv":10340145,"qty":83643,"bucket":"0-199 RUB"},{"range":"750 ₽ – 999 ₽","gmv":4834085,"qty":5864,"bucket":"750-999 RUB"},{"range":"200 ₽ – 299 ₽","gmv":4793022,"qty":19094,"bucket":"200-299 RUB"},{"range":"400 ₽ – 499 ₽","gmv":1770849,"qty":3940,"bucket":"300-499 RUB"}],"水槽过滤网":[{"range":"0 ₽ – 199 ₽","gmv":17712246,"qty":155073,"bucket":"0-199 RUB"},{"range":"200 ₽ – 299 ₽","gmv":7417102,"qty":30493,"bucket":"200-299 RUB"},{"range":"500 ₽ – 749 ₽","gmv":5645448,"qty":9414,"bucket":"500-749 RUB"},{"range":"300 ₽ – 399 ₽","gmv":2220167,"qty":6863,"bucket":"300-499 RUB"},{"range":"400 ₽ – 499 ₽","gmv":1487000,"qty":3198,"bucket":"300-499 RUB"}],"毛绒玩具":[{"range":"1 500 ₽ – 1 999 ₽","gmv":1122486599,"qty":648400,"bucket":"1500-2499 RUB"},{"range":"750 ₽ – 999 ₽","gmv":1021744290,"qty":1173721,"bucket":"750-999 RUB"},{"range":"500 ₽ – 749 ₽","gmv":924850147,"qty":1487484,"bucket":"500-749 RUB"},{"range":"1 000 ₽ – 1 249 ₽","gmv":919920617,"qty":824871,"bucket":"1000-1499 RUB"},{"range":"2 000 ₽ – 2 499 ₽","gmv":903634974,"qty":406478,"bucket":"1500-2499 RUB"}],"钥匙扣":[{"range":"200 ₽ – 299 ₽","gmv":874385973,"qty":3348598,"bucket":"200-299 RUB"},{"range":"500 ₽ – 749 ₽","gmv":850282092,"qty":1416988,"bucket":"500-749 RUB"},{"range":"0 ₽ – 199 ₽","gmv":740353021,"qty":6251909,"bucket":"0-199 RUB"},{"range":"300 ₽ – 399 ₽","gmv":592458173,"qty":1793753,"bucket":"300-499 RUB"},{"range":"750 ₽ – 999 ₽","gmv":505465461,"qty":592812,"bucket":"750-999 RUB"}],"储物罐/调味罐":[{"range":"1 500 ₽ – 1 999 ₽","gmv":485034512,"qty":278714,"bucket":"1500-2499 RUB"},{"range":"750 ₽ – 999 ₽","gmv":414974566,"qty":470870,"bucket":"750-999 RUB"},{"range":"2 000 ₽ – 2 499 ₽","gmv":412095032,"qty":185503,"bucket":"1500-2499 RUB"},{"range":"1 000 ₽ – 1 249 ₽","gmv":386036823,"qty":348408,"bucket":"1000-1499 RUB"},{"range":"2 500 ₽ – 2 999 ₽","gmv":319601399,"qty":117005,"bucket":"2500 RUB+"}],"扫把/清洁套装":[{"range":"750 ₽ – 999 ₽","gmv":71114904,"qty":82738,"bucket":"750-999 RUB"},{"range":"500 ₽ – 749 ₽","gmv":44772138,"qty":70161,"bucket":"500-749 RUB"},{"range":"1 000 ₽ – 1 249 ₽","gmv":16206859,"qty":15081,"bucket":"1000-1499 RUB"},{"range":"200 ₽ – 299 ₽","gmv":15017912,"qty":53278,"bucket":"200-299 RUB"},{"range":"1 500 ₽ – 1 999 ₽","gmv":11466732,"qty":6882,"bucket":"1500-2499 RUB"}],"马桶刷":[{"range":"500 ₽ – 749 ₽","gmv":389852795,"qty":632586,"bucket":"500-749 RUB"},{"range":"750 ₽ – 999 ₽","gmv":224820784,"qty":261283,"bucket":"750-999 RUB"},{"range":"1 500 ₽ – 1 999 ₽","gmv":163198951,"qty":93802,"bucket":"1500-2499 RUB"},{"range":"2 000 ₽ – 2 499 ₽","gmv":153680749,"qty":68894,"bucket":"1500-2499 RUB"},{"range":"1 000 ₽ – 1 249 ₽","gmv":131831278,"qty":118427,"bucket":"1000-1499 RUB"}]},"hotSummary":[{"category":"马桶刷","topGmv":5022680,"topQty":20588,"topAvgPrice":244,"topTrendPct":82,"over1mCount":9,"top10Gmv":20186957,"medianAvgPrice":569,"topTitle":"Pipolux Toilet Brush","topLink":"https://www.ozon.ru/product/2104646832","sampleSize":120},{"category":"储物罐/调味罐","topGmv":3742027,"topQty":5544,"topAvgPrice":675,"topTrendPct":-17,"over1mCount":3,"top10Gmv":12350103,"medianAvgPrice":1222,"topTitle":"good&good Food Storage Jar, 1000 ml","topLink":"https://www.ozon.ru/product/1564129823","sampleSize":120},{"category":"果蔬切","topGmv":3433575,"topQty":1373,"topAvgPrice":2501,"topTrendPct":23,"over1mCount":6,"top10Gmv":13207178,"medianAvgPrice":889,"topTitle":"Овощерезка для терки, шинковки, измельчения, ореховой пасты, соковыжималка Tuvio TFP02, белая, Яндекс Фабрика","topLink":"https://www.ozon.ru/product/3033846259","sampleSize":120},{"category":"清洁刷/扫把","topGmv":3338587,"topQty":5052,"topAvgPrice":661,"topTrendPct":-18,"over1mCount":20,"top10Gmv":19624963,"medianAvgPrice":875,"topTitle":"Веник-щетка Denian с совком для уборки чёрный (густая щетина), 3 трубки","topLink":"https://www.ozon.ru/product/3457669400","sampleSize":120},{"category":"钥匙扣","topGmv":1529808,"topQty":12864,"topAvgPrice":119,"topTrendPct":null,"over1mCount":2,"top10Gmv":9125932,"medianAvgPrice":186,"topTitle":"Cozy Dwelling Keychain","topLink":"https://www.ozon.ru/product/4204152736","sampleSize":120},{"category":"毛绒玩具","topGmv":1468716,"topQty":257,"topAvgPrice":5715,"topTrendPct":44,"over1mCount":4,"top10Gmv":9756063,"medianAvgPrice":1115,"topTitle":"Большой плюшевый медведь 200см белый","topLink":"https://www.ozon.ru/product/3291169530","sampleSize":120},{"category":"洗碗刷","topGmv":1210979,"topQty":8723,"topAvgPrice":139,"topTrendPct":-16,"over1mCount":1,"top10Gmv":4495345,"medianAvgPrice":141,"topTitle":"Ершик для бутылок и бутылей","topLink":"https://www.ozon.ru/product/1580012906","sampleSize":120},{"category":"水槽过滤网","topGmv":1029599,"topQty":7115,"topAvgPrice":145,"topTrendPct":6,"over1mCount":1,"top10Gmv":5204958,"medianAvgPrice":127,"topTitle":"Ситечко для раковины металлическое, сетка для слива в ванне, диаметр 7,5 см, 1 шт, WiseBuys","topLink":"https://www.ozon.ru/product/1657079936","sampleSize":120},{"category":"削皮器","topGmv":1013433,"topQty":4297,"topAvgPrice":236,"topTrendPct":-6,"over1mCount":1,"top10Gmv":6219580,"medianAvgPrice":188,"topTitle":"Овощечистка металлическая горизонтальная KITOME - Картофелечистка","topLink":"https://www.ozon.ru/product/1374583075","sampleSize":120},{"category":"鸡蛋切","topGmv":174821,"topQty":475,"topAvgPrice":368,"topTrendPct":-58,"over1mCount":0,"top10Gmv":941667,"medianAvgPrice":210,"topTitle":"Яйцерезка, 1 шт","topLink":"https://www.ozon.ru/product/3277998407","sampleSize":120}]}</script>
+<script type="application/json" id="embedded-hot-products">[{"category":"清洁刷/扫把","sheet":"Щетка для уборки28天热卖","avg":{"title":"Среднее значение по товарам","seller":null,"brand":null,"badge":null,"amount":108850,"trendPct":235,"qty":259,"avgPrice":1012,"minPrice":735,"buyoutPct":87.3,"stockoutDays":"18 из 28","dailyRub":3671,"dailyQty":8,"scheme":null,"volumeL":null,"impressions":116459,"conversionPct":0.29,"adCostPct":7.7,"link":null},"top":[{"title":"Веник-щетка Denian с совком для уборки чёрный (густая щетина), 3 трубки","seller":"HOVNIKA","brand":"ДЕНИАН","badge":"Лидер по продажам","amount":3338587,"trendPct":-18,"qty":5052,"avgPrice":661,"minPrice":52,"buyoutPct":88.3,"stockoutDays":"19 из 28","dailyRub":122320,"dailyQty":187,"scheme":"FBO","volumeL":7.3,"impressions":1234051,"conversionPct":0.41,"adCostPct":5.4,"link":"https://www.ozon.ru/product/3457669400"},{"title":"Веник с совком для уборки, совок и щетка для уборки, метла с длинной ручкой","seller":"MELO","brand":"CLEAN TOOL","badge":"Топ-50% по продажам","amount":2397290,"trendPct":10,"qty":3729,"avgPrice":643,"minPrice":1,"buyoutPct":92.5,"stockoutDays":"16 из 28","dailyRub":82564,"dailyQty":128,"scheme":"FBO,FBS","volumeL":2.3,"impressions":585695,"conversionPct":0.64,"adCostPct":6.9,"link":"https://www.ozon.ru/product/3517601886"},{"title":"Веник с совком для уборки, совок и щетка для уборки, метла с длинной ручкой","seller":"MELO","brand":"MELO","badge":"Лидер по продажам","amount":2204332,"trendPct":-26,"qty":3400,"avgPrice":648,"minPrice":1,"buyoutPct":89.5,"stockoutDays":"18 из 28","dailyRub":79438,"dailyQty":122,"scheme":"FBO","volumeL":6.7,"impressions":705339,"conversionPct":0.48,"adCostPct":3.4,"link":"https://www.ozon.ru/product/3618700883"},{"title":"Веник с совком для уборки, совок и щетка для уборки, метла с длинной ручкой","seller":"MELO","brand":"CLEAN TOOL","badge":"Топ-50% по продажам","amount":2019214,"trendPct":-27,"qty":3075,"avgPrice":657,"minPrice":1,"buyoutPct":91.3,"stockoutDays":"17 из 28","dailyRub":71225,"dailyQty":109,"scheme":"FBO,FBS","volumeL":2.3,"impressions":630100,"conversionPct":0.49,"adCostPct":6.5,"link":"https://www.ozon.ru/product/3517602964"},{"title":"Веник с совком для уборки Zetter М, щетка с совком, телескопические ручки","seller":"Zetter - официальный магазин","brand":"Zetter","badge":"Лидер по продажам","amount":1902636,"trendPct":-6,"qty":1281,"avgPrice":1485,"minPrice":244,"buyoutPct":93,"stockoutDays":"1 из 28","dailyRub":35196,"dailyQty":24,"scheme":"FBO","volumeL":11.6,"impressions":541413,"conversionPct":0.24,"adCostPct":7,"link":"https://www.ozon.ru/product/2310413756"}]},{"category":"洗碗刷","sheet":"Щетка для посуды28天热卖","avg":{"title":"Среднее значение по товарам","seller":null,"brand":null,"badge":null,"amount":21844,"trendPct":138,"qty":153,"avgPrice":346,"minPrice":271,"buyoutPct":91.3,"stockoutDays":"16 из 28","dailyRub":632,"dailyQty":4,"scheme":null,"volumeL":null,"impressions":59054,"conversionPct":0.41,"adCostPct":6.9,"link":null},"top":[{"title":"Ершик для бутылок и бутылей","seller":"BSC-opt","brand":"BSC-opt","badge":"Лидер по продажам","amount":1210979,"trendPct":-16,"qty":8723,"avgPrice":139,"minPrice":10,"buyoutPct":91.7,"stockoutDays":"6 из 28","dailyRub":44221,"dailyQty":317,"scheme":"FBO","volumeL":3,"impressions":1661552,"conversionPct":0.52,"adCostPct":1.1,"link":"https://www.ozon.ru/product/1580012906"},{"title":"Щетка для мытья посуды и бутылок, ершик для уборки, 2шт","seller":"LGND","brand":"без бренда","badge":"Топ-50% по продажам","amount":842078,"trendPct":1,"qty":6138,"avgPrice":137,"minPrice":1,"buyoutPct":94.1,"stockoutDays":"3 из 28","dailyRub":29914,"dailyQty":216,"scheme":"FBO","volumeL":0.4,"impressions":2983566,"conversionPct":0.21,"adCostPct":24.3,"link":"https://www.ozon.ru/product/1829861522"},{"title":"Щетка для посуды, 10 шт","seller":"FM","brand":"без бренда","badge":"Топ-10% по продажам","amount":426841,"trendPct":85,"qty":3553,"avgPrice":120,"minPrice":11,"buyoutPct":93,"stockoutDays":"-","dailyRub":0,"dailyQty":0,"scheme":"FBS","volumeL":3.5,"impressions":1938026,"conversionPct":0.18,"adCostPct":0.7,"link":"https://www.ozon.ru/product/2893026007"},{"title":"Набор мини-ёршиков 5 шт для трубочек и узких отверстий, поильника и капучинатора, 11 см, 3-7 мм","seller":"БЕЗ ЛИШНЕГО","brand":"Без Лишнего","badge":"Лидер по продажам","amount":421643,"trendPct":-6,"qty":3334,"avgPrice":126,"minPrice":1,"buyoutPct":91.2,"stockoutDays":"4 из 28","dailyRub":15089,"dailyQty":119,"scheme":"FBO","volumeL":0.1,"impressions":996550,"conversionPct":0.33,"adCostPct":12.7,"link":"https://www.ozon.ru/product/2154109772"},{"title":"Ершик для бутылок 2 шт, щетка для чистки узких мест, кружек, термосов, детских бутылочек, для кальяна, для чистки шахты и колбы, аксессуары для кальянов","seller":"SE market","brand":"Mr Brush","badge":"Лидер по продажам","amount":326580,"trendPct":12,"qty":924,"avgPrice":353,"minPrice":1,"buyoutPct":92.2,"stockoutDays":"15 из 28","dailyRub":11762,"dailyQty":33,"scheme":"FBO","volumeL":0.9,"impressions":219629,"conversionPct":0.42,"adCostPct":7.2,"link":"https://www.ozon.ru/product/2617451016"}]},{"category":"鸡蛋切","sheet":"Яйцерезка28天热卖","avg":{"title":"Среднее значение по товарам","seller":null,"brand":null,"badge":null,"amount":3047,"trendPct":72,"qty":17,"avgPrice":225,"minPrice":208,"buyoutPct":93,"stockoutDays":"21 из 28","dailyRub":65,"dailyQty":0,"scheme":null,"volumeL":null,"impressions":8897,"conversionPct":0.52,"adCostPct":3,"link":null},"top":[{"title":"Яйцерезка, 1 шт","seller":"QJXC","brand":"без бренда","badge":"Лидер по продажам","amount":174821,"trendPct":-58,"qty":475,"avgPrice":368,"minPrice":213,"buyoutPct":94.5,"stockoutDays":"-","dailyRub":0,"dailyQty":0,"scheme":"FBS","volumeL":3,"impressions":235848,"conversionPct":0.2,"adCostPct":0.2,"link":"https://www.ozon.ru/product/3277998407"},{"title":"Яйцерезка ручная для яиц / Измельчитель для овощей и фруктов ручной","seller":"Bazar","brand":"без бренда","badge":"Лидер по продажам","amount":169937,"trendPct":61,"qty":999,"avgPrice":170,"minPrice":14,"buyoutPct":92.5,"stockoutDays":"9 из 28","dailyRub":5930,"dailyQty":35,"scheme":"FBO","volumeL":0.6,"impressions":549312,"conversionPct":0.18,"adCostPct":22.6,"link":"https://www.ozon.ru/product/3281465372"},{"title":"Винегретница овощерезка, яйцерезка, для нарезки кубиками, 5 мм и 8 мм, 2 шт.","seller":"ANROM","brand":"НПФ Энтен","badge":"Super; Топ-50% по продажам","amount":124829,"trendPct":"Нет данных","qty":798,"avgPrice":156,"minPrice":1,"buyoutPct":96.9,"stockoutDays":"15 из 28","dailyRub":4204,"dailyQty":27,"scheme":"FBO","volumeL":0.2,"impressions":251436,"conversionPct":0.32,"adCostPct":10.9,"link":"https://www.ozon.ru/product/3998793548"},{"title":"Яйцерезка, Mallony, пластиковая, 10.4x8.1x2.5 см","seller":"SKRAP FBS","brand":"Mallony","badge":"Лидер по продажам","amount":97117,"trendPct":-21,"qty":856,"avgPrice":113,"minPrice":9,"buyoutPct":93.2,"stockoutDays":"27 из 28","dailyRub":3441,"dailyQty":30,"scheme":"FBO,FBS","volumeL":0.5,"impressions":303581,"conversionPct":0.28,"adCostPct":0,"link":"https://www.ozon.ru/product/2760647012"},{"title":"Яйцерезка измельчитель для овощей и фруктов 1 шт.","seller":"Весёлые Штучки","brand":"без бренда","badge":"Топ-50% по продажам","amount":82913,"trendPct":1100,"qty":801,"avgPrice":104,"minPrice":1,"buyoutPct":96.7,"stockoutDays":"26 из 28","dailyRub":3074,"dailyQty":29,"scheme":"FBO","volumeL":0.5,"impressions":518003,"conversionPct":0.15,"adCostPct":0,"link":"https://www.ozon.ru/product/3097125474"}]},{"category":"果蔬切","sheet":"Фрукто-овощерезка28天热卖","avg":{"title":"Среднее значение по товарам","seller":null,"brand":null,"badge":null,"amount":60585,"trendPct":234,"qty":162,"avgPrice":1397,"minPrice":1157,"buyoutPct":87.2,"stockoutDays":"20 из 28","dailyRub":1694,"dailyQty":3,"scheme":null,"volumeL":null,"impressions":107508,"conversionPct":0.18,"adCostPct":6.3,"link":null},"top":[{"title":"Овощерезка для терки, шинковки, измельчения, ореховой пасты, соковыжималка Tuvio TFP02, белая, Яндекс Фабрика","seller":"Яндекс Фабрика","brand":"Tuvio","badge":"Лидер по продажам","amount":3433575,"trendPct":23,"qty":1373,"avgPrice":2501,"minPrice":1,"buyoutPct":83.9,"stockoutDays":"25 из 28","dailyRub":119100,"dailyQty":48,"scheme":"FBO","volumeL":10.9,"impressions":2350617,"conversionPct":0.06,"adCostPct":16,"link":"https://www.ozon.ru/product/3033846259"},{"title":"Волнистый нож для креативной нарезки овощей и фруктов Универсальный кухонный инструмент","seller":"ЛИЧНЫЙ УЮТ","brand":"без бренда","badge":"Лидер по продажам","amount":1580828,"trendPct":-37,"qty":12823,"avgPrice":123,"minPrice":1,"buyoutPct":94.9,"stockoutDays":"5 из 28","dailyRub":58084,"dailyQty":461,"scheme":"FBO","volumeL":0.3,"impressions":9964262,"conversionPct":0.13,"adCostPct":20.4,"link":"https://www.ozon.ru/product/1553095803"},{"title":"Овощерезка ручная многофункциональная 4 в 1 Fullstar","seller":"Квокка","brand":"Fullstar","badge":"Лидер по продажам","amount":1334445,"trendPct":20,"qty":900,"avgPrice":1483,"minPrice":1,"buyoutPct":91.5,"stockoutDays":"24 из 28","dailyRub":45407,"dailyQty":30,"scheme":"FBO","volumeL":4.8,"impressions":566119,"conversionPct":0.16,"adCostPct":7,"link":"https://www.ozon.ru/product/1715532129"},{"title":"Borner Овощерезка \"Классика\", Германия. 12 видов нарезки, 5 предметов: тёрка-измельчитель, 3 вставки, плододержатель, цвет: оранжевый","seller":"Borner & AxWild","brand":"Borner","badge":null,"amount":1141869,"trendPct":11,"qty":434,"avgPrice":2631,"minPrice":1750,"buyoutPct":90.8,"stockoutDays":"23 из 28","dailyRub":29745,"dailyQty":11,"scheme":"FBO","volumeL":4,"impressions":163955,"conversionPct":0.26,"adCostPct":0,"link":"https://www.ozon.ru/product/484763312"},{"title":"Овощерезка","seller":"HOFBERG","brand":"HOFBERG","badge":"Лидер по продажам","amount":1049657,"trendPct":382,"qty":635,"avgPrice":1653,"minPrice":792,"buyoutPct":87.6,"stockoutDays":"21 из 28","dailyRub":36012,"dailyQty":22,"scheme":"FBO","volumeL":3.9,"impressions":2081362,"conversionPct":0.03,"adCostPct":9.9,"link":"https://www.ozon.ru/product/2983924206"}]},{"category":"削皮器","sheet":"Фрукто-овощечистка28天热卖","avg":{"title":"Среднее значение по товарам","seller":null,"brand":null,"badge":null,"amount":21956,"trendPct":510,"qty":122,"avgPrice":591,"minPrice":507,"buyoutPct":89.9,"stockoutDays":"18 из 28","dailyRub":638,"dailyQty":3,"scheme":null,"volumeL":null,"impressions":50795,"conversionPct":0.36,"adCostPct":6.7,"link":null},"top":[{"title":"Овощечистка металлическая горизонтальная KITOME - Картофелечистка","seller":"KITOME","brand":"Kitome","badge":"Лидер по продажам","amount":1013433,"trendPct":-6,"qty":4297,"avgPrice":236,"minPrice":3,"buyoutPct":93.6,"stockoutDays":"8 из 28","dailyRub":36459,"dailyQty":155,"scheme":"FBO","volumeL":0.3,"impressions":519533,"conversionPct":0.83,"adCostPct":11.2,"link":"https://www.ozon.ru/product/1374583075"},{"title":"Овощечистка ручная, универсальный нож слайсер для овощей и фруктов","seller":"UYTKOFF","brand":"без бренда","badge":"Лидер по продажам","amount":894224,"trendPct":131,"qty":4658,"avgPrice":192,"minPrice":1,"buyoutPct":93.5,"stockoutDays":"8 из 28","dailyRub":30438,"dailyQty":159,"scheme":"FBO","volumeL":0.1,"impressions":1763724,"conversionPct":0.26,"adCostPct":8.8,"link":"https://www.ozon.ru/product/3011434230"},{"title":"Овощечистка металлическая горизонтальная Chu-Do boksi - Картофелечистка","seller":"Chu-do","brand":"Chu-Do boksi","badge":"Лидер по продажам","amount":861895,"trendPct":18,"qty":4698,"avgPrice":183,"minPrice":2,"buyoutPct":94.2,"stockoutDays":"5 из 28","dailyRub":28881,"dailyQty":157,"scheme":"FBO","volumeL":0.3,"impressions":457160,"conversionPct":1.03,"adCostPct":10.1,"link":"https://www.ozon.ru/product/1196552468"},{"title":"Терка для овощей, овощечистка /слайсер,нож","seller":"Qingzhuan","brand":"без бренда","badge":"Лидер по продажам","amount":724887,"trendPct":10714,"qty":9413,"avgPrice":77,"minPrice":7,"buyoutPct":99.2,"stockoutDays":"-","dailyRub":0,"dailyQty":0,"scheme":"FBS","volumeL":0.6,"impressions":3615126,"conversionPct":0.26,"adCostPct":0,"link":"https://www.ozon.ru/product/3836691496"},{"title":"Набор овощечисток, ручная для чистки овощей и фруктов, картофелечистка, набор 2 шт.","seller":"NI-KO Group","brand":"BuonGusto Selection","badge":"Лидер по продажам","amount":637846,"trendPct":-22,"qty":1716,"avgPrice":372,"minPrice":1,"buyoutPct":94.1,"stockoutDays":"16 из 28","dailyRub":24941,"dailyQty":68,"scheme":"FBO","volumeL":0.3,"impressions":510005,"conversionPct":0.34,"adCostPct":7.8,"link":"https://www.ozon.ru/product/1628809406"}]},{"category":"水槽过滤网","sheet":"Сетка для раковины28天热卖","avg":{"title":"Среднее значение по товарам","seller":null,"brand":null,"badge":null,"amount":22208,"trendPct":127,"qty":196,"avgPrice":215,"minPrice":159,"buyoutPct":90.5,"stockoutDays":"16 из 28","dailyRub":737,"dailyQty":6,"scheme":null,"volumeL":null,"impressions":87135,"conversionPct":0.36,"adCostPct":7.8,"link":null},"top":[{"title":"Ситечко для раковины металлическое, сетка для слива в ванне, диаметр 7,5 см, 1 шт, WiseBuys","seller":"WiseBuys","brand":"WiseBuys","badge":"Лидер по продажам","amount":1029599,"trendPct":6,"qty":7115,"avgPrice":145,"minPrice":11,"buyoutPct":94.2,"stockoutDays":"8 из 28","dailyRub":36539,"dailyQty":251,"scheme":"FBO","volumeL":0.1,"impressions":1974852,"conversionPct":0.36,"adCostPct":21.2,"link":"https://www.ozon.ru/product/1657079936"},{"title":"Сетка для раковины, для ванной комнаты 14,5 см х 14,5 см, 1 шт, серый цвет","seller":"Бытология","brand":"без бренда","badge":"Лидер по продажам","amount":748243,"trendPct":30,"qty":9402,"avgPrice":80,"minPrice":1,"buyoutPct":95.1,"stockoutDays":"8 из 28","dailyRub":25136,"dailyQty":313,"scheme":"FBO","volumeL":0.1,"impressions":4882950,"conversionPct":0.19,"adCostPct":15.4,"link":"https://www.ozon.ru/product/2640770947"},{"title":"Сетка фильтр для раковины, ванной, душа (слива) силиконовая 14,5 см х 14,5 см, 1 шт, серый цвет","seller":"LUXGOAT-LIFE","brand":"без бренда","badge":"Топ-10% по продажам","amount":582342,"trendPct":33,"qty":7478,"avgPrice":78,"minPrice":5,"buyoutPct":94.1,"stockoutDays":"8 из 28","dailyRub":20103,"dailyQty":256,"scheme":"FBO","volumeL":0,"impressions":3156023,"conversionPct":0.24,"adCostPct":11.4,"link":"https://www.ozon.ru/product/3383655051"},{"title":"Сетка для мойки на кухню из нержавеющей стали слив для кухонной мойки, круглая решетка, коврик для раковины на кухне, предотвращает засоры, легко чистится","seller":"МОДА БЫТ","brand":"без бренда","badge":"Топ-10% по продажам","amount":502354,"trendPct":27,"qty":5778,"avgPrice":87,"minPrice":1,"buyoutPct":89.8,"stockoutDays":"4 из 28","dailyRub":18004,"dailyQty":202,"scheme":"FBO","volumeL":0.3,"impressions":3186471,"conversionPct":0.18,"adCostPct":35.7,"link":"https://www.ozon.ru/product/3212348654"},{"title":"Сетка-фильтр для раковины 11.5см из нержавейки 1 шт., сито фильтр решетка для кухни / Цвет: Черный матовый","seller":"Домоседович","brand":"Домоседович","badge":"Топ-50% по продажам","amount":502113,"trendPct":-11,"qty":3847,"avgPrice":131,"minPrice":11,"buyoutPct":92.6,"stockoutDays":"6 из 28","dailyRub":17843,"dailyQty":136,"scheme":"FBO","volumeL":0.4,"impressions":1781962,"conversionPct":0.22,"adCostPct":7.3,"link":"https://www.ozon.ru/product/2143059459"}]},{"category":"毛绒玩具","sheet":"Мягкая игрушка28天热卖","avg":{"title":"Среднее значение по товарам","seller":null,"brand":null,"badge":null,"amount":127864,"trendPct":231,"qty":176,"avgPrice":1832,"minPrice":1371,"buyoutPct":85.2,"stockoutDays":"18 из 28","dailyRub":3784,"dailyQty":5,"scheme":null,"volumeL":null,"impressions":151048,"conversionPct":0.16,"adCostPct":4.7,"link":null},"top":[{"title":"Большой плюшевый медведь 200см белый","seller":"MEDVEDI.BIZ","brand":"MEDVEDI","badge":"Лидер по продажам","amount":1468716,"trendPct":44,"qty":257,"avgPrice":5715,"minPrice":4687,"buyoutPct":58.3,"stockoutDays":"9 из 28","dailyRub":46277,"dailyQty":8,"scheme":"FBO","volumeL":61.6,"impressions":229394,"conversionPct":0.11,"adCostPct":4.9,"link":"https://www.ozon.ru/product/3291169530"},{"title":"Милый и забавный плюшевый поросёнок-летучая мышь на Хэллоуин игрушка, подарок для девушек, украшение комнаты","seller":"XYY6","brand":"Лимонный кот","badge":"Лидер по продажам","amount":1457155,"trendPct":287,"qty":5295,"avgPrice":275,"minPrice":26,"buyoutPct":94.4,"stockoutDays":"-","dailyRub":0,"dailyQty":0,"scheme":"FBS","volumeL":3.2,"impressions":9562996,"conversionPct":0.06,"adCostPct":2.9,"link":"https://www.ozon.ru/product/3014373873"},{"title":"Мягкая игрушка утка-плюшевый гусь 130 см, сплюшка-обнимашка, Гигант","seller":"Магазин Детских Товаров","brand":"без бренда","badge":"Лидер по продажам","amount":1351778,"trendPct":-11,"qty":2074,"avgPrice":652,"minPrice":1,"buyoutPct":86.9,"stockoutDays":"9 из 28","dailyRub":44046,"dailyQty":69,"scheme":"FBO","volumeL":4.1,"impressions":814240,"conversionPct":0.25,"adCostPct":3.1,"link":"https://www.ozon.ru/product/2127603178"},{"title":"бегущий теленок игрушка мягкая","seller":"Деньги","brand":"без бренда","badge":"Лидер по продажам","amount":1002254,"trendPct":6,"qty":1901,"avgPrice":527,"minPrice":101,"buyoutPct":86.6,"stockoutDays":"28 из 28","dailyRub":4031,"dailyQty":8,"scheme":"FBO,FBS","volumeL":9.7,"impressions":4398958,"conversionPct":0.04,"adCostPct":4.2,"link":"https://www.ozon.ru/product/3032389096"},{"title":"Мягкая игрушка Зайка в Клубнике 2в1, 25 см / Плюшевый заяц клубника / Плюшевая игрушка кролик для девочки и детей","seller":"БОНБОН","brand":"БОНБОН","badge":"Топ-10% по продажам","amount":862846,"trendPct":-30,"qty":1418,"avgPrice":608,"minPrice":1,"buyoutPct":91.3,"stockoutDays":"8 из 28","dailyRub":12938,"dailyQty":22,"scheme":"FBO","volumeL":3,"impressions":1357322,"conversionPct":0.1,"adCostPct":7,"link":"https://www.ozon.ru/product/1101588472"}]},{"category":"钥匙扣","sheet":"Брелок28天热卖","avg":{"title":"Среднее значение по товарам","seller":null,"brand":null,"badge":null,"amount":89571,"trendPct":455,"qty":518,"avgPrice":395,"minPrice":172,"buyoutPct":89.4,"stockoutDays":"17 из 28","dailyRub":2694,"dailyQty":15,"scheme":null,"volumeL":null,"impressions":628657,"conversionPct":3.95,"adCostPct":6.6,"link":null},"top":[{"title":"Cozy Dwelling Keychain","seller":"La_Кукарача","brand":"Cozy Dwelling","badge":"Лидер по продажам","amount":1529808,"trendPct":"Нет данных","qty":12864,"avgPrice":119,"minPrice":11,"buyoutPct":99.9,"stockoutDays":"17 из 28","dailyRub":139072,"dailyQty":1169,"scheme":"FBS","volumeL":0,"impressions":1216,"conversionPct":1057.89,"adCostPct":0,"link":"https://www.ozon.ru/product/4204152736"},{"title":" Keychain","seller":"P.A.A.","brand":"без бренда","badge":"Лидер по продажам","amount":1028960,"trendPct":-1,"qty":12347,"avgPrice":83,"minPrice":1,"buyoutPct":87.1,"stockoutDays":"6 из 28","dailyRub":36003,"dailyQty":428,"scheme":"FBO","volumeL":0.2,"impressions":8003074,"conversionPct":0.15,"adCostPct":0,"link":"https://www.ozon.ru/product/1856458128"},{"title":" Keychain","seller":"MoSheng Fashion store","brand":"без бренда","badge":"Лидер по продажам","amount":987413,"trendPct":-64,"qty":2639,"avgPrice":374,"minPrice":30,"buyoutPct":75.4,"stockoutDays":"-","dailyRub":0,"dailyQty":0,"scheme":"FBS","volumeL":0.5,"impressions":10451432,"conversionPct":0.03,"adCostPct":6.5,"link":"https://www.ozon.ru/product/1962104222"},{"title":" Keychain","seller":"Айсберг","brand":"без бренда","badge":"Лидер по продажам","amount":920836,"trendPct":"Нет данных","qty":7497,"avgPrice":123,"minPrice":10,"buyoutPct":83.8,"stockoutDays":"27 из 28","dailyRub":17187,"dailyQty":140,"scheme":"FBS","volumeL":0,"impressions":1163,"conversionPct":644.63,"adCostPct":0,"link":"https://www.ozon.ru/product/4368703877"},{"title":"Cozy Dwelling Keychain","seller":"Para_voz","brand":"Cozy Dwelling","badge":"Топ-10% по продажам","amount":902330,"trendPct":"Нет данных","qty":7617,"avgPrice":118,"minPrice":117,"buyoutPct":99.9,"stockoutDays":"23 из 28","dailyRub":180440,"dailyQty":1523,"scheme":"FBS","volumeL":0.1,"impressions":805,"conversionPct":946.21,"adCostPct":0,"link":"https://www.ozon.ru/product/4301195336"}]},{"category":"储物罐/调味罐","sheet":"Банка28天热卖","avg":{"title":"Среднее значение по товарам","seller":null,"brand":null,"badge":null,"amount":102675,"trendPct":118,"qty":141,"avgPrice":1130,"minPrice":805,"buyoutPct":83.8,"stockoutDays":"17 из 28","dailyRub":3248,"dailyQty":4,"scheme":null,"volumeL":null,"impressions":86784,"conversionPct":0.21,"adCostPct":5.8,"link":null},"top":[{"title":"good&good Food Storage Jar, 1000 ml","seller":"АРКОРИС","brand":"good&good","badge":"Лидер по продажам","amount":3742027,"trendPct":-17,"qty":5544,"avgPrice":675,"minPrice":1,"buyoutPct":90.4,"stockoutDays":"2 из 28","dailyRub":87530,"dailyQty":129,"scheme":"FBO","volumeL":6.3,"impressions":2208418,"conversionPct":0.25,"adCostPct":3,"link":"https://www.ozon.ru/product/1564129823"},{"title":"good&good Bag for bulk products, 500 ml, 1100 ml, 12 pcs","seller":"Маркет МАП","brand":"good&good","badge":"Лидер по продажам","amount":1408687,"trendPct":-21,"qty":609,"avgPrice":2313,"minPrice":1,"buyoutPct":78.2,"stockoutDays":"10 из 28","dailyRub":51053,"dailyQty":22,"scheme":"FBO","volumeL":9.5,"impressions":194342,"conversionPct":0.31,"adCostPct":2.7,"link":"https://www.ozon.ru/product/2936358546"},{"title":"good&good Food Storage Jar, 2500 ml, 1100 ml, 1600 ml, 6 pcs","seller":"АРКОРИС","brand":"good&good","badge":"Лидер по продажам","amount":1047463,"trendPct":-16,"qty":1739,"avgPrice":602,"minPrice":1,"buyoutPct":90.9,"stockoutDays":"2 из 28","dailyRub":29925,"dailyQty":49,"scheme":"FBO","volumeL":6,"impressions":518555,"conversionPct":0.34,"adCostPct":7.4,"link":"https://www.ozon.ru/product/3071741501"},{"title":"Meet Comfort Bag for bulk products, 1250 ml, 4 pcs","seller":"Meet Comfort","brand":"Meet Comfort","badge":"Лидер по продажам","amount":990592,"trendPct":-13,"qty":627,"avgPrice":1580,"minPrice":1071,"buyoutPct":87,"stockoutDays":"8 из 28","dailyRub":35253,"dailyQty":22,"scheme":"FBO","volumeL":11.7,"impressions":401046,"conversionPct":0.16,"adCostPct":10,"link":"https://www.ozon.ru/product/1980641816"},{"title":"good&good Bag for bulk products, 500 ml, 750 ml, 1100 ml, 8 pcs","seller":"Маркет МАП","brand":"good&good","badge":"Топ-10% по продажам","amount":964989,"trendPct":7,"qty":543,"avgPrice":1777,"minPrice":1512,"buyoutPct":83,"stockoutDays":"18 из 28","dailyRub":34185,"dailyQty":19,"scheme":"FBO","volumeL":16.3,"impressions":204776,"conversionPct":0.27,"adCostPct":5,"link":"https://www.ozon.ru/product/1967065824"}]},{"category":"马桶刷","sheet":"ершик для унитаза28天热卖","avg":{"title":"Среднее значение по товарам","seller":null,"brand":null,"badge":null,"amount":77306,"trendPct":115,"qty":195,"avgPrice":1839,"minPrice":1554,"buyoutPct":83.4,"stockoutDays":"18 из 28","dailyRub":2594,"dailyQty":6,"scheme":null,"volumeL":null,"impressions":75957,"conversionPct":0.35,"adCostPct":6.4,"link":null},"top":[{"title":"Pipolux Toilet Brush","seller":"Homelux","brand":"DXM Home","badge":"Лидер по продажам","amount":5022680,"trendPct":82,"qty":20588,"avgPrice":244,"minPrice":1,"buyoutPct":95.1,"stockoutDays":"15 из 28","dailyRub":171695,"dailyQty":696,"scheme":"FBO","volumeL":2.7,"impressions":4968188,"conversionPct":0.41,"adCostPct":0.7,"link":"https://www.ozon.ru/product/2104646832"},{"title":"Ridberg Toilet Brush, 1","seller":"iCover","brand":"Ridberg","badge":"Топ-50% по продажам","amount":4138312,"trendPct":-35,"qty":16191,"avgPrice":256,"minPrice":1,"buyoutPct":92.8,"stockoutDays":"8 из 28","dailyRub":146380,"dailyQty":568,"scheme":"FBO","volumeL":2.6,"impressions":3136668,"conversionPct":0.52,"adCostPct":0,"link":"https://www.ozon.ru/product/836386397"},{"title":"Toilet Brush, 1","seller":"Вишоп","brand":"без бренда","badge":"Лидер по продажам","amount":2198375,"trendPct":0,"qty":3828,"avgPrice":574,"minPrice":45,"buyoutPct":93.3,"stockoutDays":"14 из 28","dailyRub":83425,"dailyQty":149,"scheme":"FBO","volumeL":3,"impressions":926210,"conversionPct":0.41,"adCostPct":14.1,"link":"https://www.ozon.ru/product/3279800870"},{"title":"Ridberg Toilet Brush","seller":"iCover","brand":"Ridberg","badge":null,"amount":1718799,"trendPct":-31,"qty":7024,"avgPrice":245,"minPrice":1,"buyoutPct":92.6,"stockoutDays":"6 из 28","dailyRub":63181,"dailyQty":256,"scheme":"FBO","volumeL":4.7,"impressions":1460007,"conversionPct":0.48,"adCostPct":0,"link":"https://www.ozon.ru/product/3108525242"},{"title":"Pipolux Toilet Brush","seller":"Homelux","brand":"DXM Home","badge":"Топ-50% по продажам","amount":1559204,"trendPct":3,"qty":6335,"avgPrice":246,"minPrice":1,"buyoutPct":93.2,"stockoutDays":"15 из 28","dailyRub":54111,"dailyQty":217,"scheme":"FBO","volumeL":2.6,"impressions":1223100,"conversionPct":0.52,"adCostPct":1.5,"link":"https://www.ozon.ru/product/2104599208"}]}]</script>
+<script>
+  const RUB_PER_RMB = 13;
+  const similarCategoryConfig = [
+    { category: "钥匙扣", unit: "钥匙扣多件装", img: "./ozon-assets/hot-keychain.jpg", label: "现场相似：钥匙扣墙 / 低价多件装", fit: "高度相似" },
+    { category: "毛绒玩具", unit: "毛绒挂件组合", img: "./ozon-assets/hot-plush.jpg", label: "现场相似：毛绒挂件 / 小体积视觉款", fit: "选择小体积", filter: (p) => (p.volumeL || 0) <= 10 && (p.avgPrice || 0) <= 900 },
+    { category: "洗碗刷", unit: "洗碗刷清洁套装", img: "./ozon-assets/hot-dish-brush.jpg", label: "现场相似：厨房清洁刷 / 套装", fit: "高度相似" },
+    { category: "水槽过滤网", unit: "水槽过滤网多件装", img: "./ozon-assets/hot-sink-filter.jpg", label: "现场相似：厨房小件 / 复购多件装", fit: "高度相似" },
+    { category: "削皮器", unit: "削皮器刨皮刀组合", img: "./ozon-assets/hot-peeler.jpg", label: "现场相似：厨房工具 / 小体积组合", fit: "高度相似" },
+    { category: "果蔬切", unit: "果蔬切厨房工具组合", img: "./ozon-assets/hot-vegetable-cutter.jpg", label: "现场相似：厨房工具 / 利润款", fit: "谨慎利润款" },
+    { category: "马桶刷", unit: "马桶刷小体积款", img: "./ozon-assets/hot-toilet-brush.jpg", label: "现场相似：清洁用品 / 需控体积", fit: "筛小体积" },
+    { category: "清洁刷/扫把", unit: "清洁刷/扫把套装", img: "./ozon-assets/cleaning-tools-wall.jpg", label: "现场相似：清洁工具墙 / 长柄款需控体积", fit: "谨慎筛选", filter: (p) => (p.volumeL || 0) <= 8 },
+    { category: "储物罐/调味罐", unit: "储物罐/油壶", img: "./ozon-assets/hot-storage-jar.jpg", label: "现场相似：储物罐油壶 / 高客单", fit: "谨慎测试" },
+    { category: "鸡蛋切", unit: "鸡蛋切补充款", img: "./ozon-assets/hot-egg-slicer.jpg", label: "现场相似：厨房补充小件", fit: "补充款" },
+  ];
+
+  const fmtRubOnly = (v) => {
+    if (!Number.isFinite(v)) return "--";
+    if (v >= 100000000) return `${(v / 100000000).toFixed(1)}亿 RUB`;
+    if (v >= 10000) return `${(v / 10000).toFixed(0)}万 RUB`;
+    return `${Math.round(v).toLocaleString("zh-CN")} RUB`;
+  };
+  const fmtRmbOnly = (rub) => {
+    const v = Number(rub || 0) / RUB_PER_RMB;
+    if (!Number.isFinite(v)) return "--";
+    if (v >= 100000000) return `${(v / 100000000).toFixed(1)}亿 RMB`;
+    if (v >= 10000) return `${(v / 10000).toFixed(0)}万 RMB`;
+    return `${Math.round(v).toLocaleString("zh-CN")} RMB`;
+  };
+  const fmtRmbPrice = (rub) => {
+    const v = Number(rub || 0) / RUB_PER_RMB;
+    if (!Number.isFinite(v)) return "--";
+    return v >= 100 ? `${Math.round(v).toLocaleString("zh-CN")} RMB` : `${v.toFixed(1)} RMB`;
+  };
+  const fmtMoney = (rub) => {
+    if (!Number.isFinite(Number(rub))) return "--";
+    return `${fmtRmbOnly(rub)}（${fmtRubOnly(rub)}）`;
+  };
+  const fmtChartMoney = (rub) => {
+    const v = Number(rub || 0) / RUB_PER_RMB;
+    if (!Number.isFinite(v)) return "--";
+    if (v >= 100000000) return `${(v / 100000000).toFixed(1)}亿`;
+    if (v >= 10000) return `${(v / 10000).toFixed(0)}万`;
+    return `${Math.round(v).toLocaleString("zh-CN")}`;
+  };
+  const fmtPrice = (rub) => {
+    if (!Number.isFinite(Number(rub))) return "--";
+    return `${fmtRmbPrice(rub)}（${fmtQty(rub)}₽）`;
+  };
+  const fmtPriceBucket = (bucket) => {
+    const nums = String(bucket || "").match(/\d+/g)?.map(Number) || [];
+    if (!nums.length) return bucket || "--";
+    if (String(bucket).includes("+")) {
+      const rmb = Math.round(nums[0] / RUB_PER_RMB);
+      return `${rmb} RMB+（${nums[0]}₽+）`;
+    }
+    if (nums.length >= 2) {
+      const from = Math.round(nums[0] / RUB_PER_RMB);
+      const to = Math.round(nums[1] / RUB_PER_RMB);
+      return `${from}-${to} RMB（${nums[0]}-${nums[1]}₽）`;
+    }
+    return `${Math.round(nums[0] / RUB_PER_RMB)} RMB（${nums[0]}₽）`;
+  };
+  const fmtQty = (v) => Number(v || 0).toLocaleString("zh-CN");
+  const compactTitle = (title, max = 54) => {
+    const value = String(title || "--").replace(/\s+/g, " ").trim();
+    return value.length > max ? `${value.slice(0, max)}...` : value;
+  };
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+
+  function miniTrendSvg(row, months) {
+    const values = row.monthly || [];
+    if (!values.length) return "";
+    const max = Math.max(...values) * 1.08;
+    const min = 0;
+    const w = 320, h = 136, left = 10, right = 10, top = 22, bottom = 24;
+    const iw = w - left - right, ih = h - top - bottom;
+    const x = (i) => left + (iw * i) / Math.max(1, values.length - 1);
+    const y = (v) => top + ih - ((v - min) / (max - min)) * ih;
+    const pts = values.map((v, i) => `${x(i)},${y(v)}`).join(" ");
+    const area = `${left},${top + ih} ${pts} ${left + iw},${top + ih}`;
+    const peakIndex = values.reduce((best, value, index) => value > values[best] ? index : best, 0);
+    const lastIndex = values.length - 1;
+    const labels = values.map((v, i) => (i === 0 || i === values.length - 1 || months[i] === "12")
+      ? `<text x="${x(i)}" y="${h - 4}" text-anchor="middle" class="axis-label">${months[i] || i + 1}</text>`
+      : "").join("");
+    const pointGroups = values.map((v, i) => {
+      const hitW = iw / Math.max(1, values.length - 1);
+      const hitX = Math.max(0, x(i) - hitW / 2);
+      const tipX = Math.min(w - 112, Math.max(4, x(i) - 54));
+      const tipY = Math.max(3, y(v) - 40);
+      const isKey = i === peakIndex || i === lastIndex;
+      const valueY = Math.max(10, y(v) - 8);
+      return `
+        <g class="trend-month">
+          <rect class="trend-month-hit" x="${hitX}" y="0" width="${hitW}" height="${h}" fill="transparent" tabindex="0"></rect>
+          <circle cx="${x(i)}" cy="${y(v)}" r="2.7" fill="#2f6f4e"></circle>
+          ${isKey ? `<text class="trend-value-label" x="${x(i)}" y="${valueY}" text-anchor="${i === lastIndex ? "end" : "middle"}">${i === peakIndex ? "峰 " : "末 "}${fmtChartMoney(v)} RMB</text>` : ""}
+          <circle class="trend-focus-dot" cx="${x(i)}" cy="${y(v)}" r="5.4" fill="none" stroke="#b78931" stroke-width="2"></circle>
+          <g class="trend-tip">
+            <rect x="${tipX}" y="${tipY}" width="108" height="31" rx="5" fill="#151713" opacity=".94"></rect>
+            <text x="${tipX + 54}" y="${tipY + 12}" text-anchor="middle" fill="#fffaf0" font-size="8" font-weight="900">${months[i] || i + 1}月</text>
+            <text x="${tipX + 54}" y="${tipY + 24}" text-anchor="middle" fill="#fffaf0" font-size="8" font-weight="900">${fmtMoney(v)}</text>
+          </g>
+        </g>
+      `;
+    }).join("");
+    return `
+      <svg class="mini-line-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(row.category)}年度趋势">
+      <line x1="${left}" y1="${top + ih}" x2="${left + iw}" y2="${top + ih}" stroke="rgba(21,23,19,.13)"></line>
+      <polygon points="${area}" fill="rgba(47,111,78,.14)"></polygon>
+      <polyline points="${pts}" fill="none" stroke="#2f6f4e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      ${pointGroups}
+      ${labels}
+      </svg>
+    `;
+  }
+
+  function trendStats(row, months) {
+    const values = row.monthly || [];
+    if (!values.length) return [];
+    const peak = values.reduce((best, value, index) => value > best.value ? { value, index } : best, { value: values[0], index: 0 });
+    const last = { value: values[values.length - 1], index: values.length - 1 };
+    const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+    return [
+      ["峰值", `${months[peak.index] || peak.index + 1}月 ${fmtMoney(peak.value)}`],
+      ["末月", `${months[last.index] || last.index + 1}月 ${fmtMoney(last.value)}`],
+      ["月均", fmtMoney(avg)],
+    ];
+  }
+
+  function renderCategoryTrends(rows, months) {
+    const el = document.getElementById("category-trend-matrix");
+    if (!el) return;
+    el.innerHTML = rows.map((r) => `
+      <div class="trend-card">
+        <div class="trend-card-head">
+          <strong>${esc(r.category)}</strong>
+          <span class="trend-total">年 ${fmtMoney(r.annualGmv)}</span>
+        </div>
+        ${miniTrendSvg(r, months)}
+        <span>同比 ${Math.round(r.trendPct || 0)}% · 均价 ${fmtPrice(r.avgPrice)}</span>
+        <div class="trend-stat-grid">
+          ${trendStats(r, months).map(([label, value]) => `<div class="trend-stat"><em>${esc(label)}</em><b>${esc(value)}</b></div>`).join("")}
+        </div>
+      </div>
+    `).join("");
+    el.querySelectorAll(".trend-month-hit").forEach((hit) => {
+      const group = hit.closest(".trend-month");
+      hit.addEventListener("mouseenter", () => group?.classList.add("is-active"));
+      hit.addEventListener("mouseleave", () => group?.classList.remove("is-active"));
+      hit.addEventListener("focus", () => group?.classList.add("is-active"));
+      hit.addEventListener("blur", () => group?.classList.remove("is-active"));
+    });
+  }
+
+  function renderBars(id, rows, valueKey, maxRows = 8) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const top = rows.slice(0, maxRows);
+    const max = Math.max(...top.map((r) => r[valueKey] || 0), 1);
+    el.innerHTML = top.map((r) => `
+      <div class="evidence-bar">
+        <b title="${esc(r.category)}">${esc(r.category)}</b>
+        <div class="rail"><i style="width:${Math.max(4, (r[valueKey] || 0) / max * 100).toFixed(1)}%"></i></div>
+        <span class="bar-value">${fmtMoney(r[valueKey] || 0)}</span>
+      </div>
+    `).join("");
+  }
+
+  function renderEvidence(data) {
+    const annual = data.annualCategories || [];
+    const hot = data.hotSummary || [];
+    const total = Number(data.totalAnnualGmv || 0);
+    document.getElementById("annual-total-kpi").textContent = fmtMoney(total);
+    const topTrend = annual.reduce((best, r) => (r.trendPct || 0) > (best.trendPct || 0) ? r : best, annual[0] || {});
+    const topHot = hot[0] || {};
+    const kpis = [
+      ["相关类目年GMV", fmtMoney(total)],
+      ["最高增长类目", `${topTrend.category || "--"} ${Math.round(topTrend.trendPct || 0)}%`],
+      ["28天TOP单品", fmtMoney(topHot.topGmv || 0)],
+      ["热卖样本", `${hot.reduce((s, r) => s + (r.sampleSize || 0), 0)} 个SKU`],
+    ];
+    document.getElementById("platform-kpis").innerHTML = kpis.map(([k, v]) => `<div class="proof-tile"><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join("");
+    renderCategoryTrends(annual, data.months || []);
+    renderBars("category-gmv-bars", annual, "annualGmv", 8);
+
+    const priceRows = (data.priceBuckets || []).filter((r) => r.gmv > 0);
+    const priceMax = Math.max(...priceRows.map((r) => r.gmv), 1);
+    document.getElementById("price-band-grid").innerHTML = priceRows.map((r) => `
+      <div class="price-band">
+        <span>${esc(fmtPriceBucket(r.bucket))}</span>
+        <b>${fmtMoney(r.gmv)}</b>
+        <div class="rail" style="margin-top:10px;"><i style="width:${Math.max(4, r.gmv / priceMax * 100).toFixed(1)}%"></i></div>
+      </div>
+    `).join("");
+
+    document.getElementById("hot-proof-list").innerHTML = hot.slice(0, 6).map((r) => `
+      <div class="hot-proof">
+        <strong>${esc(r.category)}</strong>
+        <dl>
+          <dt>TOP 28天GMV</dt><dd>${fmtMoney(r.topGmv)}</dd>
+          <dt>销量</dt><dd>${fmtQty(r.topQty)}</dd>
+          <dt>均价</dt><dd>${fmtPrice(r.topAvgPrice)}</dd>
+          <dt>TOP10 GMV</dt><dd>${fmtMoney(r.top10Gmv)}</dd>
+        </dl>
+      </div>
+    `).join("");
+  }
+
+  function renderSimilarCompetitors(hotData) {
+    const el = document.getElementById("similar-competitor-board");
+    if (!el) return;
+    const byCategory = new Map((hotData || []).map((item) => [item.category, item]));
+    el.innerHTML = similarCategoryConfig.map((cfg) => {
+      const bucket = byCategory.get(cfg.category);
+      const allRows = bucket?.top || [];
+      const filteredRows = typeof cfg.filter === "function" ? allRows.filter(cfg.filter) : allRows;
+      const rows = (filteredRows.length >= 3 ? filteredRows : allRows).slice(0, 4);
+      if (!rows.length) return "";
+      const best = rows[0];
+      return `
+        <article class="match-card">
+          <div class="match-cover" data-label="${esc(cfg.label)}">
+            <img src="${esc(cfg.img)}" alt="${esc(cfg.category)}热卖竞品图">
+          </div>
+          <div class="match-body">
+            <div class="match-head">
+              <div>
+                <h3>${esc(cfg.unit)}</h3>
+                <p>对标 ${esc(cfg.category)} 近28天热卖。TOP商品 ${fmtMoney(best.amount)}，销量 ${fmtQty(best.qty)}，买家均价 ${fmtPrice(best.avgPrice)}。</p>
+              </div>
+              <div class="match-badge">${esc(cfg.fit)}</div>
+            </div>
+            <div class="match-table">
+              <div class="match-row header">
+                <span>热卖SKU</span><span>28天GMV</span><span>销量</span><span>均价</span><span>体积/买断</span><span>链接</span>
+              </div>
+              ${rows.map((p) => `
+                <div class="match-row">
+                  <div class="match-title">
+                    <b title="${esc(p.title)}">${esc(compactTitle(p.title))}</b>
+                    <span>${esc(p.seller || p.brand || "--")} · ${esc(p.badge || "热卖样本")}</span>
+                  </div>
+                  <span class="num">${fmtMoney(p.amount)}</span>
+                  <span class="num">${fmtQty(p.qty)}</span>
+                  <span class="num">${fmtPrice(p.avgPrice)}</span>
+                  <span class="num">${p.volumeL ?? "--"}L / ${p.buyoutPct ?? "--"}%</span>
+                  <a href="${esc(p.link || "#")}" target="_blank" rel="noopener">查看</a>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function restoreHashPosition() {
+    const id = decodeURIComponent(location.hash || "").replace(/^#/, "");
+    if (!id) return;
+    const target = document.getElementById(id);
+    if (target) requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
+  }
+
+  function readEmbeddedJson(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    return JSON.parse(el.textContent || "null");
+  }
+
+  async function loadReportJson(url, embeddedId) {
+    const embedded = readEmbeddedJson(embeddedId);
+    if (embedded) return embedded;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Failed to load ${url}`);
+    return response.json();
+  }
+
+  loadReportJson("./ozon-platform-evidence.json", "embedded-platform-evidence")
+    .then(renderEvidence)
+    .catch((error) => {
+      console.error(error);
+      const el = document.getElementById("platform-kpis");
+      if (el) el.innerHTML = '<div class="proof-tile"><span>平台数据</span><b>数据未读取</b></div>';
+    });
+
+  loadReportJson("./ozon-wholesale-28day-hot-products.json", "embedded-hot-products")
+    .then((data) => {
+      renderSimilarCompetitors(data);
+      restoreHashPosition();
+    })
+    .catch((error) => {
+      console.error(error);
+      const el = document.getElementById("similar-competitor-board");
+      if (el) el.innerHTML = '<div class="match-loading">28天热卖竞品数据未读取</div>';
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting...</title>
+  </head>
+  <body>
+    <script>
+      (function () {
+        var knownBase = "/russia-pl-calculator";
+        var base = window.location.pathname.indexOf(knownBase + "/") === 0 ? knownBase : "";
+        var fullPath = window.location.pathname + window.location.search + window.location.hash;
+        if (base && fullPath.indexOf(base) === 0) {
+          fullPath = fullPath.slice(base.length) || "/";
+        }
+        window.location.replace(base + "/?redirect=" + encodeURIComponent(fullPath));
+      })();
+    </script>
+  </body>
+  </html>
