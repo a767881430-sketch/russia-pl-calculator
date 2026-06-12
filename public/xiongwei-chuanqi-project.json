@@ -8,11 +8,11 @@
     "labelingPerUnit": 0,
     "grayShipPrice": 0,
     "whiteShipPrice": 0,
-    "taxScheme": "usn_15",
+    "taxScheme": "usn_6",
     "vatRate": 0.22,
     "profitTaxRate": 0.25,
     "customTaxRate": 0.15,
-    "incomeBasis": "payout",
+    "incomeBasis": "list",
     "oneTimeCosts": 0
   },
   "products": [
